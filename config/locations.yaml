@@ -1,0 +1,9 @@
+# Souřadnice jsou přibližné; elevace se posílá do Open-Meteo (downscaling teploty).
+locations:
+  - {key: funchal,       name: Funchal,         lat: 32.6669, lon: -16.9241, elevation_m: 25,   role: coast_south}
+  - {key: arieiro,       name: Pico do Arieiro, lat: 32.7358, lon: -16.9291, elevation_m: 1818, role: summit}
+  - {key: sao_vicente,   name: São Vicente,     lat: 32.7983, lon: -17.0381, elevation_m: 15,   role: coast_north}
+  - {key: paul_da_serra, name: Paul da Serra,   lat: 32.7500, lon: -17.1167, elevation_m: 1500, role: plateau}
+  - {key: ponta_do_sol,  name: Ponta do Sol,    lat: 32.6811, lon: -17.1022, elevation_m: 30,   role: coast_south}
+  # Moře východně od ostrova: oblačnost na východním obzoru při pohledu z Arieira.
+  - {key: east_horizon,  name: Východní obzor,  lat: 32.7400, lon: -16.6000, elevation_m: 0,    role: reference_east}

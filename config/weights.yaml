@@ -1,0 +1,32 @@
+# Váhy a prahy skóre. Výchozí hodnoty jsou odhad; kalibrace přijde v Phase 2.
+sunrise:
+  weights:
+    sky: 0.45          # volná obloha nad vrcholem a na východním obzoru
+    color: 0.15        # střední/vysoká oblačnost pro barvy
+    visibility: 0.25   # dohlednost, žádná mlha
+    wind: 0.15
+    cloudsea: 0.0      # moře mraků je neutrální (viz ARCHITECTURE.md 0.1); >0 = preferuj inverzi
+  verdict:
+    go: 70
+    maybe: 45
+  window:
+    before_min: 60
+    after_min: 30
+  fog:                     # viz FogConfig; kalibrováno na 8 dnech (5.–12. 10. 2026), hlídá regresní test
+    summit_rh_clear: 70    # RH ve výšce vrcholu (interpolace 850/800 hPa) pod tímto = bez mlhy
+    summit_rh_fog: 90      # nad tímto = vrchol v mraku
+    aloft_dry_rh: 40       # RH v 800 hPa pod tímto = suchý vzduch nad vrstvou → přízemní vlhkost se ignoruje
+    aloft_moist_rh: 65     # nad tímto = přízemní vlhkost/dohlednost je důvěryhodná
+    gate_strength: 0.85
+inversion:
+  weights:
+    stability: 0.30
+    moisture: 0.25
+    above_deck: 0.30
+    lowland: 0.15
+bot:
+  digest_time: "20:00"        # večerní digest (místní čas Madeiry)
+  feedback_time: "10:00"      # dotaz "jak dopadl východ?"
+  departure_before_min: 80    # odjezd z Funchalu před východem
+  compare_from: "13:00"
+  compare_to: "18:00"
