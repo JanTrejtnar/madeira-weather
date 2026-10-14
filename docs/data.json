@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-14T20:32:04+00:00",
+  "generated_at": "2026-10-14T20:39:52+00:00",
   "model": "best_match",
   "location": {
     "name": "Pico do Arieiro",
@@ -22,8 +22,12 @@
     "wind_kmh": 4,
     "gust_kmh": 13,
     "wind_dir_deg": 19,
-    "summary": "Vypadá to dobře. Skóre 100 %. Vrstva mraků sahá asi do 1126 m, Arieiro (1818 m) je nad ní o ~692 m.",
-    "warnings": []
+    "summary_cs": "Vypadá to dobře. Skóre 100 %. Vrstva mraků sahá asi do 1126 m, Arieiro (1818 m) je nad ní o ~692 m.",
+    "inversion_case": "above",
+    "problem": null,
+    "weakest": null,
+    "precip_mm": 0.0,
+    "alerts": []
   },
   "days": [
     {
@@ -43,8 +47,12 @@
       "wind_kmh": 4,
       "gust_kmh": 13,
       "wind_dir_deg": 19,
-      "summary": "Vypadá to dobře. Skóre 100 %. Vrstva mraků sahá asi do 1126 m, Arieiro (1818 m) je nad ní o ~692 m.",
-      "warnings": []
+      "summary_cs": "Vypadá to dobře. Skóre 100 %. Vrstva mraků sahá asi do 1126 m, Arieiro (1818 m) je nad ní o ~692 m.",
+      "inversion_case": "above",
+      "problem": null,
+      "weakest": null,
+      "precip_mm": 0.0,
+      "alerts": []
     },
     {
       "date": "2026-10-16",
@@ -63,8 +71,12 @@
       "wind_kmh": 4,
       "gust_kmh": 10,
       "wind_dir_deg": 24,
-      "summary": "Vypadá to dobře. Skóre 94 %. Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné.",
-      "warnings": []
+      "summary_cs": "Vypadá to dobře. Skóre 94 %. Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné.",
+      "inversion_case": "none",
+      "problem": null,
+      "weakest": null,
+      "precip_mm": 0.0,
+      "alerts": []
     },
     {
       "date": "2026-10-17",
@@ -83,8 +95,94 @@
       "wind_kmh": 8,
       "gust_kmh": 38,
       "wind_dir_deg": 32,
-      "summary": "Hazard, výsledek je nejistý. Skóre 54 %. Vrstva mraků sahá asi do 1236 m, Arieiro (1818 m) je nad ní o ~582 m.",
-      "warnings": []
+      "summary_cs": "Hazard, výsledek je nejistý. Skóre 54 %. Vrstva mraků sahá asi do 1236 m, Arieiro (1818 m) je nad ní o ~582 m.",
+      "inversion_case": "above",
+      "problem": null,
+      "weakest": null,
+      "precip_mm": 0.0,
+      "alerts": []
+    }
+  ],
+  "history": [
+    {
+      "date": "2026-10-14",
+      "score_pct": 99,
+      "verdict": "GO",
+      "inversion_pct": 60,
+      "outcome": "cloud_sea",
+      "source": "forecast"
+    },
+    {
+      "date": "2026-10-13",
+      "score_pct": 91,
+      "verdict": "GO",
+      "inversion_pct": 60,
+      "outcome": "mixed",
+      "source": "forecast"
+    },
+    {
+      "date": "2026-10-12",
+      "score_pct": 96,
+      "verdict": "GO",
+      "inversion_pct": 34,
+      "outcome": "cloud_sea",
+      "source": "backfill"
+    },
+    {
+      "date": "2026-10-11",
+      "score_pct": 99,
+      "verdict": "GO",
+      "inversion_pct": 66,
+      "outcome": "cloud_sea",
+      "source": "backfill"
+    },
+    {
+      "date": "2026-10-10",
+      "score_pct": 73,
+      "verdict": "GO",
+      "inversion_pct": 53,
+      "outcome": "cloud_sea",
+      "source": "backfill"
+    },
+    {
+      "date": "2026-10-09",
+      "score_pct": 2,
+      "verdict": "NO_GO",
+      "inversion_pct": 9,
+      "outcome": "fail",
+      "source": "backfill"
+    },
+    {
+      "date": "2026-10-08",
+      "score_pct": 16,
+      "verdict": "NO_GO",
+      "inversion_pct": 16,
+      "outcome": "fail",
+      "source": "backfill"
+    },
+    {
+      "date": "2026-10-07",
+      "score_pct": 41,
+      "verdict": "NO_GO",
+      "inversion_pct": 30,
+      "outcome": "mixed",
+      "source": "backfill"
+    },
+    {
+      "date": "2026-10-06",
+      "score_pct": 94,
+      "verdict": "GO",
+      "inversion_pct": 60,
+      "outcome": "cloud_sea",
+      "source": "backfill"
+    },
+    {
+      "date": "2026-10-05",
+      "score_pct": 7,
+      "verdict": "NO_GO",
+      "inversion_pct": 28,
+      "outcome": "fail",
+      "source": "backfill"
     }
   ]
 }

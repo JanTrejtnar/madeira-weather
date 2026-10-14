@@ -18,6 +18,8 @@ def test_payload_shape(tmp_path):
     assert t["verdict"] in {"GO", "MAYBE", "NO_GO"}
     assert 0 <= t["score_pct"] <= 100
     assert t["departure_funchal"] < t["sunrise"]
+    assert t["inversion_case"] in {"none", "above", "edge", "inside"}
+    assert payload["history"] == []
     assert len(payload["days"]) == 3
     out = tmp_path / "docs" / "data.json"
     webexport.write_payload(payload, out)

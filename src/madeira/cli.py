@@ -129,9 +129,13 @@ def export_calibration() -> None:
 def export_web(
     out: Path = typer.Option(Path("docs/data.json"), "--out", "-o", help="Cílový JSON"),
     days: int = typer.Option(3, min=1, max=7, help="Počet dní výhledu (od zítřka)"),
+    history: int = typer.Option(60, min=0, help="Kolik hodnocených dní historie přibalit"),
 ) -> None:
     """Uloží zítřek a krátký výhled do statického JSONu pro GitHub Pages."""
-    payload = webexport.build_payload(load_settings(), days)
+    rows = Store().calibration_rows(limit=history)
+    payload = webexport.build_payload(
+        load_settings(), days, history=webexport.history_entries(rows)
+    )
     webexport.write_payload(payload, out)
     t = payload["tomorrow"]
     console.print(f"Zapsáno {out}: {t['date']} {t['verdict']} {t['score_pct']} %")

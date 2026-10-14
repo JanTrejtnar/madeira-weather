@@ -48,7 +48,8 @@ Statická stránka `docs/index.html` čte `docs/data.json` (Tailwind přes CDN, 
        .venv\Scripts\madeira export-web            # zapíše docs/data.json
        git add docs/data.json && git commit -m "Update forecast" && git push
 
-   Volby: `--days N` (1–7), `--out cesta.json`.
+   Volby: `--days N` (1–7), `--history N` (počet hodnocených dní historie z `data/madeira.db`), `--out cesta.json`.
+   Web má přepínač CZ/EN (volba se pamatuje) a rozklikávací historii predikcí vs. skutečnosti.
 
 2. Zapnutí hostingu: na GitHubu **Settings → Pages → Build and deployment → Source: Deploy from a branch**,
    branch `main`, složka `/docs` → **Save**. Web poběží na `https://jantrejtnar.github.io/madeira-weather/`.
