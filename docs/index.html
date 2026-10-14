@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Východ slunce – Pico do Arieiro</title>
+  <meta name="description" content="Předpověď východu slunce a moře mraků na Pico do Arieiro (Madeira).">
+  <meta name="theme-color" content="#1e1b4b">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: radial-gradient(120% 60% at 50% 100%, rgba(251,146,60,.22), transparent 60%),
+                       linear-gradient(180deg, #0f172a 0%, #1e1b4b 100%) fixed; }
+  </style>
+</head>
+<body class="min-h-screen text-slate-100 antialiased">
+  <main class="mx-auto max-w-3xl px-4 py-8 sm:py-12">
+    <header class="mb-6">
+      <p class="text-sm uppercase tracking-widest text-orange-300/80">Madeira</p>
+      <h1 class="text-2xl sm:text-3xl font-semibold">Východ slunce na Pico do Arieiro</h1>
+    </header>
+
+    <div id="state" class="rounded-2xl bg-white/5 p-6 text-slate-300" role="status">Načítám předpověď…</div>
+
+    <section id="content" class="hidden space-y-4">
+      <!-- hlavní karta -->
+      <article class="rounded-3xl border border-white/10 bg-white/5 p-6 sm:p-8 shadow-xl backdrop-blur">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p id="day-label" class="text-sm text-slate-300"></p>
+            <p class="mt-1 text-slate-400 text-sm">Východ slunce <span id="sunrise" class="text-orange-200 font-medium"></span></p>
+          </div>
+          <span id="badge" class="rounded-2xl px-5 py-2 text-2xl sm:text-4xl font-extrabold tracking-tight"></span>
+        </div>
+        <div class="mt-6 flex items-end gap-3">
+          <span id="score" class="text-6xl sm:text-7xl font-bold leading-none"></span>
+          <span class="pb-2 text-slate-400">% skóre <span id="range" class="text-slate-500"></span></span>
+        </div>
+        <div class="mt-4 h-2 overflow-hidden rounded-full bg-white/10">
+          <div id="bar" class="h-full rounded-full"></div>
+        </div>
+        <p id="summary" class="mt-5 text-slate-200 leading-relaxed"></p>
+        <ul id="warnings" class="mt-3 space-y-1 text-sm text-amber-300"></ul>
+      </article>
+
+      <!-- parametry -->
+      <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <p class="text-xs uppercase tracking-wider text-slate-400">Odjezd z Funchalu</p>
+          <p id="departure" class="mt-1 text-2xl font-semibold text-orange-200"></p>
+        </div>
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <p class="text-xs uppercase tracking-wider text-slate-400">Hladina mraků</p>
+          <p id="deck" class="mt-1 text-2xl font-semibold"></p>
+        </div>
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <p class="text-xs uppercase tracking-wider text-slate-400">Arieiro nad mraky</p>
+          <p id="above" class="mt-1 text-2xl font-semibold"></p>
+        </div>
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <p class="text-xs uppercase tracking-wider text-slate-400">Vítr</p>
+          <p id="wind" class="mt-1 text-2xl font-semibold"></p>
+          <p id="gust" class="text-xs text-slate-400"></p>
+        </div>
+      </div>
+
+      <!-- přepínač dní -->
+      <div>
+        <h2 class="mb-2 mt-6 text-sm uppercase tracking-widest text-slate-400">Výhled</h2>
+        <div id="tabs" class="grid grid-cols-3 gap-2" role="tablist"></div>
+      </div>
+    </section>
+
+    <footer class="mt-10 text-xs text-slate-500">
+      <p id="updated"></p>
+      <p class="mt-1">Model: Open-Meteo. Orientační předpověď, ne záruka; před odjezdem zkontroluj aktuální stav.</p>
+    </footer>
+  </main>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const VERDICT = {
+    GO:    { text: "GO",    badge: "bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-400/40", bar: "bg-emerald-400", dot: "bg-emerald-400" },
+    MAYBE: { text: "MOŽNÁ", badge: "bg-amber-500/20 text-amber-300 ring-1 ring-amber-400/40",       bar: "bg-amber-400",   dot: "bg-amber-400" },
+    NO_GO: { text: "NO-GO", badge: "bg-rose-500/20 text-rose-300 ring-1 ring-rose-400/40",          bar: "bg-rose-400",    dot: "bg-rose-400" },
+  };
+  const DAYS = ["neděle", "pondělí", "úterý", "středa", "čtvrtek", "pátek", "sobota"];
+  const SHORT = ["Ne", "Po", "Út", "St", "Čt", "Pá", "So"];
+  const compass = (d) => d == null ? "" : ["S","SV","V","JV","J","JZ","Z","SZ"][Math.round(d / 45) % 8];
+  const parse = (iso) => new Date(iso + "T12:00:00");
+  const fmtDate = (iso) => { const d = parse(iso); return `${d.getDate()}. ${d.getMonth() + 1}.`; };
+  const m = (v) => v == null ? "–" : `${v.toLocaleString("cs-CZ")} m`;
+
+  function show(day, isTomorrow) {
+    const v = VERDICT[day.verdict] || VERDICT.MAYBE;
+    $("day-label").textContent = `${isTomorrow ? "Zítra · " : ""}${DAYS[parse(day.date).getDay()]} ${fmtDate(day.date)}`;
+    $("sunrise").textContent = day.sunrise;
+    $("badge").textContent = v.text;
+    $("badge").className = `rounded-2xl px-5 py-2 text-2xl sm:text-4xl font-extrabold tracking-tight ${v.badge}`;
+    $("score").textContent = day.score_pct;
+    $("range").textContent = day.score_range ? `(${day.score_range[0]}–${day.score_range[1]})` : "";
+    $("bar").className = `h-full rounded-full ${v.bar}`;
+    $("bar").style.width = `${Math.max(0, Math.min(100, day.score_pct))}%`;
+    $("summary").textContent = day.summary || "";
+    $("warnings").replaceChildren(...(day.warnings || []).map((w) => Object.assign(document.createElement("li"), { textContent: "⚠ " + w })));
+    $("departure").textContent = day.departure_funchal;
+    $("deck").textContent = m(day.cloud_deck_top_m);
+    $("above").textContent = day.summit_above_deck_m == null ? "–" : `${day.summit_above_deck_m >= 0 ? "+" : ""}${day.summit_above_deck_m.toLocaleString("cs-CZ")} m`;
+    $("wind").textContent = day.wind_kmh == null ? "–" : `${day.wind_kmh} km/h ${compass(day.wind_dir_deg)}`;
+    $("gust").textContent = day.gust_kmh == null ? "" : `nárazy ${day.gust_kmh} km/h`;
+  }
+
+  function renderTabs(days, selected) {
+    $("tabs").replaceChildren(...days.map((d, i) => {
+      const v = VERDICT[d.verdict] || VERDICT.MAYBE;
+      const b = document.createElement("button");
+      b.type = "button";
+      b.setAttribute("role", "tab");
+      b.setAttribute("aria-selected", i === selected);
+      b.className = "rounded-2xl border p-3 text-left transition " + (i === selected
+        ? "border-orange-300/60 bg-orange-400/10" : "border-white/10 bg-white/5 hover:bg-white/10");
+      b.innerHTML = `<p class="text-xs text-slate-400"></p><p class="mt-1 flex items-center gap-2 font-semibold"><span class="h-2.5 w-2.5 rounded-full ${v.dot}"></span><span></span></p>`;
+      b.querySelector("p").textContent = `${SHORT[parse(d.date).getDay()]} ${fmtDate(d.date)}`;
+      b.querySelector("span:last-child").textContent = `${v.text} · ${d.score_pct} %`;
+      b.addEventListener("click", () => { show(d, i === 0); renderTabs(days, i); });
+      return b;
+    }));
+  }
+
+  function updated(iso) {
+    const t = new Date(iso);
+    const ageH = (Date.now() - t.getTime()) / 36e5;
+    const when = t.toLocaleString("cs-CZ", { dateStyle: "medium", timeStyle: "short" });
+    $("updated").textContent = `Naposledy aktualizováno: ${when}` + (ageH > 24 ? " – data jsou starší než den!" : "");
+    $("updated").className = ageH > 24 ? "text-amber-400" : "";
+  }
+
+  function fail(msg) {
+    $("state").textContent = msg;
+    $("state").className = "rounded-2xl bg-rose-500/10 p-6 text-rose-200 ring-1 ring-rose-400/30";
+  }
+
+  fetch("./data.json", { cache: "no-cache" })
+    .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+    .then((data) => {
+      if (!data.days || !data.days.length) throw new Error("prázdná data");
+      $("state").classList.add("hidden");
+      $("content").classList.remove("hidden");
+      show(data.days[0], true);
+      renderTabs(data.days, 0);
+      updated(data.generated_at);
+    })
+    .catch((e) => fail(`Předpověď se nepodařilo načíst (${e.message}). Zkus to prosím později.`));
+})();
+</script>
+</body>
+</html>

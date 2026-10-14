@@ -38,3 +38,21 @@ Bot musí běžet nepřetržitě. Na Windows: Plánovač úloh → nová úloha 
 začít v `C:\Users\honza\dev-projects\madeira-weather-forecast`.
 
 Kontrola dat: `madeira history` (predikce vs. realita), `madeira export-calibration` (JSON), `madeira rate 2026-10-13 cloud_sea` (ruční zápis).
+
+## Veřejný web (GitHub Pages)
+
+Statická stránka `docs/index.html` čte `docs/data.json` (Tailwind přes CDN, žádný build).
+
+1. Aktualizace dat (zítřek + 3denní výhled):
+
+       .venv\Scripts\madeira export-web            # zapíše docs/data.json
+       git add docs/data.json && git commit -m "Update forecast" && git push
+
+   Volby: `--days N` (1–7), `--out cesta.json`.
+
+2. Zapnutí hostingu: na GitHubu **Settings → Pages → Build and deployment → Source: Deploy from a branch**,
+   branch `main`, složka `/docs` → **Save**. Web poběží na `https://jantrejtnar.github.io/madeira-weather/`.
+
+3. Lokální náhled: `python -m http.server -d docs 8000` a otevři <http://localhost:8000> (`fetch` nefunguje z `file://`).
+
+`data.json` se mění jen při spuštění exportu; stránka zobrazuje čas poslední aktualizace a varuje, když jsou data starší než den.
