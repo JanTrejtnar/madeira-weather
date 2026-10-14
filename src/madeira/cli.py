@@ -5,6 +5,7 @@ import logging
 import os
 import sys
 from datetime import UTC, datetime
+from pathlib import Path
 
 import typer
 from rich.console import Console
@@ -13,7 +14,7 @@ from rich.table import Table
 from madeira.domain.config import load_env, load_settings
 from madeira.domain.models import OUTCOME_LABELS
 from madeira.presenters.cli import render_comparison, render_sunrise, render_week
-from madeira.services import forecast
+from madeira.services import forecast, webexport
 from madeira.storage.db import Store
 
 app = typer.Typer(help="Madeira Microclimate & Sunrise Predictor", no_args_is_help=True)
@@ -122,6 +123,18 @@ def export_calibration() -> None:
             if r.get(key):
                 r[key] = json.loads(r[key])
     sys.stdout.write(json.dumps(rows, ensure_ascii=False, indent=2) + "\n")
+
+
+@app.command("export-web")
+def export_web(
+    out: Path = typer.Option(Path("docs/data.json"), "--out", "-o", help="Cílový JSON"),
+    days: int = typer.Option(3, min=1, max=7, help="Počet dní výhledu (od zítřka)"),
+) -> None:
+    """Uloží zítřek a krátký výhled do statického JSONu pro GitHub Pages."""
+    payload = webexport.build_payload(load_settings(), days)
+    webexport.write_payload(payload, out)
+    t = payload["tomorrow"]
+    console.print(f"Zapsáno {out}: {t['date']} {t['verdict']} {t['score_pct']} %")
 
 
 @app.command()
