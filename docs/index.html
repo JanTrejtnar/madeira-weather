@@ -70,6 +70,13 @@
         </div>
       </div>
 
+      <!-- počasí během dne -->
+      <article class="rounded-2xl border border-white/10 bg-white/5 p-5">
+        <h2 class="text-sm uppercase tracking-widest text-slate-400" data-i18n="wxTitle">Počasí během dne</h2>
+        <p class="mt-1 text-xs text-slate-500" data-i18n="wxNote">Orientačně pro 7:00–20:00. Nemá vliv na skóre východu slunce.</p>
+        <div id="wx" class="mt-4 grid gap-4 sm:grid-cols-2"></div>
+      </article>
+
       <!-- přepínač dní -->
       <div>
         <h2 class="mb-2 mt-6 text-sm uppercase tracking-widest text-slate-400" data-i18n="outlook">Výhled</h2>
@@ -130,6 +137,25 @@
       outcome: { cloud_sea: "🌊 Nádherná inverze", clear: "☀️ Jasno bez mraků", mixed: "⛅ Částečně zataženo", fail: "🌫 V mlze / nepovedlo se" },
       head: { GO: "Vypadá to dobře.", MAYBE: "Hazard, výsledek je nejistý.", NO_GO: "Spíš zůstaň v posteli." },
       comp: { sky: "oblačnost", color: "barvy oblohy", visibility: "dohlednost", wind: "vítr", cloudsea: "moře mraků" },
+      wxTitle: "Počasí během dne", wxNote: "Orientačně pro 7:00–20:00. Nemá vliv na skóre východu slunce.",
+      place: { funchal: "Funchal (pobřeží)", arieiro: "Pico do Arieiro (hory)" },
+      wx: {
+        rain: (w) => ({
+          none: "☀️ Nebude pršet, suchý den.",
+          drizzle: "🌦 Možné jen lehké mrholení, skoro nic.",
+          light: "🌧 Občas slabý déšť, deštník se hodí.",
+          moderate: "🌧 Bude pršet, vezmi si pláštěnku nebo deštník.",
+          heavy: "⛈ Bude pršet hodně – vydatný déšť, plánuj raději uvnitř.",
+        })[w.rain],
+        when: (w) => w.rain !== "none" && w.rain_from != null ? `Nejspíš zhruba od ${w.rain_from}:00 do ${w.rain_to}:00.` : "",
+        chance: (w) => w.rain_prob_pct == null ? "" : w.rain === "none" && w.rain_prob_pct < 20 ? "" : `Šance na srážky až ${w.rain_prob_pct} %.`,
+        sky: (w) => ({ clear: "Obloha: jasno.", partly: "Obloha: polojasno.", cloudy: "Obloha: zataženo." })[w.sky] || "",
+        temp: (w) => w.temp_min_c == null ? "" : `Teplota ${w.temp_min_c}–${w.temp_max_c} °C.`,
+        wind: (w) => w.gust_max_kmh == null ? "" : w.gust_max_kmh < 30 ? "Vítr: slabý."
+          : w.gust_max_kmh < 50 ? `Vítr: svěží, nárazy až ${w.gust_max_kmh} km/h.`
+          : w.gust_max_kmh < 70 ? `Vítr: silný, nárazy až ${w.gust_max_kmh} km/h.`
+          : `Vítr: velmi silný, nárazy až ${w.gust_max_kmh} km/h.`,
+      },
       summary: (d, t) => [
         `${t.head[d.verdict]} Skóre ${d.score_pct} %.`,
         d.problem === "precip" ? "Největší problém jsou srážky."
@@ -160,6 +186,25 @@
       outcome: { cloud_sea: "🌊 Magnificent cloud sea", clear: "☀️ Clear, no clouds", mixed: "⛅ Partly cloudy", fail: "🌫 Fogged in / failed" },
       head: { GO: "Looks good.", MAYBE: "A gamble, the outcome is uncertain.", NO_GO: "Better stay in bed." },
       comp: { sky: "cloud cover", color: "sky colours", visibility: "visibility", wind: "wind", cloudsea: "cloud sea" },
+      wxTitle: "Weather during the day", wxNote: "Rough guide for 7:00–20:00. Does not affect the sunrise score.",
+      place: { funchal: "Funchal (coast)", arieiro: "Pico do Arieiro (mountains)" },
+      wx: {
+        rain: (w) => ({
+          none: "☀️ No rain, a dry day.",
+          drizzle: "🌦 Maybe a light drizzle, hardly anything.",
+          light: "🌧 Occasional light rain, an umbrella is handy.",
+          moderate: "🌧 It will rain – take a rain jacket or umbrella.",
+          heavy: "⛈ Heavy rain expected – better plan something indoors.",
+        })[w.rain],
+        when: (w) => w.rain !== "none" && w.rain_from != null ? `Most likely from about ${w.rain_from}:00 to ${w.rain_to}:00.` : "",
+        chance: (w) => w.rain_prob_pct == null ? "" : w.rain === "none" && w.rain_prob_pct < 20 ? "" : `Chance of rain up to ${w.rain_prob_pct}%.`,
+        sky: (w) => ({ clear: "Sky: clear.", partly: "Sky: partly cloudy.", cloudy: "Sky: overcast." })[w.sky] || "",
+        temp: (w) => w.temp_min_c == null ? "" : `Temperature ${w.temp_min_c}–${w.temp_max_c} °C.`,
+        wind: (w) => w.gust_max_kmh == null ? "" : w.gust_max_kmh < 30 ? "Wind: light."
+          : w.gust_max_kmh < 50 ? `Wind: breezy, gusts up to ${w.gust_max_kmh} km/h.`
+          : w.gust_max_kmh < 70 ? `Wind: strong, gusts up to ${w.gust_max_kmh} km/h.`
+          : `Wind: very strong, gusts up to ${w.gust_max_kmh} km/h.`,
+      },
       summary: (d, t) => [
         `${t.head[d.verdict]} Score ${d.score_pct}%.`,
         d.problem === "precip" ? "The main problem is rain."
@@ -210,6 +255,18 @@
     $("above").textContent = day.summit_above_deck_m == null ? "–" : `${day.summit_above_deck_m >= 0 ? "+" : ""}${num(day.summit_above_deck_m)} m`;
     $("wind").textContent = day.wind_kmh == null ? "–" : `${day.wind_kmh} km/h ${compass(day.wind_dir_deg)}`;
     $("gust").textContent = day.gust_kmh == null ? "" : `${L.gust} ${day.gust_kmh} km/h`;
+    renderWeather(day);
+  }
+
+  function renderWeather(day) {
+    const L = t(), wx = day.weather || {};
+    $("wx").replaceChildren(...Object.keys(L.place).filter((k) => wx[k]).map((k) => {
+      const w = wx[k], box = el("div");
+      box.append(el("p", "text-sm font-semibold text-orange-200", L.place[k]),
+        el("p", "mt-1 text-slate-100", L.wx.rain(w)),
+        el("p", "mt-1 text-sm text-slate-300", [L.wx.when(w), L.wx.chance(w), L.wx.sky(w), L.wx.temp(w), L.wx.wind(w)].filter(Boolean).join(" ")));
+      return box;
+    }));
   }
 
   function renderTabs() {

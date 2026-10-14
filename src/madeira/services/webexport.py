@@ -7,6 +7,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+from madeira.analyzers.daily_weather import day_weather
 from madeira.analyzers.features import extract_sunrise_features
 from madeira.analyzers.sunrise import score_sunrise
 from madeira.domain.config import Settings
@@ -100,7 +101,9 @@ def build_payload(
             break
         features = extract_sunrise_features(bundle, day, now, settings.sunrise.window)
         analysis = score_sunrise(features, settings)
-        entries.append(_day_entry(analysis, features, settings.bot.departure_before_min))
+        entry = _day_entry(analysis, features, settings.bot.departure_before_min)
+        entry["weather"] = day_weather(bundle, day)
+        entries.append(entry)
     if not entries:
         raise RuntimeError("Model nevrátil data pro zítřek.")
     return {

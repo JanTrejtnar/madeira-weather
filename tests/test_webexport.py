@@ -25,3 +25,20 @@ def test_payload_shape(tmp_path):
     webexport.write_payload(payload, out)
     assert json.loads(out.read_text(encoding="utf-8"))["tomorrow"] == t
     assert datetime.fromisoformat(payload["generated_at"]).tzinfo == UTC
+
+
+def test_rain_levels():
+    from madeira.analyzers.daily_weather import rain_level
+
+    assert rain_level(0.0, 0.0) == "none"
+    assert rain_level(0.5, 0.3) == "drizzle"
+    assert rain_level(1.5, 0.8) == "light"
+    assert rain_level(4, 2) == "moderate"
+    assert rain_level(3, 5) == "heavy"
+    assert rain_level(12, 1) == "heavy"
+
+
+def test_payload_has_weather():
+    payload = webexport.build_payload(Settings(), days=3, bundle=_bundle(), now=NOW)
+    w = payload["tomorrow"]["weather"]["funchal"]
+    assert w["rain"] in {"none", "drizzle", "light", "moderate", "heavy"}
