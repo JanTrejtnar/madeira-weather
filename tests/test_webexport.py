@@ -80,3 +80,22 @@ def test_payload_has_tomorrow_spots():
     assert pargo["departure_funchal"] < pargo["sunset"]
     assert pargo["verdict"] in {"GO", "MAYBE", "NO_GO"}
     json.dumps(payload)  # musí jít serializovat
+
+
+def test_payload_has_sunrise_and_sunset_roots():
+    payload = webexport.build_payload(Settings(), days=3, bundle=_bundle(), now=NOW)
+    for key, time_key in (("sunrise", "arieiro"), ("sunset", "ponta_do_pargo")):
+        s = payload[key]
+        assert s["location"]["key"] == time_key
+        for field in ("time", "departure", "verdict", "score", "cloud_sea", "wind",
+                      "clouds_canvas", "summary"):
+            assert field in s
+        assert s["departure"] < s["time"]
+        assert set(s["wind"]) == {"kmh", "gust_kmh", "dir_deg"}
+    assert payload["sunrise"]["score"] == payload["tomorrow"]["score_pct"]
+    assert payload["sunrise"]["cloud_sea"]["probability_pct"] == payload["tomorrow"]["inversion_pct"]
+    assert payload["sunrise"]["webcam_url"].endswith("/pico-do-arieiro")
+    assert payload["sunset"]["webcam_url"].endswith("/ponta-do-pargo")
+    assert payload["tomorrow_spots"]["morning"][1]["webcam_url"] is None  # Bica: bez kamery
+    assert payload["sunset"]["cloud_sea"] is None  # pobřežní západ: moře mraků se neskóruje
+    json.dumps(payload)

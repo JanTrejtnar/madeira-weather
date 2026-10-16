@@ -45,7 +45,14 @@ def _day_entry(analysis: SunriseAnalysis, features, departure_before_min: int) -
         "weakest": _weakest(analysis),
         "precip_mm": round(features.precip_mm, 1),
         "alerts": _alerts(analysis, features),
+        "canvas_cloud_pct": _canvas_pct(features),
     }
+
+
+def _canvas_pct(features) -> int | None:
+    """Střední + vysoká oblačnost (průměr) jako "plátno" pro barvy, stejně jako ve skóre."""
+    vals = [v for v in (features.mid_cloud, features.high_cloud) if v is not None]
+    return round(sum(vals) / len(vals)) if vals else None
 
 
 def _sunset_entry(analysis: SunsetAnalysis, features, departure_min: int) -> dict:
@@ -71,6 +78,58 @@ def _sunset_entry(analysis: SunsetAnalysis, features, departure_min: int) -> dic
         ),
         "weakest": _weakest(analysis),
         "warnings": analysis.warnings,
+        "alerts": _sunset_alerts(analysis, features),
+    }
+
+
+def _sunset_alerts(a: SunsetAnalysis, f) -> list[dict]:
+    alerts = []
+    if a.gates["precip"] < 1:
+        alerts.append({"code": "precip", "value": round(f.precip_mm, 1)})
+    if a.gates["horizon"] < 1 and f.horizon_low_cloud is not None:
+        alerts.append({"code": "horizon", "value": round(f.horizon_low_cloud)})
+    if a.gates["visibility"] < 1 and f.visibility_m is not None:
+        alerts.append({"code": "visibility", "value": round(f.visibility_m / 1000)})
+    if f.horizon_low_cloud is None and f.canvas_cloud is None:
+        alerts.append({"code": "no_cloud_data"})
+    return alerts
+
+
+def _spot_summary(spot: dict, kind: str) -> dict:
+    """Jednotný tvar pro kořenové klíče `sunrise` a `sunset` v data.json."""
+    cloud_sea = None
+    if kind == "sunrise":  # moře mraků dává smysl jen na horské vyhlídce
+        cloud_sea = {
+            "probability_pct": spot["inversion_pct"],
+            "deck_top_m": spot["cloud_deck_top_m"],
+            "above_deck_m": spot["summit_above_deck_m"],
+            "case": spot["inversion_case"],
+        }
+    return {
+        "location": {
+            k: spot[k] for k in ("key", "name", "type", "lat", "lon", "elevation_m")
+        },
+        "webcam_url": spot["webcam_url"],
+        "date": spot["date"],
+        "time": spot[kind],
+        "departure": spot["departure_funchal"],
+        "verdict": spot["verdict"],
+        "score": spot["score_pct"],
+        "score_range": spot["score_range"],
+        "confidence": spot["confidence"],
+        "cloud_sea": cloud_sea,
+        "wind": {
+            "kmh": spot["wind_kmh"],
+            "gust_kmh": spot["gust_kmh"],
+            "dir_deg": spot["wind_dir_deg"],
+        },
+        "clouds_canvas": {"pct": spot["canvas_cloud_pct"]},
+        "horizon_low_cloud_pct": spot.get("horizon_low_cloud_pct"),
+        "visibility_km": spot.get("visibility_km"),
+        "summary": spot["summary_cs"],
+        "problem": spot["problem"],
+        "weakest": spot["weakest"],
+        "alerts": spot["alerts"],
     }
 
 
@@ -87,6 +146,7 @@ def _spot_meta(settings: Settings, bundle: ForecastBundle, key: str) -> dict:
         "lat": loc.lat,
         "lon": loc.lon,
         "elevation_m": round(loc.elevation_m),
+        "webcam_url": settings.spots[key].webcam_url,
     }
 
 
@@ -104,6 +164,7 @@ def tomorrow_spots(settings: Settings, bundle: ForecastBundle, day, now: datetim
         score_sunset(features, settings), features, settings.spots[key].departure_from_funchal_min
     )
     return {"morning": morning, "evening": [_spot_meta(settings, bundle, key) | entry]}
+
 
 
 def _inversion_case(deck: float | None, above: float | None) -> str:
@@ -172,12 +233,15 @@ def build_payload(
         entries.append(entry)
     if not entries:
         raise RuntimeError("Model nevrátil data pro zítřek.")
+    spots = tomorrow_spots(settings, bundle, first, now)
     return {
         "generated_at": now.isoformat(timespec="seconds"),
         "model": bundle.model,
         "location": {"name": "Pico do Arieiro", "elevation_m": ARIEIRO_ELEVATION_M},
         "tomorrow": entries[0],
-        "tomorrow_spots": tomorrow_spots(settings, bundle, first, now),
+        "tomorrow_spots": spots,
+        "sunrise": _spot_summary(spots["morning"][0], "sunrise"),
+        "sunset": _spot_summary(spots["evening"][0], "sunset"),
         "days": entries,
         "history": history or [],
     }

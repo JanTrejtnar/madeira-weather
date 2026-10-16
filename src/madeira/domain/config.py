@@ -65,12 +65,16 @@ class SpotConfig(BaseModel):
     name: str
     type: Literal["mountain_inversion", "coastal_sunset"]
     departure_from_funchal_min: int  # odjezd z Funchalu před východem/západem (jízda + chůze)
+    webcam_url: str | None = None  # živá webkamera (odkaz na webu)
 
 
 def _default_spots() -> dict[str, SpotConfig]:
     return {
         "arieiro": SpotConfig(
-            name="Pico do Arieiro", type="mountain_inversion", departure_from_funchal_min=80
+            name="Pico do Arieiro",
+            type="mountain_inversion",
+            departure_from_funchal_min=80,
+            webcam_url="https://www.netmadeira.com/webcams-madeira/pico-do-arieiro",
         ),
         "bica_da_cana": SpotConfig(
             name="Miradouro da Bica da Cana",
@@ -81,6 +85,7 @@ def _default_spots() -> dict[str, SpotConfig]:
             name="Farol da Ponta do Pargo",
             type="coastal_sunset",
             departure_from_funchal_min=65,
+            webcam_url="https://www.netmadeira.com/webcams-madeira/ponta-do-pargo",
         ),
     }
 

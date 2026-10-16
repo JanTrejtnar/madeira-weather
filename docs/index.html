@@ -3,28 +3,42 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Východ slunce – Pico do Arieiro</title>
+  <title>Východ a západ slunce – Madeira</title>
   <meta name="description" content="Předpověď východu slunce a moře mraků na Pico do Arieiro (Madeira) / Sunrise and cloud-sea forecast for Pico do Arieiro, Madeira.">
   <meta name="theme-color" content="#1e1b4b">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { background: radial-gradient(120% 60% at 50% 100%, rgba(251,146,60,.22), transparent 60%),
+    /* akcent: oranžová = východ, růžová = západ (přepíná se atributem data-mode na <body>) */
+    body { --acc: 251,146,60; --acc-200: #fed7aa; --acc-300: #fdba74; }
+    body[data-mode="sunset"] { --acc: 244,114,182; --acc-200: #fbcfe8; --acc-300: #f9a8d4; }
+    body { background: radial-gradient(120% 60% at 50% 100%, rgba(var(--acc),.22), transparent 60%),
                        linear-gradient(180deg, #0f172a 0%, #1e1b4b 100%) fixed; }
+    .acc-200 { color: var(--acc-200); }
+    .acc-300 { color: var(--acc-300); opacity: .85; }
+    .acc-on { border-color: rgba(var(--acc),.6); background: rgba(var(--acc),.1); }
+    .seg-on { background: rgba(var(--acc),.2); color: var(--acc-200); }
+    .seg-off { color: #94a3b8; }
+    .seg-off:hover { background: rgba(255,255,255,.1); }
     summary::-webkit-details-marker { display: none; }
   </style>
 </head>
-<body class="min-h-screen text-slate-100 antialiased">
+<body class="min-h-screen text-slate-100 antialiased" data-mode="sunrise">
   <main class="mx-auto max-w-3xl px-4 py-8 sm:py-12">
     <header class="mb-6 flex items-start justify-between gap-4">
       <div>
-        <p class="text-sm uppercase tracking-widest text-orange-300/80">Madeira</p>
-        <h1 class="text-2xl sm:text-3xl font-semibold" data-i18n="title">Východ slunce na Pico do Arieiro</h1>
+        <p class="acc-300 text-sm uppercase tracking-widest">Madeira</p>
+        <h1 id="title" class="text-2xl sm:text-3xl font-semibold">Východ slunce na Pico do Arieiro</h1>
       </div>
       <div id="lang" class="flex shrink-0 overflow-hidden rounded-xl border border-white/15 text-sm" role="group" aria-label="Language">
         <button type="button" data-lang="cs" class="px-3 py-1.5">CZ</button>
         <button type="button" data-lang="en" class="px-3 py-1.5">EN</button>
       </div>
     </header>
+
+    <div id="mode" class="mb-4 hidden grid-cols-2 gap-1 rounded-2xl border border-white/10 bg-white/5 p-1" role="tablist" aria-label="Východ / Západ">
+      <button type="button" role="tab" data-mode="sunrise" class="rounded-xl px-4 py-2.5 text-sm font-semibold transition"></button>
+      <button type="button" role="tab" data-mode="sunset" class="rounded-xl px-4 py-2.5 text-sm font-semibold transition"></button>
+    </div>
 
     <div id="state" class="rounded-2xl bg-white/5 p-6 text-slate-300" role="status" data-i18n="loading">Načítám předpověď…</div>
 
@@ -34,7 +48,7 @@
         <div class="flex items-start justify-between gap-4">
           <div>
             <p id="day-label" class="text-sm text-slate-300"></p>
-            <p class="mt-1 text-slate-400 text-sm"><span data-i18n="sunrise">Východ slunce</span> <span id="sunrise" class="text-orange-200 font-medium"></span></p>
+            <p class="mt-1 text-slate-400 text-sm"><span id="time-label"></span> <span id="time" class="acc-200 font-medium"></span></p>
           </div>
           <span id="badge" class="rounded-2xl px-5 py-2 text-2xl sm:text-4xl font-extrabold tracking-tight"></span>
         </div>
@@ -47,20 +61,32 @@
         </div>
         <p id="summary" class="mt-5 text-slate-200 leading-relaxed"></p>
         <ul id="warnings" class="mt-3 space-y-1 text-sm text-amber-300"></ul>
+        <a id="webcam" href="#" target="_blank" rel="noopener noreferrer"
+           class="mt-5 hidden items-center gap-2.5 rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-medium transition hover:bg-white/10">
+          <span class="relative flex h-2.5 w-2.5" aria-hidden="true">
+            <span class="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75 motion-safe:animate-ping"></span>
+            <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500"></span>
+          </span>
+          <span class="text-xs font-bold tracking-wider text-red-400">LIVE</span>
+          <span id="webcam-text"></span>
+          <svg class="h-4 w-4 text-slate-400" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M11 3h6v6M17 3l-8 8M8 5H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-3"/>
+          </svg>
+        </a>
       </article>
 
       <!-- parametry -->
       <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
           <p class="text-xs uppercase tracking-wider text-slate-400" data-i18n="departure">Odjezd z Funchalu</p>
-          <p id="departure" class="mt-1 text-2xl font-semibold text-orange-200"></p>
+          <p id="departure" class="acc-200 mt-1 text-2xl font-semibold"></p>
         </div>
         <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
-          <p class="text-xs uppercase tracking-wider text-slate-400" data-i18n="deck">Hladina mraků</p>
+          <p id="l-deck" class="text-xs uppercase tracking-wider text-slate-400"></p>
           <p id="deck" class="mt-1 text-2xl font-semibold"></p>
         </div>
         <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
-          <p class="text-xs uppercase tracking-wider text-slate-400" data-i18n="above">Arieiro nad mraky</p>
+          <p id="l-above" class="text-xs uppercase tracking-wider text-slate-400"></p>
           <p id="above" class="mt-1 text-2xl font-semibold"></p>
         </div>
         <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
@@ -71,14 +97,14 @@
       </div>
 
       <!-- počasí během dne -->
-      <article class="rounded-2xl border border-white/10 bg-white/5 p-5">
+      <article id="wx-card" class="rounded-2xl border border-white/10 bg-white/5 p-5">
         <h2 class="text-sm uppercase tracking-widest text-slate-400" data-i18n="wxTitle">Počasí během dne</h2>
         <p class="mt-1 text-xs text-slate-500" data-i18n="wxNote">Orientačně pro 7:00–20:00. Nemá vliv na skóre východu slunce.</p>
         <div id="wx" class="mt-4 grid gap-4 sm:grid-cols-2"></div>
       </article>
 
       <!-- přepínač dní -->
-      <div>
+      <div id="outlook-wrap">
         <h2 class="mb-2 mt-6 text-sm uppercase tracking-widest text-slate-400" data-i18n="outlook">Výhled</h2>
         <div id="tabs" class="grid grid-cols-3 gap-2" role="tablist"></div>
       </div>
@@ -121,8 +147,23 @@
   const $ = (id) => document.getElementById(id);
   const T = {
     cs: {
-      title: "Východ slunce na Pico do Arieiro", loading: "Načítám předpověď…",
-      sunrise: "Východ slunce", score: "% skóre", departure: "Odjezd z Funchalu", deck: "Hladina mraků",
+      loading: "Načítám předpověď…",
+      modeSunrise: "🌅 Východ", modeSunset: "🌇 Západ",
+      titleSunrise: "Východ slunce na Pico do Arieiro", titleSunset: "Západ slunce na Ponta do Pargo",
+      timeSunrise: "Východ slunce", timeSunset: "Západ slunce",
+      horizon: "Nízké mraky na obzoru", canvas: "Mraky pro barvy",
+      webcam: (name) => `Živá webkamera · ${name}`,
+      sunsetHead: { GO: "Západ slunce vypadá slibně.", MAYBE: "Hazard, výsledek je nejistý.", NO_GO: "Dnes to nevypadá na západ, který by stál za cestu." },
+      sunsetComp: { horizon_clarity: "čistý obzor", cloud_canvas: "barvy oblohy", low_cloud_penalty: "mlha na vyhlídce", wind_comfort: "vítr" },
+      sunsetSummary: (d, t) => [
+        `${t.sunsetHead[d.verdict]} Skóre ${d.score} %.`,
+        d.problem === "precip" ? "Největší problém jsou srážky."
+          : d.problem === "horizon" ? "Největší problém jsou nízké mraky na obzoru."
+          : d.weakest ? `Nejslabší stránka: ${t.sunsetComp[d.weakest] || d.weakest}.` : "",
+      ].filter(Boolean).join(" "),
+      sunsetAlert: (a) => ({ precip: `Srážky kolem západu: ${a.value} mm.`, horizon: `Nízké mraky na západním obzoru (${a.value} %) mohou zakrýt slunce.`,
+                             visibility: `Snížená dohlednost (${a.value} km).`, no_cloud_data: "Chybí data o oblačnosti." })[a.code] || a.code,
+      score: "% skóre", departure: "Odjezd z Funchalu", deck: "Hladina mraků",
       above: "Arieiro nad mraky", wind: "Vítr", gust: "nárazy", outlook: "Výhled", tomorrow: "Zítra",
       history: "Historie predikcí", historyNote: "Predikce modelu vs. skutečnost podle ručního hodnocení (pokud je zadané).",
       hDate: "Datum", hPred: "Predikce", hInv: "Inverze", hActual: "Skutečnost",
@@ -139,6 +180,7 @@
       comp: { sky: "oblačnost", color: "barvy oblohy", visibility: "dohlednost", wind: "vítr", cloudsea: "moře mraků" },
       wxTitle: "Počasí během dne", wxNote: "Orientačně pro 7:00–20:00. Nemá vliv na skóre východu slunce.",
       place: { funchal: "Funchal (pobřeží)", arieiro: "Pico do Arieiro (hory)" },
+      spot: { arieiro: "Pico do Arieiro", ponta_do_pargo: "Ponta do Pargo" },
       wx: {
         rain: (w) => ({
           none: "☀️ Nebude pršet, suchý den.",
@@ -170,8 +212,23 @@
                        gusts: `Silné nárazy větru (${a.value} km/h).`, no_cloud_data: "Chybí data o oblačnosti." })[a.code] || a.code,
     },
     en: {
-      title: "Sunrise at Pico do Arieiro", loading: "Loading forecast…",
-      sunrise: "Sunrise", score: "% score", departure: "Leave Funchal", deck: "Cloud deck top",
+      loading: "Loading forecast…",
+      modeSunrise: "🌅 Sunrise", modeSunset: "🌇 Sunset",
+      titleSunrise: "Sunrise at Pico do Arieiro", titleSunset: "Sunset at Ponta do Pargo",
+      timeSunrise: "Sunrise", timeSunset: "Sunset",
+      horizon: "Low clouds on horizon", canvas: "Clouds for colour",
+      webcam: (name) => `Live webcam · ${name}`,
+      sunsetHead: { GO: "The sunset looks promising.", MAYBE: "A gamble, the outcome is uncertain.", NO_GO: "Not a sunset worth the trip today." },
+      sunsetComp: { horizon_clarity: "clear horizon", cloud_canvas: "sky colours", low_cloud_penalty: "fog at the viewpoint", wind_comfort: "wind" },
+      sunsetSummary: (d, t) => [
+        `${t.sunsetHead[d.verdict]} Score ${d.score}%.`,
+        d.problem === "precip" ? "The main problem is rain."
+          : d.problem === "horizon" ? "The main problem is low cloud on the horizon."
+          : d.weakest ? `Weakest factor: ${t.sunsetComp[d.weakest] || d.weakest}.` : "",
+      ].filter(Boolean).join(" "),
+      sunsetAlert: (a) => ({ precip: `Rain around sunset: ${a.value} mm.`, horizon: `Low clouds on the western horizon (${a.value}%) may hide the sun.`,
+                             visibility: `Reduced visibility (${a.value} km).`, no_cloud_data: "Cloud cover data missing." })[a.code] || a.code,
+      score: "% score", departure: "Leave Funchal", deck: "Cloud deck top",
       above: "Arieiro above clouds", wind: "Wind", gust: "gusts", outlook: "Outlook", tomorrow: "Tomorrow",
       history: "Prediction history", historyNote: "Model prediction vs. what actually happened (when rated by hand).",
       hDate: "Date", hPred: "Prediction", hInv: "Inversion", hActual: "Actual",
@@ -188,6 +245,7 @@
       comp: { sky: "cloud cover", color: "sky colours", visibility: "visibility", wind: "wind", cloudsea: "cloud sea" },
       wxTitle: "Weather during the day", wxNote: "Rough guide for 7:00–20:00. Does not affect the sunrise score.",
       place: { funchal: "Funchal (coast)", arieiro: "Pico do Arieiro (mountains)" },
+      spot: { arieiro: "Pico do Arieiro", ponta_do_pargo: "Ponta do Pargo" },
       wx: {
         rain: (w) => ({
           none: "☀️ No rain, a dry day.",
@@ -225,7 +283,7 @@
     NO_GO: { badge: "bg-rose-500/20 text-rose-300 ring-1 ring-rose-400/40",          bar: "bg-rose-400",    dot: "bg-rose-400",    text: "text-rose-300" },
   };
 
-  let lang = "", data = null, selected = 0;
+  let lang = "", data = null, selected = 0, mode = "sunrise";
   try { lang = localStorage.getItem("lang") || ""; } catch (e) {}
   if (!T[lang]) lang = (navigator.language || "cs").toLowerCase().startsWith("cs") ? "cs" : "en";
   const t = () => T[lang];
@@ -241,7 +299,10 @@
   function show(day, isTomorrow) {
     const v = style(day.verdict), L = t();
     $("day-label").textContent = `${isTomorrow ? L.tomorrow + " · " : ""}${L.days[parse(day.date).getDay()]} ${fmtDate(day.date)}`;
-    $("sunrise").textContent = day.sunrise;
+    $("time-label").textContent = L.timeSunrise;
+    $("l-deck").textContent = L.deck;
+    $("l-above").textContent = L.above;
+    $("time").textContent = day.sunrise;
     $("badge").textContent = L.verdict[day.verdict] || day.verdict;
     $("badge").className = `rounded-2xl px-5 py-2 text-2xl sm:text-4xl font-extrabold tracking-tight ${v.badge}`;
     $("score").textContent = day.score_pct;
@@ -256,13 +317,70 @@
     $("wind").textContent = day.wind_kmh == null ? "–" : `${day.wind_kmh} km/h ${compass(day.wind_dir_deg)}`;
     $("gust").textContent = day.gust_kmh == null ? "" : `${L.gust} ${day.gust_kmh} km/h`;
     renderWeather(day);
+    setWebcam(data.sunrise && data.sunrise.webcam_url, L.spot.arieiro);
+  }
+
+  function showSunset(s) {
+    const v = style(s.verdict), L = t();
+    $("day-label").textContent = `${L.tomorrow} · ${L.days[parse(s.date).getDay()]} ${fmtDate(s.date)}`;
+    $("time-label").textContent = L.timeSunset;
+    $("l-deck").textContent = L.horizon;
+    $("l-above").textContent = L.canvas;
+    $("time").textContent = s.time;
+    $("badge").textContent = L.verdict[s.verdict] || s.verdict;
+    $("badge").className = `rounded-2xl px-5 py-2 text-2xl sm:text-4xl font-extrabold tracking-tight ${v.badge}`;
+    $("score").textContent = s.score;
+    $("range").textContent = s.score_range ? `(${s.score_range[0]}–${s.score_range[1]})` : "";
+    $("bar").className = `h-full rounded-full ${v.bar}`;
+    $("bar").style.width = `${Math.max(0, Math.min(100, s.score))}%`;
+    $("summary").textContent = L.sunsetSummary(s, L);
+    $("warnings").replaceChildren(...(s.alerts || []).map((a) => el("li", null, "⚠ " + L.sunsetAlert(a))));
+    $("departure").textContent = s.departure;
+    const pct = (x) => (x == null ? "–" : `${x} %`);
+    $("deck").textContent = pct(s.horizon_low_cloud_pct);
+    $("above").textContent = pct(s.clouds_canvas && s.clouds_canvas.pct);
+    const w = s.wind || {};
+    $("wind").textContent = w.kmh == null ? "–" : `${w.kmh} km/h ${compass(w.dir_deg)}`;
+    $("gust").textContent = w.gust_kmh == null ? "" : `${L.gust} ${w.gust_kmh} km/h`;
+    setWebcam(s.webcam_url, L.spot.ponta_do_pargo);
+  }
+
+  function setWebcam(url, place) {
+    const a = $("webcam");
+    a.classList.toggle("hidden", !url);
+    a.classList.toggle("inline-flex", !!url);
+    if (url) { a.href = url; $("webcam-text").textContent = t().webcam(place); }
+  }
+
+  function setMode(next) {
+    mode = next === "sunset" && data && data.sunset ? "sunset" : "sunrise";
+    try { localStorage.setItem("mode", mode); } catch (e) {}
+    applyLang();
+  }
+
+  function renderMode() {
+    const L = t(), sunset = mode === "sunset";
+    document.body.dataset.mode = mode;
+    $("title").textContent = sunset ? L.titleSunset : L.titleSunrise;
+    document.title = $("title").textContent;
+    const bar = $("mode"), has = !!(data && data.sunset);
+    bar.classList.toggle("hidden", !has);
+    bar.classList.toggle("grid", has);
+    bar.querySelectorAll("button").forEach((b) => {
+      const on = b.dataset.mode === mode;
+      b.textContent = b.dataset.mode === "sunset" ? L.modeSunset : L.modeSunrise;
+      b.setAttribute("aria-selected", on);
+      b.className = "rounded-xl px-4 py-2.5 text-sm font-semibold transition " + (on ? "seg-on" : "seg-off");
+    });
+    // výhled, počasí a historie jsou jen ke východu
+    ["outlook-wrap", "wx-card", "history"].forEach((id) => $(id).classList.toggle("hidden", sunset));
   }
 
   function renderWeather(day) {
     const L = t(), wx = day.weather || {};
     $("wx").replaceChildren(...Object.keys(L.place).filter((k) => wx[k]).map((k) => {
       const w = wx[k], box = el("div");
-      box.append(el("p", "text-sm font-semibold text-orange-200", L.place[k]),
+      box.append(el("p", "acc-200 text-sm font-semibold", L.place[k]),
         el("p", "mt-1 text-slate-100", L.wx.rain(w)),
         el("p", "mt-1 text-sm text-slate-300", [L.wx.when(w), L.wx.chance(w), L.wx.sky(w), L.wx.temp(w), L.wx.wind(w)].filter(Boolean).join(" ")));
       return box;
@@ -273,7 +391,7 @@
     $("tabs").replaceChildren(...data.days.map((d, i) => {
       const v = style(d.verdict), L = t();
       const b = el("button", "rounded-2xl border p-3 text-left transition " + (i === selected
-        ? "border-orange-300/60 bg-orange-400/10" : "border-white/10 bg-white/5 hover:bg-white/10"));
+        ? "acc-on" : "border-white/10 bg-white/5 hover:bg-white/10"));
       b.type = "button";
       b.setAttribute("role", "tab");
       b.setAttribute("aria-selected", i === selected);
@@ -312,14 +430,18 @@
 
   function applyLang() {
     document.documentElement.lang = lang;
-    document.title = t().title;
+    if (!data) { $("title").textContent = t().titleSunrise; document.title = $("title").textContent; }
     document.querySelectorAll("[data-i18n]").forEach((n) => { n.textContent = t()[n.dataset.i18n]; });
     document.querySelectorAll("#lang button").forEach((b) => {
       const on = b.dataset.lang === lang;
       b.setAttribute("aria-pressed", on);
-      b.className = "px-3 py-1.5 " + (on ? "bg-orange-400/20 text-orange-200" : "text-slate-400 hover:bg-white/10");
+      b.className = "px-3 py-1.5 " + (on ? "seg-on" : "seg-off");
     });
-    if (data) { show(data.days[selected], selected === 0); renderTabs(); renderHistory(); renderUpdated(); }
+    if (data) {
+      renderMode();
+      if (mode === "sunset") showSunset(data.sunset); else show(data.days[selected], selected === 0);
+      renderTabs(); renderHistory(); renderUpdated();
+    }
   }
 
   document.querySelectorAll("#lang button").forEach((b) => b.addEventListener("click", () => {
@@ -327,6 +449,7 @@
     try { localStorage.setItem("lang", lang); } catch (e) {}
     applyLang();
   }));
+  document.querySelectorAll("#mode button").forEach((b) => b.addEventListener("click", () => setMode(b.dataset.mode)));
   applyLang();
 
   fetch("./data.json", { cache: "no-cache" })
@@ -334,6 +457,9 @@
     .then((d) => {
       if (!d.days || !d.days.length) throw new Error("empty");
       data = d;
+      let saved = "";
+      try { saved = localStorage.getItem("mode") || ""; } catch (e) {}
+      mode = saved === "sunset" && d.sunset ? "sunset" : "sunrise";
       $("state").classList.add("hidden");
       $("content").classList.remove("hidden");
       applyLang();

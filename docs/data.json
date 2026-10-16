@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-16T10:46:38+00:00",
+  "generated_at": "2026-10-16T13:33:06+00:00",
   "model": "best_match",
   "location": {
     "name": "Pico do Arieiro",
@@ -10,24 +10,25 @@
     "sunrise": "08:13",
     "departure_funchal": "06:53",
     "verdict": "MAYBE",
-    "score_pct": 54,
+    "score_pct": 50,
     "score_range": [
-      50,
-      60
+      45,
+      55
     ],
     "confidence": "HIGH",
-    "cloud_deck_top_m": 977,
-    "summit_above_deck_m": 841,
+    "cloud_deck_top_m": 1016,
+    "summit_above_deck_m": 802,
     "inversion_pct": 35,
     "wind_kmh": 8,
-    "gust_kmh": 42,
-    "wind_dir_deg": 39,
-    "summary_cs": "Hazard, výsledek je nejistý. Skóre 54 %. Vrstva mraků sahá asi do 977 m, Arieiro (1818 m) je nad ní o ~841 m.",
+    "gust_kmh": 39,
+    "wind_dir_deg": 40,
+    "summary_cs": "Hazard, výsledek je nejistý. Skóre 50 %. Vrstva mraků sahá asi do 1016 m, vrchol (1818 m) je nad ní o ~802 m.",
     "inversion_case": "above",
     "problem": null,
     "weakest": null,
     "precip_mm": 0.0,
     "alerts": [],
+    "canvas_cloud_pct": 1,
     "weather": {
       "funchal": {
         "rain": "none",
@@ -35,7 +36,7 @@
         "rain_prob_pct": 0,
         "rain_from": null,
         "rain_to": null,
-        "sky": "partly",
+        "sky": "clear",
         "temp_min_c": 21,
         "temp_max_c": 26,
         "gust_max_kmh": 26
@@ -48,10 +49,192 @@
         "rain_to": null,
         "sky": "partly",
         "temp_min_c": 9,
-        "temp_max_c": 14,
+        "temp_max_c": 15,
         "gust_max_kmh": 49
       }
     }
+  },
+  "tomorrow_spots": {
+    "morning": [
+      {
+        "key": "arieiro",
+        "name": "Pico do Arieiro",
+        "type": "mountain_inversion",
+        "lat": 32.7358,
+        "lon": -16.9291,
+        "elevation_m": 1818,
+        "webcam_url": "https://www.netmadeira.com/webcams-madeira/pico-do-arieiro",
+        "date": "2026-10-17",
+        "sunrise": "08:13",
+        "departure_funchal": "06:53",
+        "verdict": "MAYBE",
+        "score_pct": 50,
+        "score_range": [
+          45,
+          55
+        ],
+        "confidence": "HIGH",
+        "cloud_deck_top_m": 1016,
+        "summit_above_deck_m": 802,
+        "inversion_pct": 35,
+        "wind_kmh": 8,
+        "gust_kmh": 39,
+        "wind_dir_deg": 40,
+        "summary_cs": "Hazard, výsledek je nejistý. Skóre 50 %. Vrstva mraků sahá asi do 1016 m, vrchol (1818 m) je nad ní o ~802 m.",
+        "inversion_case": "above",
+        "problem": null,
+        "weakest": null,
+        "precip_mm": 0.0,
+        "alerts": [],
+        "canvas_cloud_pct": 1
+      },
+      {
+        "key": "bica_da_cana",
+        "name": "Miradouro da Bica da Cana",
+        "type": "mountain_inversion",
+        "lat": 32.7547,
+        "lon": -17.0575,
+        "elevation_m": 1560,
+        "webcam_url": null,
+        "date": "2026-10-17",
+        "sunrise": "08:13",
+        "departure_funchal": "07:03",
+        "verdict": "NO_GO",
+        "score_pct": 34,
+        "score_range": [
+          29,
+          39
+        ],
+        "confidence": "HIGH",
+        "cloud_deck_top_m": 1016,
+        "summit_above_deck_m": 544,
+        "inversion_pct": 32,
+        "wind_kmh": 8,
+        "gust_kmh": 39,
+        "wind_dir_deg": 40,
+        "summary_cs": "Spíš zůstaň v posteli. Skóre 34 %. Největší problém je mlha/mrak na vrcholu. Vrstva mraků sahá asi do 1016 m, vrchol (1560 m) je nad ní o ~544 m.",
+        "inversion_case": "above",
+        "problem": "fog",
+        "weakest": null,
+        "precip_mm": 0.0,
+        "alerts": [
+          {
+            "code": "fog"
+          }
+        ],
+        "canvas_cloud_pct": 1
+      }
+    ],
+    "evening": [
+      {
+        "key": "ponta_do_pargo",
+        "name": "Farol da Ponta do Pargo",
+        "type": "coastal_sunset",
+        "lat": 32.8122,
+        "lon": -17.2638,
+        "elevation_m": 312,
+        "webcam_url": "https://www.netmadeira.com/webcams-madeira/ponta-do-pargo",
+        "date": "2026-10-17",
+        "sunset": "19:33",
+        "departure_funchal": "18:28",
+        "verdict": "GO",
+        "score_pct": 72,
+        "score_range": [
+          66,
+          76
+        ],
+        "confidence": "HIGH",
+        "horizon_low_cloud_pct": 14,
+        "canvas_cloud_pct": 0,
+        "wind_kmh": 18,
+        "gust_kmh": 52,
+        "wind_dir_deg": 60,
+        "visibility_km": 38,
+        "precip_mm": 0.0,
+        "summary_cs": "Západ slunce vypadá slibně. Skóre 72 %. Nejslabší stránka: vítr (nárazy 52 km/h).",
+        "problem": null,
+        "weakest": "wind_comfort",
+        "warnings": [],
+        "alerts": []
+      }
+    ]
+  },
+  "sunrise": {
+    "location": {
+      "key": "arieiro",
+      "name": "Pico do Arieiro",
+      "type": "mountain_inversion",
+      "lat": 32.7358,
+      "lon": -16.9291,
+      "elevation_m": 1818
+    },
+    "webcam_url": "https://www.netmadeira.com/webcams-madeira/pico-do-arieiro",
+    "date": "2026-10-17",
+    "time": "08:13",
+    "departure": "06:53",
+    "verdict": "MAYBE",
+    "score": 50,
+    "score_range": [
+      45,
+      55
+    ],
+    "confidence": "HIGH",
+    "cloud_sea": {
+      "probability_pct": 35,
+      "deck_top_m": 1016,
+      "above_deck_m": 802,
+      "case": "above"
+    },
+    "wind": {
+      "kmh": 8,
+      "gust_kmh": 39,
+      "dir_deg": 40
+    },
+    "clouds_canvas": {
+      "pct": 1
+    },
+    "horizon_low_cloud_pct": null,
+    "visibility_km": null,
+    "summary": "Hazard, výsledek je nejistý. Skóre 50 %. Vrstva mraků sahá asi do 1016 m, vrchol (1818 m) je nad ní o ~802 m.",
+    "problem": null,
+    "weakest": null,
+    "alerts": []
+  },
+  "sunset": {
+    "location": {
+      "key": "ponta_do_pargo",
+      "name": "Farol da Ponta do Pargo",
+      "type": "coastal_sunset",
+      "lat": 32.8122,
+      "lon": -17.2638,
+      "elevation_m": 312
+    },
+    "webcam_url": "https://www.netmadeira.com/webcams-madeira/ponta-do-pargo",
+    "date": "2026-10-17",
+    "time": "19:33",
+    "departure": "18:28",
+    "verdict": "GO",
+    "score": 72,
+    "score_range": [
+      66,
+      76
+    ],
+    "confidence": "HIGH",
+    "cloud_sea": null,
+    "wind": {
+      "kmh": 18,
+      "gust_kmh": 52,
+      "dir_deg": 60
+    },
+    "clouds_canvas": {
+      "pct": 0
+    },
+    "horizon_low_cloud_pct": 14,
+    "visibility_km": 38,
+    "summary": "Západ slunce vypadá slibně. Skóre 72 %. Nejslabší stránka: vítr (nárazy 52 km/h).",
+    "problem": null,
+    "weakest": "wind_comfort",
+    "alerts": []
   },
   "days": [
     {
@@ -59,24 +242,25 @@
       "sunrise": "08:13",
       "departure_funchal": "06:53",
       "verdict": "MAYBE",
-      "score_pct": 54,
+      "score_pct": 50,
       "score_range": [
-        50,
-        60
+        45,
+        55
       ],
       "confidence": "HIGH",
-      "cloud_deck_top_m": 977,
-      "summit_above_deck_m": 841,
+      "cloud_deck_top_m": 1016,
+      "summit_above_deck_m": 802,
       "inversion_pct": 35,
       "wind_kmh": 8,
-      "gust_kmh": 42,
-      "wind_dir_deg": 39,
-      "summary_cs": "Hazard, výsledek je nejistý. Skóre 54 %. Vrstva mraků sahá asi do 977 m, Arieiro (1818 m) je nad ní o ~841 m.",
+      "gust_kmh": 39,
+      "wind_dir_deg": 40,
+      "summary_cs": "Hazard, výsledek je nejistý. Skóre 50 %. Vrstva mraků sahá asi do 1016 m, vrchol (1818 m) je nad ní o ~802 m.",
       "inversion_case": "above",
       "problem": null,
       "weakest": null,
       "precip_mm": 0.0,
       "alerts": [],
+      "canvas_cloud_pct": 1,
       "weather": {
         "funchal": {
           "rain": "none",
@@ -84,7 +268,7 @@
           "rain_prob_pct": 0,
           "rain_from": null,
           "rain_to": null,
-          "sky": "partly",
+          "sky": "clear",
           "temp_min_c": 21,
           "temp_max_c": 26,
           "gust_max_kmh": 26
@@ -97,7 +281,7 @@
           "rain_to": null,
           "sky": "partly",
           "temp_min_c": 9,
-          "temp_max_c": 14,
+          "temp_max_c": 15,
           "gust_max_kmh": 49
         }
       }
@@ -129,6 +313,7 @@
           "code": "fog"
         }
       ],
+      "canvas_cloud_pct": 4,
       "weather": {
         "funchal": {
           "rain": "drizzle",
@@ -181,6 +366,7 @@
           "code": "fog"
         }
       ],
+      "canvas_cloud_pct": 40,
       "weather": {
         "funchal": {
           "rain": "none",
