@@ -14,7 +14,7 @@ from rich.table import Table
 from madeira.domain.config import load_env, load_settings
 from madeira.domain.models import OUTCOME_LABELS
 from madeira.presenters.cli import render_comparison, render_sunrise, render_week
-from madeira.services import forecast, webexport
+from madeira.services import forecast, story_image, webexport
 from madeira.storage.db import Store
 
 app = typer.Typer(help="Madeira Microclimate & Sunrise Predictor", no_args_is_help=True)
@@ -140,6 +140,10 @@ def export_web(
     webexport.write_payload(payload, out)
     t = payload["tomorrow"]
     console.print(f"Zapsáno {out}: {t['date']} {t['verdict']} {t['score_pct']} %")
+    story = story_image.write_story(payload, out.parent / "story-latest.png")
+    og = out.parent / "og-preview.png"
+    story_image.write_og(og)
+    console.print(f"Obrázky: {story}, {og}")
     spots = payload["tomorrow_spots"]
     for part, label in (("morning", "východ"), ("evening", "západ")):
         for s in spots[part]:

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import io
 import logging
 import os
 from datetime import date, datetime, time, timedelta
@@ -18,7 +19,7 @@ from telegram.ext import (
 from madeira.domain.config import Settings
 from madeira.domain.models import OUTCOME_LABELS
 from madeira.presenters import telegram as fmt
-from madeira.services import forecast
+from madeira.services import forecast, story_image, webexport
 from madeira.storage.db import Store
 
 log = logging.getLogger("madeira.bot")
@@ -27,6 +28,7 @@ TZ = forecast.TZ
 HELP = (
     "<b>Madeira Sunrise Bot</b>\n"
     "/sunrise [today|tomorrow|YYYY-MM-DD] – skóre východu na Arieiru\n"
+    "/story – obrázek 9:16 pro Instagram/WhatsApp Story\n"
     "/week – výhled na 7 dní\n"
     "/compare [den] [od] [do] – srovnání lokalit, např. <code>/compare tomorrow 13:00 18:00</code>\n"
     "/rate [den] – zapsat, jak východ opravdu dopadl\n"
@@ -110,6 +112,16 @@ async def cmd_sunrise(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     if analysis.sunrise_utc <= datetime.now(analysis.sunrise_utc.tzinfo):
         markup = feedback_keyboard(day)  # východ už proběhl → rovnou nabídni hodnocení
     await _reply(update, fmt.format_sunrise(analysis), reply_markup=markup)
+
+
+@guarded
+async def cmd_story(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    def make() -> bytes:
+        payload = webexport.build_payload(_settings(context), 1, store=_store(context))
+        return story_image.story_bytes(payload)
+
+    data = await asyncio.to_thread(make)
+    await update.effective_message.reply_photo(io.BytesIO(data), filename="story.png")
 
 
 @guarded
@@ -254,6 +266,7 @@ def build_application(token: str, store: Store, settings: Settings) -> Applicati
         ("stop", cmd_stop),
         ("help", cmd_help),
         ("sunrise", cmd_sunrise),
+        ("story", cmd_story),
         ("week", cmd_week),
         ("compare", cmd_compare),
         ("rate", cmd_rate),

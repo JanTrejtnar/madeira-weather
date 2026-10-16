@@ -139,7 +139,7 @@ def test_application_registers_handlers_and_jobs(store):
     application = bot.build_application("123456:TEST", store, Settings())
     names = {j.name for j in application.job_queue.jobs()}
     assert names == {"digest", "feedback"}
-    assert len(application.handlers[0]) == 8  # 7 příkazů + callback
+    assert len(application.handlers[0]) == 9  # 8 příkazů + callback
 
 
 # --- zpětné dopočítání predikce při hodnocení ---------------------------------

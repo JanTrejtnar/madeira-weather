@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-16T13:33:06+00:00",
+  "generated_at": "2026-10-16T18:10:07+00:00",
   "model": "best_match",
   "location": {
     "name": "Pico do Arieiro",
@@ -10,25 +10,29 @@
     "sunrise": "08:13",
     "departure_funchal": "06:53",
     "verdict": "MAYBE",
-    "score_pct": 50,
+    "score_pct": 48,
     "score_range": [
-      45,
-      55
+      43,
+      53
     ],
     "confidence": "HIGH",
-    "cloud_deck_top_m": 1016,
-    "summit_above_deck_m": 802,
-    "inversion_pct": 35,
-    "wind_kmh": 8,
-    "gust_kmh": 39,
-    "wind_dir_deg": 40,
-    "summary_cs": "Hazard, výsledek je nejistý. Skóre 50 %. Vrstva mraků sahá asi do 1016 m, vrchol (1818 m) je nad ní o ~802 m.",
+    "cloud_deck_top_m": 1035,
+    "summit_above_deck_m": 783,
+    "inversion_pct": 33,
+    "wind_kmh": 9,
+    "gust_kmh": 42,
+    "wind_dir_deg": 39,
+    "summary_cs": "Hazard, výsledek je nejistý. Skóre 48 %. Největší problém je mlha/mrak na vrcholu. Vrstva mraků sahá asi do 1035 m, vrchol (1818 m) je nad ní o ~783 m.",
     "inversion_case": "above",
-    "problem": null,
+    "problem": "fog",
     "weakest": null,
     "precip_mm": 0.0,
-    "alerts": [],
-    "canvas_cloud_pct": 1,
+    "alerts": [
+      {
+        "code": "fog"
+      }
+    ],
+    "canvas_cloud_pct": 33,
     "weather": {
       "funchal": {
         "rain": "none",
@@ -36,7 +40,7 @@
         "rain_prob_pct": 0,
         "rain_from": null,
         "rain_to": null,
-        "sky": "clear",
+        "sky": "partly",
         "temp_min_c": 21,
         "temp_max_c": 26,
         "gust_max_kmh": 26
@@ -50,7 +54,7 @@
         "sky": "partly",
         "temp_min_c": 9,
         "temp_max_c": 15,
-        "gust_max_kmh": 49
+        "gust_max_kmh": 53
       }
     }
   },
@@ -68,25 +72,29 @@
         "sunrise": "08:13",
         "departure_funchal": "06:53",
         "verdict": "MAYBE",
-        "score_pct": 50,
+        "score_pct": 48,
         "score_range": [
-          45,
-          55
+          43,
+          53
         ],
         "confidence": "HIGH",
-        "cloud_deck_top_m": 1016,
-        "summit_above_deck_m": 802,
-        "inversion_pct": 35,
-        "wind_kmh": 8,
-        "gust_kmh": 39,
-        "wind_dir_deg": 40,
-        "summary_cs": "Hazard, výsledek je nejistý. Skóre 50 %. Vrstva mraků sahá asi do 1016 m, vrchol (1818 m) je nad ní o ~802 m.",
+        "cloud_deck_top_m": 1035,
+        "summit_above_deck_m": 783,
+        "inversion_pct": 33,
+        "wind_kmh": 9,
+        "gust_kmh": 42,
+        "wind_dir_deg": 39,
+        "summary_cs": "Hazard, výsledek je nejistý. Skóre 48 %. Největší problém je mlha/mrak na vrcholu. Vrstva mraků sahá asi do 1035 m, vrchol (1818 m) je nad ní o ~783 m.",
         "inversion_case": "above",
-        "problem": null,
+        "problem": "fog",
         "weakest": null,
         "precip_mm": 0.0,
-        "alerts": [],
-        "canvas_cloud_pct": 1
+        "alerts": [
+          {
+            "code": "fog"
+          }
+        ],
+        "canvas_cloud_pct": 33
       },
       {
         "key": "bica_da_cana",
@@ -99,20 +107,20 @@
         "date": "2026-10-17",
         "sunrise": "08:13",
         "departure_funchal": "07:03",
-        "verdict": "NO_GO",
-        "score_pct": 34,
+        "verdict": "MAYBE",
+        "score_pct": 46,
         "score_range": [
-          29,
-          39
+          41,
+          51
         ],
         "confidence": "HIGH",
-        "cloud_deck_top_m": 1016,
-        "summit_above_deck_m": 544,
-        "inversion_pct": 32,
-        "wind_kmh": 8,
-        "gust_kmh": 39,
-        "wind_dir_deg": 40,
-        "summary_cs": "Spíš zůstaň v posteli. Skóre 34 %. Největší problém je mlha/mrak na vrcholu. Vrstva mraků sahá asi do 1016 m, vrchol (1560 m) je nad ní o ~544 m.",
+        "cloud_deck_top_m": 1035,
+        "summit_above_deck_m": 525,
+        "inversion_pct": 30,
+        "wind_kmh": 9,
+        "gust_kmh": 42,
+        "wind_dir_deg": 39,
+        "summary_cs": "Hazard, výsledek je nejistý. Skóre 46 %. Největší problém je mlha/mrak na vrcholu. Vrstva mraků sahá asi do 1035 m, vrchol (1560 m) je nad ní o ~525 m.",
         "inversion_case": "above",
         "problem": "fog",
         "weakest": null,
@@ -122,7 +130,7 @@
             "code": "fog"
           }
         ],
-        "canvas_cloud_pct": 1
+        "canvas_cloud_pct": 33
       }
     ],
     "evening": [
@@ -137,21 +145,21 @@
         "date": "2026-10-17",
         "sunset": "19:33",
         "departure_funchal": "18:28",
-        "verdict": "GO",
-        "score_pct": 72,
+        "verdict": "MAYBE",
+        "score_pct": 67,
         "score_range": [
-          66,
-          76
+          62,
+          72
         ],
         "confidence": "HIGH",
-        "horizon_low_cloud_pct": 14,
+        "horizon_low_cloud_pct": 15,
         "canvas_cloud_pct": 0,
-        "wind_kmh": 18,
-        "gust_kmh": 52,
-        "wind_dir_deg": 60,
-        "visibility_km": 38,
+        "wind_kmh": 19,
+        "gust_kmh": 50,
+        "wind_dir_deg": 55,
+        "visibility_km": 36,
         "precip_mm": 0.0,
-        "summary_cs": "Západ slunce vypadá slibně. Skóre 72 %. Nejslabší stránka: vítr (nárazy 52 km/h).",
+        "summary_cs": "Hazard, výsledek je nejistý. Skóre 67 %. Nejslabší stránka: vítr (nárazy 50 km/h).",
         "problem": null,
         "weakest": "wind_comfort",
         "warnings": [],
@@ -173,32 +181,36 @@
     "time": "08:13",
     "departure": "06:53",
     "verdict": "MAYBE",
-    "score": 50,
+    "score": 48,
     "score_range": [
-      45,
-      55
+      43,
+      53
     ],
     "confidence": "HIGH",
     "cloud_sea": {
-      "probability_pct": 35,
-      "deck_top_m": 1016,
-      "above_deck_m": 802,
+      "probability_pct": 33,
+      "deck_top_m": 1035,
+      "above_deck_m": 783,
       "case": "above"
     },
     "wind": {
-      "kmh": 8,
-      "gust_kmh": 39,
-      "dir_deg": 40
+      "kmh": 9,
+      "gust_kmh": 42,
+      "dir_deg": 39
     },
     "clouds_canvas": {
-      "pct": 1
+      "pct": 33
     },
     "horizon_low_cloud_pct": null,
     "visibility_km": null,
-    "summary": "Hazard, výsledek je nejistý. Skóre 50 %. Vrstva mraků sahá asi do 1016 m, vrchol (1818 m) je nad ní o ~802 m.",
-    "problem": null,
+    "summary": "Hazard, výsledek je nejistý. Skóre 48 %. Největší problém je mlha/mrak na vrcholu. Vrstva mraků sahá asi do 1035 m, vrchol (1818 m) je nad ní o ~783 m.",
+    "problem": "fog",
     "weakest": null,
-    "alerts": []
+    "alerts": [
+      {
+        "code": "fog"
+      }
+    ]
   },
   "sunset": {
     "location": {
@@ -213,25 +225,25 @@
     "date": "2026-10-17",
     "time": "19:33",
     "departure": "18:28",
-    "verdict": "GO",
-    "score": 72,
+    "verdict": "MAYBE",
+    "score": 67,
     "score_range": [
-      66,
-      76
+      62,
+      72
     ],
     "confidence": "HIGH",
     "cloud_sea": null,
     "wind": {
-      "kmh": 18,
-      "gust_kmh": 52,
-      "dir_deg": 60
+      "kmh": 19,
+      "gust_kmh": 50,
+      "dir_deg": 55
     },
     "clouds_canvas": {
       "pct": 0
     },
-    "horizon_low_cloud_pct": 14,
-    "visibility_km": 38,
-    "summary": "Západ slunce vypadá slibně. Skóre 72 %. Nejslabší stránka: vítr (nárazy 52 km/h).",
+    "horizon_low_cloud_pct": 15,
+    "visibility_km": 36,
+    "summary": "Hazard, výsledek je nejistý. Skóre 67 %. Nejslabší stránka: vítr (nárazy 50 km/h).",
     "problem": null,
     "weakest": "wind_comfort",
     "alerts": []
@@ -242,25 +254,29 @@
       "sunrise": "08:13",
       "departure_funchal": "06:53",
       "verdict": "MAYBE",
-      "score_pct": 50,
+      "score_pct": 48,
       "score_range": [
-        45,
-        55
+        43,
+        53
       ],
       "confidence": "HIGH",
-      "cloud_deck_top_m": 1016,
-      "summit_above_deck_m": 802,
-      "inversion_pct": 35,
-      "wind_kmh": 8,
-      "gust_kmh": 39,
-      "wind_dir_deg": 40,
-      "summary_cs": "Hazard, výsledek je nejistý. Skóre 50 %. Vrstva mraků sahá asi do 1016 m, vrchol (1818 m) je nad ní o ~802 m.",
+      "cloud_deck_top_m": 1035,
+      "summit_above_deck_m": 783,
+      "inversion_pct": 33,
+      "wind_kmh": 9,
+      "gust_kmh": 42,
+      "wind_dir_deg": 39,
+      "summary_cs": "Hazard, výsledek je nejistý. Skóre 48 %. Největší problém je mlha/mrak na vrcholu. Vrstva mraků sahá asi do 1035 m, vrchol (1818 m) je nad ní o ~783 m.",
       "inversion_case": "above",
-      "problem": null,
+      "problem": "fog",
       "weakest": null,
       "precip_mm": 0.0,
-      "alerts": [],
-      "canvas_cloud_pct": 1,
+      "alerts": [
+        {
+          "code": "fog"
+        }
+      ],
+      "canvas_cloud_pct": 33,
       "weather": {
         "funchal": {
           "rain": "none",
@@ -268,7 +284,7 @@
           "rain_prob_pct": 0,
           "rain_from": null,
           "rain_to": null,
-          "sky": "clear",
+          "sky": "partly",
           "temp_min_c": 21,
           "temp_max_c": 26,
           "gust_max_kmh": 26
@@ -282,7 +298,7 @@
           "sky": "partly",
           "temp_min_c": 9,
           "temp_max_c": 15,
-          "gust_max_kmh": 49
+          "gust_max_kmh": 53
         }
       }
     },
@@ -291,19 +307,19 @@
       "sunrise": "08:14",
       "departure_funchal": "06:54",
       "verdict": "NO_GO",
-      "score_pct": 5,
+      "score_pct": 7,
       "score_range": [
         0,
-        15
+        17
       ],
       "confidence": "MEDIUM",
-      "cloud_deck_top_m": 2436,
-      "summit_above_deck_m": -618,
-      "inversion_pct": 9,
+      "cloud_deck_top_m": 2638,
+      "summit_above_deck_m": -820,
+      "inversion_pct": 6,
       "wind_kmh": 9,
-      "gust_kmh": 44,
-      "wind_dir_deg": 359,
-      "summary_cs": "Spíš zůstaň v posteli. Skóre 5 %. Největší problém je mlha/mrak na vrcholu. Vlhká vrstva sahá až k ~2436 m — vrchol bude pravděpodobně v mraku.",
+      "gust_kmh": 46,
+      "wind_dir_deg": 3,
+      "summary_cs": "Spíš zůstaň v posteli. Skóre 7 %. Největší problém je mlha/mrak na vrcholu. Vlhká vrstva sahá až k ~2638 m — vrchol bude pravděpodobně v mraku.",
       "inversion_case": "inside",
       "problem": "fog",
       "weakest": "sky",
@@ -313,29 +329,29 @@
           "code": "fog"
         }
       ],
-      "canvas_cloud_pct": 4,
+      "canvas_cloud_pct": 16,
       "weather": {
         "funchal": {
           "rain": "drizzle",
-          "rain_mm": 0.5,
-          "rain_prob_pct": 5,
-          "rain_from": 15,
-          "rain_to": 17,
+          "rain_mm": 0.2,
+          "rain_prob_pct": 3,
+          "rain_from": null,
+          "rain_to": null,
           "sky": "cloudy",
           "temp_min_c": 20,
           "temp_max_c": 24,
-          "gust_max_kmh": 28
+          "gust_max_kmh": 34
         },
         "arieiro": {
           "rain": "drizzle",
-          "rain_mm": 0.8,
-          "rain_prob_pct": 33,
-          "rain_from": 14,
-          "rain_to": 16,
+          "rain_mm": 0.6,
+          "rain_prob_pct": 28,
+          "rain_from": 15,
+          "rain_to": 17,
           "sky": "cloudy",
           "temp_min_c": 7,
-          "temp_max_c": 11,
-          "gust_max_kmh": 66
+          "temp_max_c": 12,
+          "gust_max_kmh": 65
         }
       }
     },
@@ -344,29 +360,29 @@
       "sunrise": "08:14",
       "departure_funchal": "06:54",
       "verdict": "NO_GO",
-      "score_pct": 4,
+      "score_pct": 7,
       "score_range": [
         0,
-        14
+        17
       ],
       "confidence": "MEDIUM",
-      "cloud_deck_top_m": 2112,
-      "summit_above_deck_m": -294,
+      "cloud_deck_top_m": 2016,
+      "summit_above_deck_m": -198,
       "inversion_pct": 9,
       "wind_kmh": 9,
-      "gust_kmh": 45,
-      "wind_dir_deg": 5,
-      "summary_cs": "Spíš zůstaň v posteli. Skóre 4 %. Největší problém je mlha/mrak na vrcholu. Vlhká vrstva sahá až k ~2112 m — vrchol bude pravděpodobně v mraku.",
-      "inversion_case": "inside",
+      "gust_kmh": 44,
+      "wind_dir_deg": 76,
+      "summary_cs": "Spíš zůstaň v posteli. Skóre 7 %. Největší problém je mlha/mrak na vrcholu. Vrstva mraků sahá asi do 2016 m — vrchol je na její hranici.",
+      "inversion_case": "edge",
       "problem": "fog",
-      "weakest": "visibility",
+      "weakest": "sky",
       "precip_mm": 0.0,
       "alerts": [
         {
           "code": "fog"
         }
       ],
-      "canvas_cloud_pct": 40,
+      "canvas_cloud_pct": 11,
       "weather": {
         "funchal": {
           "rain": "none",
@@ -374,21 +390,21 @@
           "rain_prob_pct": 0,
           "rain_from": null,
           "rain_to": null,
-          "sky": "cloudy",
-          "temp_min_c": 19,
+          "sky": "partly",
+          "temp_min_c": 18,
           "temp_max_c": 23,
           "gust_max_kmh": 18
         },
         "arieiro": {
-          "rain": "none",
-          "rain_mm": 0.1,
-          "rain_prob_pct": 3,
+          "rain": "drizzle",
+          "rain_mm": 0.5,
+          "rain_prob_pct": 8,
           "rain_from": null,
           "rain_to": null,
           "sky": "cloudy",
-          "temp_min_c": 7,
+          "temp_min_c": 6,
           "temp_max_c": 11,
-          "gust_max_kmh": 45
+          "gust_max_kmh": 44
         }
       }
     }
@@ -496,27 +512,27 @@
       11,
       16
     ],
-    "day": "today",
-    "date": "2026-10-16",
+    "day": "tomorrow",
+    "date": "2026-10-17",
     "winner": {
       "key": "funchal",
       "name": "Funchal",
       "name_gen": "Funchalu",
-      "sun_score": 92,
-      "temp_c": 25,
+      "sun_score": 95,
+      "temp_c": 26,
       "precip_mm": 0.0,
       "sky": "clear",
-      "recommendation": "Dnes jeďte do Funchalu – 25 °C, jasno, 0 mm srážek"
+      "recommendation": "Zítra jeďte do Funchalu – 26 °C, jasno, 0 mm srážek"
     },
     "locations": [
       {
         "key": "funchal",
         "name": "Funchal",
         "name_gen": "Funchalu",
-        "sun_score": 92,
-        "temp_c": 25,
+        "sun_score": 95,
+        "temp_c": 26,
         "precip_mm": 0.0,
-        "cloud_pct": 21,
+        "cloud_pct": 12,
         "sunshine_pct": 100,
         "sky": "clear",
         "lat": 32.65,
@@ -526,10 +542,10 @@
         "key": "machico",
         "name": "Machico",
         "name_gen": "Machica",
-        "sun_score": 90,
+        "sun_score": 92,
         "temp_c": 25,
         "precip_mm": 0.0,
-        "cloud_pct": 24,
+        "cloud_pct": 18,
         "sunshine_pct": 100,
         "sky": "clear",
         "lat": 32.7183,
@@ -539,12 +555,12 @@
         "key": "ponta_do_sol",
         "name": "Ponta do Sol",
         "name_gen": "Ponta do Sol",
-        "sun_score": 89,
-        "temp_c": 24,
+        "sun_score": 86,
+        "temp_c": 25,
         "precip_mm": 0.0,
-        "cloud_pct": 24,
+        "cloud_pct": 33,
         "sunshine_pct": 100,
-        "sky": "clear",
+        "sky": "partly",
         "lat": 32.6806,
         "lon": -17.1042
       },
@@ -552,12 +568,12 @@
         "key": "calheta",
         "name": "Calheta / Jardim do Mar",
         "name_gen": "Calhety / Jardim do Mar",
-        "sun_score": 89,
-        "temp_c": 24,
+        "sun_score": 86,
+        "temp_c": 25,
         "precip_mm": 0.0,
-        "cloud_pct": 24,
+        "cloud_pct": 33,
         "sunshine_pct": 100,
-        "sky": "clear",
+        "sky": "partly",
         "lat": 32.7214,
         "lon": -17.1742
       },
@@ -565,10 +581,10 @@
         "key": "sao_vicente",
         "name": "São Vicente",
         "name_gen": "São Vicente",
-        "sun_score": 87,
-        "temp_c": 24,
+        "sun_score": 86,
+        "temp_c": 23,
         "precip_mm": 0.0,
-        "cloud_pct": 31,
+        "cloud_pct": 30,
         "sunshine_pct": 100,
         "sky": "partly",
         "lat": 32.8028,
@@ -581,7 +597,7 @@
         "key": "funchal",
         "name": "Funchal",
         "name_gen": "Funchalu",
-        "sun_score": 92,
+        "sun_score": 93,
         "temp_c": 25,
         "precip_mm": 0.0,
         "sky": "clear",
@@ -592,10 +608,10 @@
           "key": "funchal",
           "name": "Funchal",
           "name_gen": "Funchalu",
-          "sun_score": 92,
+          "sun_score": 93,
           "temp_c": 25,
           "precip_mm": 0.0,
-          "cloud_pct": 21,
+          "cloud_pct": 17,
           "sunshine_pct": 100,
           "sky": "clear",
           "lat": 32.65,
@@ -608,7 +624,7 @@
           "sun_score": 90,
           "temp_c": 25,
           "precip_mm": 0.0,
-          "cloud_pct": 24,
+          "cloud_pct": 23,
           "sunshine_pct": 100,
           "sky": "clear",
           "lat": 32.7183,
@@ -618,12 +634,12 @@
           "key": "ponta_do_sol",
           "name": "Ponta do Sol",
           "name_gen": "Ponta do Sol",
-          "sun_score": 89,
-          "temp_c": 24,
+          "sun_score": 88,
+          "temp_c": 23,
           "precip_mm": 0.0,
-          "cloud_pct": 24,
+          "cloud_pct": 27,
           "sunshine_pct": 100,
-          "sky": "clear",
+          "sky": "partly",
           "lat": 32.6806,
           "lon": -17.1042
         },
@@ -631,12 +647,12 @@
           "key": "calheta",
           "name": "Calheta / Jardim do Mar",
           "name_gen": "Calhety / Jardim do Mar",
-          "sun_score": 89,
-          "temp_c": 24,
+          "sun_score": 88,
+          "temp_c": 23,
           "precip_mm": 0.0,
-          "cloud_pct": 24,
+          "cloud_pct": 27,
           "sunshine_pct": 100,
-          "sky": "clear",
+          "sky": "partly",
           "lat": 32.7214,
           "lon": -17.1742
         },
@@ -647,7 +663,7 @@
           "sun_score": 87,
           "temp_c": 24,
           "precip_mm": 0.0,
-          "cloud_pct": 31,
+          "cloud_pct": 29,
           "sunshine_pct": 100,
           "sky": "partly",
           "lat": 32.8028,
@@ -661,7 +677,7 @@
         "key": "funchal",
         "name": "Funchal",
         "name_gen": "Funchalu",
-        "sun_score": 94,
+        "sun_score": 95,
         "temp_c": 26,
         "precip_mm": 0.0,
         "sky": "clear",
@@ -672,23 +688,36 @@
           "key": "funchal",
           "name": "Funchal",
           "name_gen": "Funchalu",
-          "sun_score": 94,
+          "sun_score": 95,
           "temp_c": 26,
           "precip_mm": 0.0,
-          "cloud_pct": 15,
+          "cloud_pct": 12,
           "sunshine_pct": 100,
           "sky": "clear",
           "lat": 32.65,
           "lon": -16.9086
         },
         {
+          "key": "machico",
+          "name": "Machico",
+          "name_gen": "Machica",
+          "sun_score": 92,
+          "temp_c": 25,
+          "precip_mm": 0.0,
+          "cloud_pct": 18,
+          "sunshine_pct": 100,
+          "sky": "clear",
+          "lat": 32.7183,
+          "lon": -16.7644
+        },
+        {
           "key": "ponta_do_sol",
           "name": "Ponta do Sol",
           "name_gen": "Ponta do Sol",
-          "sun_score": 89,
-          "temp_c": 24,
+          "sun_score": 86,
+          "temp_c": 25,
           "precip_mm": 0.0,
-          "cloud_pct": 26,
+          "cloud_pct": 33,
           "sunshine_pct": 100,
           "sky": "partly",
           "lat": 32.6806,
@@ -698,36 +727,23 @@
           "key": "calheta",
           "name": "Calheta / Jardim do Mar",
           "name_gen": "Calhety / Jardim do Mar",
-          "sun_score": 89,
-          "temp_c": 24,
+          "sun_score": 86,
+          "temp_c": 25,
           "precip_mm": 0.0,
-          "cloud_pct": 26,
+          "cloud_pct": 33,
           "sunshine_pct": 100,
           "sky": "partly",
           "lat": 32.7214,
           "lon": -17.1742
         },
         {
-          "key": "machico",
-          "name": "Machico",
-          "name_gen": "Machica",
-          "sun_score": 87,
-          "temp_c": 25,
-          "precip_mm": 0.0,
-          "cloud_pct": 31,
-          "sunshine_pct": 100,
-          "sky": "partly",
-          "lat": 32.7183,
-          "lon": -16.7644
-        },
-        {
           "key": "sao_vicente",
           "name": "São Vicente",
           "name_gen": "São Vicente",
-          "sun_score": 87,
+          "sun_score": 86,
           "temp_c": 23,
           "precip_mm": 0.0,
-          "cloud_pct": 29,
+          "cloud_pct": 30,
           "sunshine_pct": 100,
           "sky": "partly",
           "lat": 32.8028,
