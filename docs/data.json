@@ -1,28 +1,28 @@
 {
-  "generated_at": "2026-10-14T20:42:06+00:00",
+  "generated_at": "2026-10-16T10:42:13+00:00",
   "model": "best_match",
   "location": {
     "name": "Pico do Arieiro",
     "elevation_m": 1818
   },
   "tomorrow": {
-    "date": "2026-10-15",
-    "sunrise": "08:11",
-    "departure_funchal": "06:51",
-    "verdict": "GO",
-    "score_pct": 100,
+    "date": "2026-10-17",
+    "sunrise": "08:13",
+    "departure_funchal": "06:53",
+    "verdict": "MAYBE",
+    "score_pct": 54,
     "score_range": [
-      95,
-      100
+      50,
+      60
     ],
     "confidence": "HIGH",
-    "cloud_deck_top_m": 1126,
-    "summit_above_deck_m": 692,
-    "inversion_pct": 60,
-    "wind_kmh": 4,
-    "gust_kmh": 13,
-    "wind_dir_deg": 19,
-    "summary_cs": "Vypadá to dobře. Skóre 100 %. Vrstva mraků sahá asi do 1126 m, Arieiro (1818 m) je nad ní o ~692 m.",
+    "cloud_deck_top_m": 977,
+    "summit_above_deck_m": 841,
+    "inversion_pct": 35,
+    "wind_kmh": 8,
+    "gust_kmh": 42,
+    "wind_dir_deg": 39,
+    "summary_cs": "Hazard, výsledek je nejistý. Skóre 54 %. Vrstva mraků sahá asi do 977 m, Arieiro (1818 m) je nad ní o ~841 m.",
     "inversion_case": "above",
     "problem": null,
     "weakest": null,
@@ -35,10 +35,10 @@
         "rain_prob_pct": 0,
         "rain_from": null,
         "rain_to": null,
-        "sky": "cloudy",
-        "temp_min_c": 20,
-        "temp_max_c": 24,
-        "gust_max_kmh": 19
+        "sky": "partly",
+        "temp_min_c": 21,
+        "temp_max_c": 26,
+        "gust_max_kmh": 26
       },
       "arieiro": {
         "rain": "none",
@@ -46,81 +46,33 @@
         "rain_prob_pct": 0,
         "rain_from": null,
         "rain_to": null,
-        "sky": "cloudy",
-        "temp_min_c": 7,
-        "temp_max_c": 15,
-        "gust_max_kmh": 27
+        "sky": "partly",
+        "temp_min_c": 9,
+        "temp_max_c": 14,
+        "gust_max_kmh": 49
       }
     }
   },
   "days": [
     {
-      "date": "2026-10-15",
-      "sunrise": "08:11",
-      "departure_funchal": "06:51",
-      "verdict": "GO",
-      "score_pct": 100,
+      "date": "2026-10-17",
+      "sunrise": "08:13",
+      "departure_funchal": "06:53",
+      "verdict": "MAYBE",
+      "score_pct": 54,
       "score_range": [
-        95,
-        100
+        50,
+        60
       ],
       "confidence": "HIGH",
-      "cloud_deck_top_m": 1126,
-      "summit_above_deck_m": 692,
-      "inversion_pct": 60,
-      "wind_kmh": 4,
-      "gust_kmh": 13,
-      "wind_dir_deg": 19,
-      "summary_cs": "Vypadá to dobře. Skóre 100 %. Vrstva mraků sahá asi do 1126 m, Arieiro (1818 m) je nad ní o ~692 m.",
+      "cloud_deck_top_m": 977,
+      "summit_above_deck_m": 841,
+      "inversion_pct": 35,
+      "wind_kmh": 8,
+      "gust_kmh": 42,
+      "wind_dir_deg": 39,
+      "summary_cs": "Hazard, výsledek je nejistý. Skóre 54 %. Vrstva mraků sahá asi do 977 m, Arieiro (1818 m) je nad ní o ~841 m.",
       "inversion_case": "above",
-      "problem": null,
-      "weakest": null,
-      "precip_mm": 0.0,
-      "alerts": [],
-      "weather": {
-        "funchal": {
-          "rain": "none",
-          "rain_mm": 0.0,
-          "rain_prob_pct": 0,
-          "rain_from": null,
-          "rain_to": null,
-          "sky": "cloudy",
-          "temp_min_c": 20,
-          "temp_max_c": 24,
-          "gust_max_kmh": 19
-        },
-        "arieiro": {
-          "rain": "none",
-          "rain_mm": 0.0,
-          "rain_prob_pct": 0,
-          "rain_from": null,
-          "rain_to": null,
-          "sky": "cloudy",
-          "temp_min_c": 7,
-          "temp_max_c": 15,
-          "gust_max_kmh": 27
-        }
-      }
-    },
-    {
-      "date": "2026-10-16",
-      "sunrise": "08:12",
-      "departure_funchal": "06:52",
-      "verdict": "GO",
-      "score_pct": 94,
-      "score_range": [
-        84,
-        100
-      ],
-      "confidence": "MEDIUM",
-      "cloud_deck_top_m": null,
-      "summit_above_deck_m": null,
-      "inversion_pct": 16,
-      "wind_kmh": 4,
-      "gust_kmh": 10,
-      "wind_dir_deg": 24,
-      "summary_cs": "Vypadá to dobře. Skóre 94 %. Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné.",
-      "inversion_case": "none",
       "problem": null,
       "weakest": null,
       "precip_mm": 0.0,
@@ -135,7 +87,7 @@
           "sky": "partly",
           "temp_min_c": 21,
           "temp_max_c": 26,
-          "gust_max_kmh": 20
+          "gust_max_kmh": 26
         },
         "arieiro": {
           "rain": "none",
@@ -144,35 +96,91 @@
           "rain_from": null,
           "rain_to": null,
           "sky": "partly",
-          "temp_min_c": 8,
-          "temp_max_c": 16,
-          "gust_max_kmh": 22
+          "temp_min_c": 9,
+          "temp_max_c": 14,
+          "gust_max_kmh": 49
         }
       }
     },
     {
-      "date": "2026-10-17",
-      "sunrise": "08:13",
-      "departure_funchal": "06:53",
-      "verdict": "MAYBE",
-      "score_pct": 54,
+      "date": "2026-10-18",
+      "sunrise": "08:14",
+      "departure_funchal": "06:54",
+      "verdict": "NO_GO",
+      "score_pct": 5,
       "score_range": [
-        44,
-        64
+        0,
+        15
       ],
       "confidence": "MEDIUM",
-      "cloud_deck_top_m": 1236,
-      "summit_above_deck_m": 582,
-      "inversion_pct": 37,
-      "wind_kmh": 8,
-      "gust_kmh": 38,
-      "wind_dir_deg": 32,
-      "summary_cs": "Hazard, výsledek je nejistý. Skóre 54 %. Vrstva mraků sahá asi do 1236 m, Arieiro (1818 m) je nad ní o ~582 m.",
-      "inversion_case": "above",
-      "problem": null,
-      "weakest": null,
+      "cloud_deck_top_m": 2436,
+      "summit_above_deck_m": -618,
+      "inversion_pct": 9,
+      "wind_kmh": 9,
+      "gust_kmh": 44,
+      "wind_dir_deg": 359,
+      "summary_cs": "Spíš zůstaň v posteli. Skóre 5 %. Největší problém je mlha/mrak na vrcholu. Vlhká vrstva sahá až k ~2436 m — vrchol bude pravděpodobně v mraku.",
+      "inversion_case": "inside",
+      "problem": "fog",
+      "weakest": "sky",
       "precip_mm": 0.0,
-      "alerts": [],
+      "alerts": [
+        {
+          "code": "fog"
+        }
+      ],
+      "weather": {
+        "funchal": {
+          "rain": "drizzle",
+          "rain_mm": 0.5,
+          "rain_prob_pct": 5,
+          "rain_from": 15,
+          "rain_to": 17,
+          "sky": "cloudy",
+          "temp_min_c": 20,
+          "temp_max_c": 24,
+          "gust_max_kmh": 28
+        },
+        "arieiro": {
+          "rain": "drizzle",
+          "rain_mm": 0.8,
+          "rain_prob_pct": 33,
+          "rain_from": 14,
+          "rain_to": 16,
+          "sky": "cloudy",
+          "temp_min_c": 7,
+          "temp_max_c": 11,
+          "gust_max_kmh": 66
+        }
+      }
+    },
+    {
+      "date": "2026-10-19",
+      "sunrise": "08:14",
+      "departure_funchal": "06:54",
+      "verdict": "NO_GO",
+      "score_pct": 4,
+      "score_range": [
+        0,
+        14
+      ],
+      "confidence": "MEDIUM",
+      "cloud_deck_top_m": 2112,
+      "summit_above_deck_m": -294,
+      "inversion_pct": 9,
+      "wind_kmh": 9,
+      "gust_kmh": 45,
+      "wind_dir_deg": 5,
+      "summary_cs": "Spíš zůstaň v posteli. Skóre 4 %. Největší problém je mlha/mrak na vrcholu. Vlhká vrstva sahá až k ~2112 m — vrchol bude pravděpodobně v mraku.",
+      "inversion_case": "inside",
+      "problem": "fog",
+      "weakest": "visibility",
+      "precip_mm": 0.0,
+      "alerts": [
+        {
+          "code": "fog"
+        }
+      ],
       "weather": {
         "funchal": {
           "rain": "none",
@@ -180,21 +188,21 @@
           "rain_prob_pct": 0,
           "rain_from": null,
           "rain_to": null,
-          "sky": "clear",
-          "temp_min_c": 21,
-          "temp_max_c": 28,
-          "gust_max_kmh": 27
+          "sky": "cloudy",
+          "temp_min_c": 19,
+          "temp_max_c": 23,
+          "gust_max_kmh": 18
         },
         "arieiro": {
           "rain": "none",
-          "rain_mm": 0.0,
-          "rain_prob_pct": 0,
+          "rain_mm": 0.1,
+          "rain_prob_pct": 3,
           "rain_from": null,
           "rain_to": null,
-          "sky": "partly",
-          "temp_min_c": 10,
-          "temp_max_c": 15,
-          "gust_max_kmh": 46
+          "sky": "cloudy",
+          "temp_min_c": 7,
+          "temp_max_c": 11,
+          "gust_max_kmh": 45
         }
       }
     }
