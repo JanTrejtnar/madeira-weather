@@ -41,8 +41,8 @@
     <nav class="mb-6 flex items-center justify-between gap-4">
       <a href="./index.html" id="back" class="text-sm text-slate-400 transition hover:text-amber-200"></a>
       <div id="lang" class="flex shrink-0 overflow-hidden rounded-xl border border-white/15 text-sm" role="group" aria-label="Language">
-        <button type="button" data-lang="cs" class="px-3 py-1.5">CZ</button>
-        <button type="button" data-lang="en" class="px-3 py-1.5">EN</button>
+        <button type="button" data-lang="cs" class="inline-flex items-center gap-1.5 px-3 py-1.5" aria-label="Čeština"><img src="flag-cz.svg" alt="" width="20" height="14" class="h-3.5 w-5 rounded-[2px]">CZ</button>
+        <button type="button" data-lang="en" class="inline-flex items-center gap-1.5 px-3 py-1.5" aria-label="English"><img src="flag-gb.svg" alt="" width="20" height="14" class="h-3.5 w-5 rounded-[2px]">EN</button>
       </div>
     </nav>
 
@@ -68,18 +68,18 @@
             <p id="hero-sky" class="mt-2 text-slate-200"></p>
           </div>
         </div>
-        <dl class="mt-6 grid grid-cols-3 gap-3 text-center">
-          <div class="rounded-2xl bg-black/20 p-3">
-            <dt id="h-rain" class="text-xs uppercase tracking-wider text-slate-400"></dt>
-            <dd id="hero-rain" class="mt-1 text-xl font-semibold"></dd>
+        <dl class="mt-6 grid grid-cols-3 gap-2 text-center sm:gap-3">
+          <div class="min-w-0 rounded-2xl bg-black/20 px-1.5 py-3 sm:px-3">
+            <dt id="h-rain" class="text-[11px] leading-tight text-slate-400 sm:text-xs"></dt>
+            <dd id="hero-rain" class="mt-1 text-lg font-semibold sm:text-xl"></dd>
           </div>
-          <div class="rounded-2xl bg-black/20 p-3">
-            <dt id="h-cloud" class="text-xs uppercase tracking-wider text-slate-400"></dt>
-            <dd id="hero-cloud" class="mt-1 text-xl font-semibold"></dd>
+          <div class="min-w-0 rounded-2xl bg-black/20 px-1.5 py-3 sm:px-3">
+            <dt id="h-cloud" class="text-[11px] leading-tight text-slate-400 sm:text-xs"></dt>
+            <dd id="hero-cloud" class="mt-1 text-lg font-semibold sm:text-xl"></dd>
           </div>
-          <div class="rounded-2xl bg-black/20 p-3">
-            <dt id="h-sun" class="text-xs uppercase tracking-wider text-slate-400"></dt>
-            <dd id="hero-sun" class="mt-1 text-xl font-semibold text-amber-200"></dd>
+          <div class="min-w-0 rounded-2xl bg-black/20 px-1.5 py-3 sm:px-3">
+            <dt id="h-sun" class="text-[11px] leading-tight text-slate-400 sm:text-xs"></dt>
+            <dd id="hero-sun" class="mt-1 text-lg font-semibold text-amber-200 sm:text-xl"></dd>
           </div>
         </dl>
         <p id="hero-tip" class="mt-5 text-slate-200"></p>
@@ -108,7 +108,7 @@
       title: (w, d) => `🏆 ${d === "today" ? "Dnes" : "Zítra"} jeďte do ${w.name_gen || w.name}`,
       rain: "Srážky", cloud: "Oblačnost", sun: "Slunečnost",
       sky: { clear: "Jasno", partly: "Polojasno", cloudy: "Zataženo", rain: "Déšť" },
-      dry: "Bez srážek", mm: (v) => `${v} mm`,
+      dry: "0 mm", dryShort: "bez deště", mm: (v) => `${v} mm`,
       tip: (w, d) => w.sun_score >= 70 ? (w.precip_mm > 0 ? "Převážně slunečno, jen s občasnou přeháňkou." : "Slunečno a sucho – tady to vyhrává.")
         : w.sun_score >= 40 ? "Bude to spíš proměnlivé, ale pořád nejlepší z nabídky." : "Nikde to dnes nevypadá na pláž – tohle je nejlepší z horšího.",
       nodata: "Data o slunečnosti zatím nejsou k dispozici.",
@@ -123,7 +123,7 @@
       title: (w, d) => `🏆 Head to ${w.name} ${d === "today" ? "today" : "tomorrow"}`,
       rain: "Rain", cloud: "Clouds", sun: "Sunshine",
       sky: { clear: "Clear", partly: "Partly cloudy", cloudy: "Overcast", rain: "Rain" },
-      dry: "No rain", mm: (v) => `${v} mm`,
+      dry: "0 mm", dryShort: "no rain", mm: (v) => `${v} mm`,
       tip: (w, d) => w.sun_score >= 70 ? (w.precip_mm > 0 ? "Mostly sunny, with just the odd shower." : "Sunny and dry – this is the winner.")
         : w.sun_score >= 40 ? "Changeable, but still the best on offer." : "No beach weather anywhere today – this is the least bad.",
       nodata: "Sunshine data is not available yet.",
@@ -158,7 +158,7 @@
     document.querySelectorAll("#lang button").forEach((b) => {
       const on = b.dataset.lang === lang;
       b.setAttribute("aria-pressed", on);
-      b.className = "px-3 py-1.5 " + (on ? "seg-on" : "seg-off");
+      b.className = "inline-flex items-center gap-1.5 px-3 py-1.5 " + (on ? "seg-on" : "seg-off");
     });
     if (!data) { $("state").textContent = L.loading; return; }
     if (data.generated_at) {
@@ -212,7 +212,7 @@
       fill.style.width = `${Math.max(0, Math.min(100, r.sun_score))}%`;
       bar.append(fill);
       const stats = el("p", "mt-2 text-sm text-slate-300",
-        `${r.temp_c == null ? "–" : r.temp_c + " °C"} · ${L.cloud} ${pct(r.cloud_pct)} · ${L.rain} ${mm(r.precip_mm)}`);
+        `${r.temp_c == null ? "–" : r.temp_c + " °C"} · ${L.cloud} ${pct(r.cloud_pct)} · ${r.precip_mm ? `${L.rain} ${mm(r.precip_mm)}` : L.dryShort}`);
       li.append(head, bar, stats);
       return li;
     }));

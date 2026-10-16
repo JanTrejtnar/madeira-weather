@@ -152,20 +152,43 @@ def _spot_meta(settings: Settings, bundle: ForecastBundle, key: str) -> dict:
     }
 
 
+MORNING_SPOTS = ("arieiro", "bica_da_cana")
+EVENING_SPOTS = ("ponta_do_pargo",)
+
+
+def spot_entry(settings: Settings, bundle: ForecastBundle, key: str, day, now: datetime) -> dict:
+    """Předpověď jednoho spotu na jeden den (ranní nebo večerní tvar podle spotu)."""
+    departure = settings.spots[key].departure_from_funchal_min
+    if key in EVENING_SPOTS:
+        features = extract_sunset_features(bundle, day, now, settings)
+        return _sunset_entry(score_sunset(features, settings), features, departure)
+    features, tuning = extract_spot_features(bundle, day, settings, now, key)
+    return _day_entry(score_sunrise(features, settings, tuning), features, departure)
+
+
 def tomorrow_spots(settings: Settings, bundle: ForecastBundle, day, now: datetime) -> dict:
     """Zítřejší ranní (Arieiro, Bica da Cana) a večerní (Ponta do Pargo) vyhlídky."""
-    morning = []
-    for key in ("arieiro", "bica_da_cana"):
-        features, tuning = extract_spot_features(bundle, day, settings, now, key)
-        analysis = score_sunrise(features, settings, tuning)
-        departure = settings.spots[key].departure_from_funchal_min
-        morning.append(_spot_meta(settings, bundle, key) | _day_entry(analysis, features, departure))
-    key = "ponta_do_pargo"
-    features = extract_sunset_features(bundle, day, now, settings)
-    entry = _sunset_entry(
-        score_sunset(features, settings), features, settings.spots[key].departure_from_funchal_min
-    )
-    return {"morning": morning, "evening": [_spot_meta(settings, bundle, key) | entry]}
+    def one(key):
+        return _spot_meta(settings, bundle, key) | spot_entry(settings, bundle, key, day, now)
+
+    return {"morning": [one(k) for k in MORNING_SPOTS], "evening": [one(k) for k in EVENING_SPOTS]}
+
+
+def spot_days(settings: Settings, bundle: ForecastBundle, first, days: int, now: datetime) -> dict:
+    """Výhled na `days` dní pro každý spot + počasí během dne (Funchal a samotný spot)."""
+    out: dict[str, list[dict]] = {}
+    for key in (*MORNING_SPOTS, *EVENING_SPOTS):
+        available = {d.date for d in bundle.forecasts[key].daily}
+        rows = []
+        for offset in range(days):
+            day = first + timedelta(days=offset)
+            if day not in available:
+                break
+            entry = spot_entry(settings, bundle, key, day, now)
+            entry["weather"] = day_weather(bundle, day, ("funchal", key))
+            rows.append(entry)
+        out[key] = rows
+    return out
 
 
 
@@ -280,6 +303,7 @@ def build_payload(
         "sunrise": _spot_summary(spots["morning"][0], "sunrise"),
         "sunset": _spot_summary(spots["evening"][0], "sunset"),
         "days": entries,
+        "spot_days": spot_days(settings, bundle, first, days, now),
         "history": history or [],
         **({"sunny_escape": escape} if escape else {}),
     }

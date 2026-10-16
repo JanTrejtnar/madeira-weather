@@ -65,9 +65,9 @@ def place_weather(points: list[HourlyPoint], day: date) -> dict | None:
     }
 
 
-def day_weather(bundle: ForecastBundle, day: date) -> dict:
+def day_weather(bundle: ForecastBundle, day: date, places: tuple[str, ...] = PLACES) -> dict:
     out = {}
-    for key in PLACES:
+    for key in places:
         fc = bundle.forecasts.get(key)
         w = place_weather(fc.hourly, day) if fc else None
         if w:

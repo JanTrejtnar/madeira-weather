@@ -70,8 +70,8 @@
         <a href="./escape.html" data-i18n="navEscape" class="mt-2 inline-block text-sm text-amber-200/80 transition hover:text-amber-100"></a>
       </div>
       <div id="lang" class="flex shrink-0 overflow-hidden rounded-xl border border-white/15 text-sm" role="group" aria-label="Language">
-        <button type="button" data-lang="cs" class="px-3 py-1.5">CZ</button>
-        <button type="button" data-lang="en" class="px-3 py-1.5">EN</button>
+        <button type="button" data-lang="cs" class="inline-flex items-center gap-1.5 px-3 py-1.5" aria-label="Čeština"><img src="flag-cz.svg" alt="" width="20" height="14" class="h-3.5 w-5 rounded-[2px]">CZ</button>
+        <button type="button" data-lang="en" class="inline-flex items-center gap-1.5 px-3 py-1.5" aria-label="English"><img src="flag-gb.svg" alt="" width="20" height="14" class="h-3.5 w-5 rounded-[2px]">EN</button>
       </div>
     </header>
 
@@ -140,7 +140,7 @@
       <!-- počasí během dne -->
       <article id="wx-card" class="rounded-2xl border border-white/10 bg-white/5 p-5">
         <h2 class="text-sm uppercase tracking-widest text-slate-400" data-i18n="wxTitle">Počasí během dne</h2>
-        <p class="mt-1 text-xs text-slate-500" data-i18n="wxNote">Orientačně pro 7:00–20:00. Nemá vliv na skóre východu slunce.</p>
+        <p class="mt-1 text-xs text-slate-500" data-i18n="wxNote">Orientačně pro 7:00–20:00. Nemá vliv na skóre.</p>
         <div id="wx" class="mt-4 grid gap-4 sm:grid-cols-2"></div>
       </article>
 
@@ -222,8 +222,8 @@
       outcome: { cloud_sea: "🌊 Nádherná inverze", clear: "☀️ Jasno bez mraků", mixed: "⛅ Částečně zataženo", fail: "🌫 V mlze / nepovedlo se" },
       head: { GO: "Vypadá to dobře.", MAYBE: "Hazard, výsledek je nejistý.", NO_GO: "Spíš zůstaň v posteli." },
       comp: { sky: "oblačnost", color: "barvy oblohy", visibility: "dohlednost", wind: "vítr", cloudsea: "moře mraků" },
-      wxTitle: "Počasí během dne", wxNote: "Orientačně pro 7:00–20:00. Nemá vliv na skóre východu slunce.",
-      place: { funchal: "Funchal (pobřeží)", arieiro: "Pico do Arieiro (hory)" },
+      wxTitle: "Počasí během dne", wxNote: "Orientačně pro 7:00–20:00. Nemá vliv na skóre.",
+      place: { funchal: "Funchal (pobřeží)", arieiro: "Pico do Arieiro (hory)", bica_da_cana: "Bica da Cana (hory)", ponta_do_pargo: "Ponta do Pargo (pobřeží)" },
       spot: { arieiro: "Pico do Arieiro", ponta_do_pargo: "Ponta do Pargo" },
       mapTime: { sunrise: "Východ", sunset: "Západ" }, mapScore: "skóre",
       wx: {
@@ -290,8 +290,8 @@
       outcome: { cloud_sea: "🌊 Magnificent cloud sea", clear: "☀️ Clear, no clouds", mixed: "⛅ Partly cloudy", fail: "🌫 Fogged in / failed" },
       head: { GO: "Looks good.", MAYBE: "A gamble, the outcome is uncertain.", NO_GO: "Better stay in bed." },
       comp: { sky: "cloud cover", color: "sky colours", visibility: "visibility", wind: "wind", cloudsea: "cloud sea" },
-      wxTitle: "Weather during the day", wxNote: "Rough guide for 7:00–20:00. Does not affect the sunrise score.",
-      place: { funchal: "Funchal (coast)", arieiro: "Pico do Arieiro (mountains)" },
+      wxTitle: "Weather during the day", wxNote: "Rough guide for 7:00–20:00. Does not affect the score.",
+      place: { funchal: "Funchal (coast)", arieiro: "Pico do Arieiro (mountains)", bica_da_cana: "Bica da Cana (mountains)", ponta_do_pargo: "Ponta do Pargo (coast)" },
       spot: { arieiro: "Pico do Arieiro", ponta_do_pargo: "Ponta do Pargo" },
       mapTime: { sunrise: "Sunrise", sunset: "Sunset" }, mapScore: "score",
       wx: {
@@ -371,9 +371,16 @@
     setWebcam(sp.key === "arieiro" ? data.sunrise && data.sunrise.webcam_url : sp.webcam_url, sp.name);
   }
 
-  function showSunset(s) {
+  // denní záznam večerního spotu -> tvar kořenového klíče `sunset`
+  function sunsetView(e, sp) {
+    return { ...e, time: e.sunset, departure: e.departure_funchal, score: e.score_pct,
+             wind: { kmh: e.wind_kmh, gust_kmh: e.gust_kmh, dir_deg: e.wind_dir_deg },
+             clouds_canvas: { pct: e.canvas_cloud_pct }, webcam_url: sp.webcam_url };
+  }
+
+  function showSunset(s, isTomorrow = true) {
     const v = style(s.verdict), L = t();
-    $("day-label").textContent = `${L.tomorrow} · ${L.days[parse(s.date).getDay()]} ${fmtDate(s.date)}`;
+    $("day-label").textContent = `${isTomorrow ? L.tomorrow + " · " : ""}${L.days[parse(s.date).getDay()]} ${fmtDate(s.date)}`;
     $("time-label").textContent = L.timeSunset;
     $("l-deck").textContent = L.horizon;
     $("l-above").textContent = L.canvas;
@@ -393,6 +400,7 @@
     const w = s.wind || {};
     $("wind").textContent = w.kmh == null ? "–" : `${w.kmh} km/h ${compass(w.dir_deg)}`;
     $("gust").textContent = w.gust_kmh == null ? "" : `${L.gust} ${w.gust_kmh} km/h`;
+    renderWeather(s);
     setWebcam(s.webcam_url, L.spot.ponta_do_pargo);
   }
 
@@ -401,6 +409,22 @@
     a.classList.toggle("hidden", !url);
     a.classList.toggle("inline-flex", !!url);
     if (url) { a.href = url; $("webcam-text").textContent = t().webcam(place); }
+  }
+
+  // výhled na další dny; bez `spot_days` (starší data.json) jen Arieiro + zítřek ostatních
+  function daysOf(key) {
+    if (data.spot_days && data.spot_days[key] && data.spot_days[key].length) return data.spot_days[key];
+    if (key === "arieiro") return data.days;
+    const sp = allSpots().find((s) => s.key === key);
+    return sp ? [sp] : [];
+  }
+
+  function showDay() {
+    const list = daysOf(spotKey), sp = curSpot();
+    if (selected >= list.length) selected = 0;
+    const d = list[selected];
+    if (mode === "sunset") showSunset(sunsetView(d, sp), selected === 0);
+    else show(d, selected === 0);
   }
 
   function allSpots() {
@@ -414,6 +438,7 @@
   function selectSpot(key, opts = {}) {
     const sp = allSpots().find((s) => s.key === key);
     if (!sp) return;
+    if (spotKey !== key) selected = 0;
     spotKey = key;
     mode = sp.kind === "sunset" ? "sunset" : "sunrise";
     try { localStorage.setItem("mode", mode); } catch (e) {}
@@ -531,8 +556,8 @@
     document.body.dataset.mode = mode;
     $("title").textContent = (sunset ? L.titleSunset : L.titleSunrise)(curSpot().name);
     document.title = $("title").textContent;
-    // výhled, počasí a historie jsou jen k Arieiru
-    ["outlook-wrap", "wx-card", "history"].forEach((id) => $(id).classList.toggle("hidden", spotKey !== "arieiro"));
+    // historie predikcí (ručně hodnocené východy) existuje jen pro Arieiro
+    $("history").classList.toggle("hidden", spotKey !== "arieiro");
   }
 
   function renderWeather(day) {
@@ -547,7 +572,10 @@
   }
 
   function renderTabs() {
-    $("tabs").replaceChildren(...data.days.map((d, i) => {
+    const list = daysOf(spotKey);
+    $("outlook-wrap").classList.toggle("hidden", list.length < 2);
+    $("tabs").className = "grid gap-2 " + (list.length > 3 ? "grid-cols-4" : "grid-cols-3");
+    $("tabs").replaceChildren(...list.map((d, i) => {
       const v = style(d.verdict), L = t();
       const b = el("button", "rounded-2xl border p-3 text-left transition " + (i === selected
         ? "acc-on" : "border-white/10 bg-white/5 hover:bg-white/10"));
@@ -557,7 +585,7 @@
       const label = el("p", "mt-1 flex items-center gap-2 font-semibold");
       label.append(el("span", `h-2.5 w-2.5 rounded-full ${v.dot}`), el("span", null, `${L.verdict[d.verdict] || d.verdict} · ${d.score_pct} %`));
       b.append(el("p", "text-xs text-slate-400", `${L.short[parse(d.date).getDay()]} ${fmtDate(d.date)}`), label);
-      b.addEventListener("click", () => { selected = i; show(d, i === 0); renderTabs(); });
+      b.addEventListener("click", () => { selected = i; showDay(); renderTabs(); });
       return b;
     }));
   }
@@ -594,14 +622,11 @@
     document.querySelectorAll("#lang button").forEach((b) => {
       const on = b.dataset.lang === lang;
       b.setAttribute("aria-pressed", on);
-      b.className = "px-3 py-1.5 " + (on ? "seg-on" : "seg-off");
+      b.className = "inline-flex items-center gap-1.5 px-3 py-1.5 " + (on ? "seg-on" : "seg-off");
     });
     if (data) {
       renderMode();
-      const morningSpot = allSpots().find((s) => s.key === spotKey && s.kind === "sunrise");
-      if (mode === "sunset") showSunset(data.sunset);
-      else if (morningSpot && spotKey !== "arieiro") show(morningSpot, true);
-      else show(data.days[selected], selected === 0);
+      showDay();
       renderTabs(); renderHistory(); renderUpdated(); renderSpots(); renderMap();
     }
   }

@@ -101,3 +101,12 @@ def test_payload_has_sunrise_and_sunset_roots():
     assert payload["tomorrow_spots"]["morning"][1]["webcam_url"] is None  # Bica: bez kamery
     assert payload["sunset"]["cloud_sea"] is None  # pobřežní západ: moře mraků se neskóruje
     json.dumps(payload)
+
+
+def test_spot_days_cover_every_spot():
+    payload = webexport.build_payload(Settings(), days=3, bundle=_bundle(), now=NOW)
+    sd = payload["spot_days"]
+    assert set(sd) == {"arieiro", "bica_da_cana", "ponta_do_pargo"}
+    for key, rows in sd.items():
+        assert rows and rows[0]["date"] == payload["tomorrow"]["date"]
+        assert "weather" in rows[0]
