@@ -140,6 +140,10 @@ def export_web(
     webexport.write_payload(payload, out)
     t = payload["tomorrow"]
     console.print(f"Zapsáno {out}: {t['date']} {t['verdict']} {t['score_pct']} %")
+    spots = payload["tomorrow_spots"]
+    for part, label in (("morning", "východ"), ("evening", "západ")):
+        for s in spots[part]:
+            console.print(f"  {label} {s['name']}: {s['verdict']} {s['score_pct']} %")
 
 
 @app.command()

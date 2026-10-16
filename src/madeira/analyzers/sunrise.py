@@ -5,12 +5,13 @@ from datetime import date, datetime
 from madeira.analyzers.features import SunriseFeatures, extract_sunrise_features
 from madeira.analyzers.inversion import (
     analyze_inversion,
+    deck_margin,
     rh_aloft,
     summit_clear_factor,
     summit_rh,
 )
 from madeira.analyzers.scoring_utils import pw
-from madeira.domain.config import FogConfig, Settings
+from madeira.domain.config import FogConfig, Settings, SpotTuning
 from madeira.domain.models import ForecastBundle, ScoreComponent, SunriseAnalysis
 
 CLEAR_SKY = [(0, 1.0), (10, 1.0), (60, 0.2), (100, 0.0)]
@@ -64,15 +65,25 @@ def _confidence(days_ahead: int) -> tuple[str, float]:
     return "LOW", 18.0
 
 
-def score_sunrise(f: SunriseFeatures, settings: Settings) -> SunriseAnalysis:
+def score_sunrise(
+    f: SunriseFeatures, settings: Settings, tuning: SpotTuning | None = None
+) -> SunriseAnalysis:
+    """Skóre východu; `tuning` upravuje prahy pro jiný vrchol než Arieiro (např. Bica da Cana)."""
     cfg = settings.sunrise
-    inv = analyze_inversion(f, settings.inversion)
+    tuning = tuning or SpotTuning()
+    inv = analyze_inversion(f, settings.inversion, tuning.cloud_top_max_m)
     warnings: list[str] = []
+    gust_curve = WIND_GUST
+    if tuning.max_gusts_kmh is not None:
+        shift = tuning.max_gusts_kmh - WIND_GUST[0][0]
+        gust_curve = [(x + shift, y) for x, y in WIND_GUST]
 
     # Mraky POD vrcholem (moře mraků) pohled neblokují: nízkou oblačnost u vrcholu
     # proto tlumíme, pokud je vrchol nad horní hranicí vrstvy.
     fog_cfg = cfg.fog
-    clear = summit_clear_factor(f)
+    if tuning.peak_rh_max is not None:
+        fog_cfg = fog_cfg.model_copy(update={"summit_rh_clear": tuning.peak_rh_max})
+    clear = summit_clear_factor(f, deck_margin(f, tuning.cloud_top_max_m))
     eff_low = None if f.low_cloud_summit is None else f.low_cloud_summit * (1 - clear)
     # Stejně nízká oblačnost nad mořem na východě: pohled nad ni neblokuje, jen střední vrstva.
     east_block = None
@@ -140,7 +151,7 @@ def score_sunrise(f: SunriseFeatures, settings: Settings) -> SunriseAnalysis:
 
     # --- wind ---
     if f.gust_kmh is not None:
-        comps.append(("wind", pw(f.gust_kmh, WIND_GUST), f"nárazy {f.gust_kmh:.0f} km/h"))
+        comps.append(("wind", pw(f.gust_kmh, gust_curve), f"nárazy {f.gust_kmh:.0f} km/h"))
     else:
         comps.append(("wind", NEUTRAL, "chybí data"))
 
@@ -233,7 +244,28 @@ def _summary_cs(score, verdict, inv_text, components, gates) -> str:
 
 
 def analyze_sunrise(
-    bundle: ForecastBundle, target_date: date, settings: Settings, now_utc: datetime
+    bundle: ForecastBundle,
+    target_date: date,
+    settings: Settings,
+    now_utc: datetime,
+    spot: str = "arieiro",
 ) -> SunriseAnalysis:
-    f = extract_sunrise_features(bundle, target_date, now_utc, settings.sunrise.window)
-    return score_sunrise(f, settings)
+    """Východ slunce na `spot` (arieiro | bica_da_cana)."""
+    f, tuning = extract_spot_features(bundle, target_date, settings, now_utc, spot)
+    return score_sunrise(f, settings, tuning)
+
+
+def extract_spot_features(
+    bundle: ForecastBundle, target_date: date, settings: Settings, now_utc: datetime, spot: str
+) -> tuple[SunriseFeatures, SpotTuning | None]:
+    """Features východu a ladění heuristiky pro dané místo."""
+    tuning = settings.bica_da_cana.tuning() if spot == "bica_da_cana" else None
+    f = extract_sunrise_features(
+        bundle,
+        target_date,
+        now_utc,
+        settings.sunrise.window,
+        summit_key=spot,
+        aloft_hpa=tuning.dry_layer_hpa if tuning else 800,
+    )
+    return f, tuning

@@ -77,6 +77,8 @@ class SunriseFeatures:
     t: dict[int, float | None]
     rh: dict[int, float | None]
     z: dict[int, float | None]
+    summit_m: float = SUMMIT_M  # výška místa (Arieiro 1818, Bica da Cana 1560)
+    aloft_hpa: int = 800  # hladina, jejíž RH říká, zda je nad vrcholem sucho
 
 
 def extract_sunrise_features(
@@ -87,6 +89,7 @@ def extract_sunrise_features(
     summit_key: str = "arieiro",
     east_key: str = "east_horizon",
     lowland_keys: tuple[str, ...] = ("sao_vicente", "funchal"),
+    aloft_hpa: int = 800,
 ) -> SunriseFeatures:
     summit = bundle.forecasts[summit_key]
     day = next((d for d in summit.daily if d.date == target_date), None)
@@ -160,4 +163,6 @@ def extract_sunrise_features(
         t={lv: lvl(lv, "temperature_c") for lv in levels},
         rh={lv: lvl(lv, "relative_humidity_pct") for lv in levels},
         z={lv: lvl(lv, "geopotential_height_m") for lv in levels},
+        summit_m=summit.location.elevation_m,
+        aloft_hpa=aloft_hpa,
     )

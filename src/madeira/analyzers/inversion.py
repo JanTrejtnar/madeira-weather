@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from madeira.analyzers.features import SUMMIT_M, SunriseFeatures
+from madeira.analyzers.features import SunriseFeatures
 from madeira.analyzers.scoring_utils import clamp, pw
 from madeira.domain.config import InversionConfig
 from madeira.domain.models import InversionAnalysis
@@ -33,26 +33,37 @@ def estimate_deck_top(f: SunriseFeatures) -> float | None:
 
 
 def rh_aloft(f: SunriseFeatures) -> float | None:
-    """RH ve vzduchu těsně nad vrcholem: 800 hPa (~2050 m), jinak 700 hPa."""
-    return f.rh.get(800) if f.rh.get(800) is not None else f.rh.get(700)
+    """RH ve vzduchu nad vrcholem: f.aloft_hpa (Arieiro 800 hPa ≈ 2050 m), jinak 700 hPa."""
+    rh = f.rh.get(f.aloft_hpa)
+    return rh if rh is not None else f.rh.get(700)
 
 
 def summit_rh(f: SunriseFeatures) -> float | None:
-    """RH ve výšce vrcholu (1818 m), interpolovaná mezi hladinami 850 a 800 hPa (jinak 850/700)."""
+    """RH ve výšce vrcholu (f.summit_m), interpolovaná mezi hladinami 850 a 800 hPa (jinak 850/700)."""
     for upper in (800, 700):
         z0, z1, r0, r1 = f.z.get(850), f.z.get(upper), f.rh.get(850), f.rh.get(upper)
         if None not in (z0, z1, r0, r1) and z1 != z0:
-            return r0 + (r1 - r0) * clamp((SUMMIT_M - z0) / (z1 - z0))
+            return r0 + (r1 - r0) * clamp((f.summit_m - z0) / (z1 - z0))
     return None
 
 
-def above_deck_factor(summit_above_deck_m: float | None) -> float:
+DEFAULT_DECK_MARGIN_M = 100.0  # o kolik musí vrchol převyšovat vrstvu mraků pro plné skóre
+
+
+def deck_margin(f: SunriseFeatures, cloud_top_max_m: float | None) -> float:
+    """Požadované převýšení vrcholu nad vrstvou; cloud_top_max_m = nejvyšší přípustná horní hranice mraků."""
+    return DEFAULT_DECK_MARGIN_M if cloud_top_max_m is None else f.summit_m - cloud_top_max_m
+
+
+def above_deck_factor(
+    summit_above_deck_m: float | None, margin_m: float = DEFAULT_DECK_MARGIN_M
+) -> float:
     if summit_above_deck_m is None:
         return 0.0
-    return pw(summit_above_deck_m, [(-200, 0.0), (100, 1.0)])
+    return pw(summit_above_deck_m, [(margin_m - 300, 0.0), (margin_m, 1.0)])
 
 
-def summit_clear_factor(f: SunriseFeatures) -> float:
+def summit_clear_factor(f: SunriseFeatures, margin_m: float = DEFAULT_DECK_MARGIN_M) -> float:
     """0..1: nakolik je vrchol nad oblačností pod ním (1 = mraky pohled neblokují).
 
     Žádná vlhká vrstva ve 925 hPa a výš znamená, že případné mraky jsou níž než ~850 m.
@@ -62,14 +73,19 @@ def summit_clear_factor(f: SunriseFeatures) -> float:
     deck_top = estimate_deck_top(f)
     if deck_top is None:
         return 1.0
-    return above_deck_factor(SUMMIT_M - deck_top)
+    return above_deck_factor(f.summit_m - deck_top, margin_m)
 
 
-def analyze_inversion(f: SunriseFeatures, cfg: InversionConfig | None = None) -> InversionAnalysis:
+def analyze_inversion(
+    f: SunriseFeatures,
+    cfg: InversionConfig | None = None,
+    cloud_top_max_m: float | None = None,
+) -> InversionAnalysis:
     cfg = cfg or InversionConfig()
+    margin = deck_margin(f, cloud_top_max_m)
     w = cfg.weights
     deck_top = estimate_deck_top(f)
-    above = None if deck_top is None else SUMMIT_M - deck_top
+    above = None if deck_top is None else f.summit_m - deck_top
 
     # Stabilita nad vlhkou vrstvou: T(800) − T(850) ≥ 0 = zadržující inverze nad vrcholem.
     # Bez 800 hPa: starší odhad T(850) − T(925) (normální gradient je asi −5 °C).
@@ -88,7 +104,7 @@ def analyze_inversion(f: SunriseFeatures, cfg: InversionConfig | None = None) ->
             aloft, [(40, 1.0), (80, 0.0)]
         )
 
-    e_deck = above_deck_factor(above)
+    e_deck = above_deck_factor(above, margin)
 
     e_low = 0.0
     if f.lowland_low_cloud is not None and deck_top is not None:
@@ -109,9 +125,9 @@ def analyze_inversion(f: SunriseFeatures, cfg: InversionConfig | None = None) ->
 
     if deck_top is None:
         desc = "Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné."
-    elif above is not None and above > 100:
-        desc = f"Vrstva mraků sahá asi do {deck_top:.0f} m, Arieiro (1818 m) je nad ní o ~{above:.0f} m."
-    elif above is not None and above > -200:
+    elif above is not None and above > margin:
+        desc = f"Vrstva mraků sahá asi do {deck_top:.0f} m, vrchol ({f.summit_m:.0f} m) je nad ní o ~{above:.0f} m."
+    elif above is not None and above > margin - 300:
         desc = f"Vrstva mraků sahá asi do {deck_top:.0f} m — vrchol je na její hranici."
     else:
         desc = f"Vlhká vrstva sahá až k ~{deck_top:.0f} m — vrchol bude pravděpodobně v mraku."

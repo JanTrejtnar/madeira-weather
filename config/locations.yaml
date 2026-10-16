@@ -7,3 +7,8 @@ locations:
   - {key: ponta_do_sol,  name: Ponta do Sol,    lat: 32.6811, lon: -17.1022, elevation_m: 30,   role: coast_south}
   # Moře východně od ostrova: oblačnost na východním obzoru při pohledu z Arieira.
   - {key: east_horizon,  name: Východní obzor,  lat: 32.7400, lon: -16.6000, elevation_m: 0,    role: reference_east}
+  # Vyhlídkové body pro východ (Bica da Cana, 1560 m ≈ 850 hPa) a západ slunce (maják, útes 312 m).
+  - {key: bica_da_cana,    name: Miradouro da Bica da Cana, lat: 32.7547, lon: -17.0575, elevation_m: 1560, role: spot_sunrise}
+  - {key: ponta_do_pargo,  name: Farol da Ponta do Pargo,   lat: 32.8122, lon: -17.2638, elevation_m: 312,  role: spot_sunset}
+  # Moře západně od ostrova: nízké mraky na obzoru a "plátno" pro barvy při pohledu z majáku.
+  - {key: west_horizon,    name: Západní obzor,             lat: 32.8100, lon: -17.7500, elevation_m: 0,    role: reference_west}

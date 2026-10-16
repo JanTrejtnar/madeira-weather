@@ -24,6 +24,63 @@ inversion:
     moisture: 0.25
     above_deck: 0.30
     lowland: 0.15
+# Vyhlídková místa (souřadnice a výšky jsou v locations.yaml pod stejným klíčem).
+spots:
+  arieiro:
+    name: "Pico do Arieiro"
+    type: mountain_inversion
+    departure_from_funchal_min: 80
+  bica_da_cana:
+    name: "Miradouro da Bica da Cana"
+    type: mountain_inversion
+    departure_from_funchal_min: 70
+  ponta_do_pargo:
+    name: "Farol da Ponta do Pargo"
+    type: coastal_sunset
+    departure_from_funchal_min: 65
+# Bica da Cana leží v 1560 m (≈ hladina 850 hPa), tedy pod Arieirem (1818 m): vrchol musí být nad
+# mraky už v ~1400 m, jinak se přelijí přes plošinu Paul da Serra. Východ se skóruje stejnou
+# heuristikou jako Arieiro (sunrise.*), tyto hodnoty ji jen posouvají.
+bica_da_cana:
+  inversion:
+    target_cloud_top_max: 1400   # horní hranice mraků nejvýš 1400 m (≥ 160 m pod vrcholem)
+    peak_rh_max: 70              # RH ve výšce vrcholu pod tímto = bez mlhy (jinak roste pravděpodobnost mraku)
+    dry_layer_hpa: 850           # dělící hladina pro "sucho nad vrstvou" (u Arieira 800 hPa)
+  wind:
+    max_gusts_kmh: 30            # Paul da Serra je větrnější → práh nárazů bez srážení skóre +5 km/h
+# Západ slunce na Ponta do Pargo: čistý obzor nízkých mraků + střední/vysoká oblačnost jako plátno.
+sunset:
+  window:
+    before_min: 45             # okno dat kolem západu; barvy vrcholí až po západu slunce
+    after_min: 15
+  verdict:
+    go: 70
+    maybe: 45
+  gates:
+    max_precipitation_mm: 0.1  # déšť = NO-GO
+    max_horizon_low_clouds: 30 # nad tímto (%) nízké mraky na západě zakrývají slunce → skóre klesá
+    min_visibility_m: 15000    # pod tímto se skóre sráží (na 1/3 prahu ×0.3)
+  weights:
+    horizon_clarity: 0.40      # čistý obzor nad mořem
+    cloud_canvas: 0.35         # střední/vysoká oblačnost pro barvy
+    low_cloud_penalty: 0.15    # mlha/mrak přímo na vyhlídce (312 m)
+    wind_comfort: 0.10         # na útesu je nad ~45 km/h nepříjemně
+  piecewise:
+    # [pokrytí %, skóre 0–100]: bez mraků obyčejný západ (50), 35 % nejbarevnější (100), >85 % zataženo
+    canvas_clouds:
+      - [0, 50]
+      - [15, 80]
+      - [35, 100]
+      - [55, 90]
+      - [70, 40]
+      - [85, 0]
+    # nízká oblačnost na západním obzoru [%, skóre 0–100]
+    horizon_low_clouds:
+      - [0, 100]
+      - [15, 90]
+      - [25, 60]
+      - [40, 20]
+      - [60, 0]
 bot:
   digest_time: "20:00"        # večerní digest (místní čas Madeiry)
   feedback_time: "10:00"      # dotaz "jak dopadl východ?"

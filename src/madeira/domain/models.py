@@ -12,7 +12,16 @@ class Location(BaseModel):
     lat: float
     lon: float
     elevation_m: float
-    role: Literal["coast_south", "coast_north", "summit", "plateau", "reference_east"]
+    role: Literal[
+        "coast_south",
+        "coast_north",
+        "summit",
+        "plateau",
+        "reference_east",
+        "reference_west",
+        "spot_sunrise",
+        "spot_sunset",
+    ]
 
 
 class PressureLevel(BaseModel):
@@ -83,6 +92,19 @@ class SunriseAnalysis(BaseModel):
     verdict: Literal["GO", "MAYBE", "NO_GO"]
     confidence: Literal["LOW", "MEDIUM", "HIGH"]
     inversion: InversionAnalysis
+    components: list[ScoreComponent]
+    gates: dict[str, float]
+    summary_cs: str
+    warnings: list[str]
+
+
+class SunsetAnalysis(BaseModel):
+    target_date: date
+    sunset_utc: datetime
+    score_pct: float
+    score_range: tuple[float, float]
+    verdict: Literal["GO", "MAYBE", "NO_GO"]
+    confidence: Literal["LOW", "MEDIUM", "HIGH"]
     components: list[ScoreComponent]
     gates: dict[str, float]
     summary_cs: str

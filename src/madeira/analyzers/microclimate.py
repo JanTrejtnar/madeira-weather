@@ -22,7 +22,7 @@ def compare_microclimates(
 ) -> MicroclimateComparison:
     rows: list[MicroclimateRow] = []
     for key, fc in bundle.forecasts.items():
-        if fc.location.role == "reference_east":
+        if fc.location.role.startswith("reference_") or fc.location.role.startswith("spot_"):
             continue
         pts = fc.hourly
         total = _avg(pts, lambda p: p.cloud_cover_total_pct, start, end)

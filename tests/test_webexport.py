@@ -66,3 +66,17 @@ def test_history_rows_include_unrated_days(tmp_path, monkeypatch):
     assert all(r["outcome"] is None and r["score"] is not None for r in rows)
     assert store.history_rows(date(2026, 10, 13))[0]["target_date"] == "2026-10-13"
     assert webexport.history_entries(rows)[0]["outcome"] is None
+
+
+def test_payload_has_tomorrow_spots():
+    payload = webexport.build_payload(Settings(), days=3, bundle=_bundle(), now=NOW)
+    spots = payload["tomorrow_spots"]
+    assert [s["key"] for s in spots["morning"]] == ["arieiro", "bica_da_cana"]
+    assert [s["key"] for s in spots["evening"]] == ["ponta_do_pargo"]
+    assert spots["morning"][0]["score_pct"] == payload["tomorrow"]["score_pct"]
+    assert spots["morning"][1]["elevation_m"] == 1560
+    pargo = spots["evening"][0]
+    assert pargo["date"] == payload["tomorrow"]["date"]
+    assert pargo["departure_funchal"] < pargo["sunset"]
+    assert pargo["verdict"] in {"GO", "MAYBE", "NO_GO"}
+    json.dumps(payload)  # musí jít serializovat

@@ -7,6 +7,7 @@ from madeira.analyzers.inversion import analyze_inversion, estimate_deck_top
 from madeira.analyzers.microclimate import compare_microclimates
 from madeira.analyzers.scoring_utils import pw
 from madeira.analyzers.sunrise import analyze_sunrise, score_sunrise
+from madeira.analyzers.sunset import SunsetFeatures, analyze_sunset, score_sunset
 from madeira.domain.config import Settings, load_locations
 from madeira.domain.models import HourlyPoint
 from madeira.fetchers.open_meteo import parse_response
@@ -172,3 +173,92 @@ def test_calibration_days_are_ranked_by_real_outcome():
     assert len(sea) == 4 and len(fail) == 3
     assert min(sea) >= 65, scores
     assert max(fail) <= 30, scores
+
+
+# --- západ slunce (Ponta do Pargo) ------------------------------------------------
+
+
+def sunset_features(**over) -> SunsetFeatures:
+    """Ideální večer: čistý obzor, ~35 % středních/vysokých mraků, bez deště a mlhy."""
+    base = {
+        "target_date": date(2026, 10, 13),
+        "sunset_utc": datetime(2026, 10, 13, 18, 37, tzinfo=UTC),
+        "days_ahead": 1,
+        "horizon_low_cloud": 0.0,
+        "canvas_cloud": 35.0,
+        "local_low_cloud": 0.0,
+        "precip_mm": 0.0,
+        "gust_kmh": 20.0,
+        "wind_kmh": 15.0,
+        "wind_dir_deg": 20.0,
+        "visibility_m": 30000.0,
+        "dewpoint_depression_c": 8.0,
+        "temp_c": 20.0,
+    }
+    base.update(over)
+    return SunsetFeatures(**base)
+
+
+def test_sunset_perfect_evening_is_go():
+    a = score_sunset(sunset_features(), Settings())
+    assert a.verdict == "GO"
+    assert a.score_pct == 100.0
+    assert a.gates == {"precip": 1.0, "horizon": 1.0, "visibility": 1.0}
+
+
+def test_sunset_canvas_curve_peaks_at_35_pct():
+    s = Settings()
+    score = {c: score_sunset(sunset_features(canvas_cloud=c), s).score_pct for c in (0, 35, 70, 90)}
+    # 0 % = obyčejný západ (plátno 50), 35 % = nejlepší, >85 % = zataženo (plátno 0)
+    assert score[35] > score[0] > score[70] > score[90]
+    assert score[0] == 100 - 0.35 * 100 * 0.5
+    assert score[90] == 100 - 0.35 * 100
+
+
+def test_sunset_rain_is_instant_no_go():
+    a = score_sunset(sunset_features(precip_mm=0.2), Settings())
+    assert a.score_pct == 0 and a.verdict == "NO_GO"
+    assert a.gates["precip"] == 0.0 and a.warnings
+
+
+def test_sunset_low_clouds_on_horizon_hurt():
+    s = Settings()
+    clear = score_sunset(sunset_features(), s).score_pct
+    blocked = score_sunset(sunset_features(horizon_low_cloud=50.0), s)
+    assert blocked.score_pct < 0.5 * clear
+    assert blocked.gates["horizon"] < 1.0
+    assert blocked.verdict == "NO_GO"
+
+
+def test_sunset_gale_and_fog_lower_score():
+    s = Settings()
+    base = score_sunset(sunset_features(), s).score_pct
+    assert score_sunset(sunset_features(gust_kmh=70.0), s).score_pct == base - 10
+    assert score_sunset(sunset_features(local_low_cloud=70.0), s).score_pct == base - 15
+    assert score_sunset(sunset_features(visibility_m=5000.0), s).gates["visibility"] == 0.3
+
+
+def test_sunset_end_to_end_on_fixture():
+    bundle = parse_response(json.loads(FIXTURE.read_text()), load_locations(), "best_match", NOW)
+    target = bundle.forecasts["ponta_do_pargo"].daily[1].date
+    a = analyze_sunset(bundle, target, Settings(), NOW)
+    assert 0 <= a.score_pct <= 100 and a.summary_cs
+    assert a.sunset_utc.date() == target
+    # Bica da Cana běží stejnou heuristikou východu jako Arieiro, jen s jiným laděním
+    b = analyze_sunrise(bundle, target, Settings(), NOW, spot="bica_da_cana")
+    assert 0 <= b.score_pct <= 100
+
+
+def test_bica_tuning_shifts_thresholds():
+    # mraky sahají do ~1500 m: pro Arieiro (1818 m) v pohodě, pro Bicu (1560 m, strop 1400 m) ne
+    f = features(
+        summit_m=1560.0,
+        aloft_hpa=850,
+        rh={925: 99.0, 850: 98.0, 800: 42.0, 700: 9.0},
+        z={925: 860.0, 850: 1500.0, 800: 2040.0, 700: 3175.0},
+    )
+    plain = analyze_inversion(f)
+    bica = analyze_inversion(f, cloud_top_max_m=1400)
+    assert bica.probability_pct < plain.probability_pct
+    s = Settings()
+    assert score_sunrise(f, s, s.bica_da_cana.tuning()).score_pct <= score_sunrise(f, s).score_pct
