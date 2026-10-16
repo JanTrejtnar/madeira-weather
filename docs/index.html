@@ -18,9 +18,9 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* akcent: oranžová = východ, růžová = západ (přepíná se atributem data-mode na <body>) */
+    /* akcent: oranžová = východ, růžovo-fialová = západ (přepíná se atributem data-mode na <body>) */
     body { --acc: 251,146,60; --acc-200: #fed7aa; --acc-300: #fdba74; }
-    body[data-mode="sunset"] { --acc: 244,114,182; --acc-200: #fbcfe8; --acc-300: #f9a8d4; }
+    body[data-mode="sunset"] { --acc: 217,70,239; --acc-200: #f5d0fe; --acc-300: #f0abfc; }
     body { background: radial-gradient(120% 60% at 50% 100%, rgba(var(--acc),.22), transparent 60%),
                        linear-gradient(180deg, #0f172a 0%, #1e1b4b 100%) fixed; }
     .acc-200 { color: var(--acc-200); }
@@ -37,6 +37,7 @@
     .pin-wrap { background: none; border: 0; }
     .pin { position: relative; display: block; width: 18px; height: 18px; border-radius: 9999px; border: 2px solid #fff;
            background: var(--pin); animation: pin-pulse 2s infinite; }
+    .pin.dim { opacity: .4; animation: none; }
     .pin.sel { width: 24px; height: 24px; margin: -3px 0 0 -3px; }
     .pin-go { --pin: #34d399; } .pin-maybe { --pin: #fbbf24; } .pin-nogo { --pin: #fb7185; }
     @keyframes pin-pulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--pin) 70%, transparent); }
@@ -61,7 +62,8 @@
       </div>
     </header>
 
-    <div id="spots" class="mb-4 hidden gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Spot"></div>
+    <div id="modes" class="mb-3 hidden grid-cols-2 gap-2" role="tablist" aria-label="Sunrise / Sunset"></div>
+    <div id="spots" class="mb-4 hidden gap-2 overflow-x-auto pb-1" role="group" aria-label="Spot"></div>
 
     <div id="state" class="rounded-2xl bg-white/5 p-6 text-slate-300" role="status" data-i18n="loading">Načítám předpověď…</div>
 
@@ -175,6 +177,7 @@
   const T = {
     cs: {
       loading: "Načítám předpověď…",
+      modeSunrise: "🌅 Východ slunce", modeSunset: "🌇 Západ slunce",
       titleSunrise: (n) => `Východ slunce – ${n}`, titleSunset: (n) => `Západ slunce – ${n}`,
       timeSunrise: "Východ slunce", timeSunset: "Západ slunce",
       horizon: "Nízké mraky na obzoru", canvas: "Mraky pro barvy",
@@ -242,6 +245,7 @@
     },
     en: {
       loading: "Loading forecast…",
+      modeSunrise: "🌅 Sunrise", modeSunset: "🌇 Sunset",
       titleSunrise: (n) => `Sunrise – ${n}`, titleSunset: (n) => `Sunset – ${n}`,
       timeSunrise: "Sunrise", timeSunset: "Sunset",
       horizon: "Low clouds on horizon", canvas: "Clouds for colour",
@@ -406,22 +410,48 @@
 
   const SEG = {
     sunrise: { on: "border-orange-400/60 bg-orange-400/20 text-orange-200", icon: "🌅" },
-    sunset: { on: "border-pink-400/60 bg-pink-400/20 text-pink-200", icon: "🌇" },
+    sunset: { on: "border-fuchsia-400/60 bg-fuchsia-400/20 text-fuchsia-200", icon: "🌇" },
   };
 
-  function renderSpots() {
-    const L = t(), all = allSpots(), bar = $("spots");
-    bar.classList.toggle("hidden", all.length === 0);
-    bar.classList.toggle("flex", all.length > 0);
-    bar.replaceChildren(...all.map((s) => {
-      const on = s.key === spotKey, seg = SEG[s.kind];
-      const b = el("button", "min-w-max flex-1 rounded-xl border px-3 py-2.5 text-left text-sm font-semibold transition " +
-        (on ? seg.on : "border-white/10 bg-white/5 text-slate-300 hover:bg-white/10"));
+  const MODES = ["sunrise", "sunset"];
+  const spotsOf = (kind) => allSpots().filter((s) => s.kind === kind);
+
+  // horní úroveň: Východ / Západ; po přepnutí se karta přeladí na výchozí spot režimu
+  function renderModes() {
+    const L = t(), bar = $("modes"), has = allSpots().length > 0;
+    bar.classList.toggle("hidden", !has);
+    bar.classList.toggle("grid", has);
+    bar.replaceChildren(...MODES.filter((k) => spotsOf(k).length).map((k) => {
+      const on = k === mode;
+      const b = el("button", "rounded-2xl border px-4 py-4 text-base font-bold transition sm:text-lg " +
+        (on ? SEG[k].on : "border-white/10 bg-white/5 text-slate-300 hover:bg-white/10"), k === "sunrise" ? L.modeSunrise : L.modeSunset);
       b.type = "button";
       b.setAttribute("role", "tab");
       b.setAttribute("aria-selected", on);
-      b.append(el("span", "block whitespace-nowrap", `${seg.icon} ${s.name.replace(/^(Miradouro da|Farol da) /, "")}`),
-        el("span", "block text-xs font-normal opacity-70", `${L.mapTime[s.kind]} ${s.time}`));
+      b.addEventListener("click", () => { if (!on) selectSpot(spotsOf(k)[0].key, { fly: true }); });
+      return b;
+    }));
+  }
+
+  // spodní úroveň: místa zvoleného režimu (jediné místo = jen odznak)
+  function renderSpots() {
+    renderModes();
+    const L = t(), list = spotsOf(mode), bar = $("spots");
+    bar.classList.toggle("hidden", list.length === 0);
+    bar.classList.toggle("flex", list.length > 0);
+    bar.replaceChildren(...list.map((s) => {
+      const on = s.key === spotKey, seg = SEG[s.kind];
+      const sub = el("span", "block text-xs font-normal opacity-70", `${L.mapTime[s.kind]} ${s.time}`);
+      if (list.length === 1) {
+        const badge = el("div", "flex-1 rounded-xl border px-3 py-2.5 text-sm font-semibold " + seg.on);
+        badge.append(el("span", "block", `📍 ${s.name}`), sub);
+        return badge;
+      }
+      const b = el("button", "min-w-max flex-1 rounded-xl border px-3 py-2.5 text-left text-sm font-semibold transition " +
+        (on ? seg.on : "border-white/10 bg-white/5 text-slate-300 hover:bg-white/10"));
+      b.type = "button";
+      b.setAttribute("aria-pressed", on);
+      b.append(el("span", "block whitespace-nowrap", s.name.replace(/^(Miradouro da|Farol da) /, "")), sub);
       b.addEventListener("click", () => selectSpot(s.key, { fly: true }));
       return b;
     }));
@@ -443,7 +473,7 @@
   }
 
   function pinIcon(s) {
-    return LL.divIcon({ className: "pin-wrap", html: `<span class="pin ${pinClass(s.verdict)}${s.key === spotKey ? " sel" : ""}"></span>`,
+    return LL.divIcon({ className: "pin-wrap", html: `<span class="pin ${pinClass(s.verdict)}${s.key === spotKey ? " sel" : ""}${s.kind !== mode ? " dim" : ""}"></span>`,
                         iconSize: [18, 18], iconAnchor: [9, 9], popupAnchor: [0, -12] });
   }
 
