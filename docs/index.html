@@ -25,6 +25,7 @@
     /* mapa */
     #map { background: #0f172a; }
     .leaflet-container { font: inherit; }
+    .dark .leaflet-tile { filter: brightness(0.6) invert(1) contrast(2.5) hue-rotate(190deg) saturate(0.2); }
     .pin-wrap { background: none; border: 0; }
     .pin { position: relative; display: block; width: 18px; height: 18px; border-radius: 9999px; border: 2px solid #fff;
            background: var(--pin); animation: pin-pulse 2s infinite; }
@@ -38,12 +39,12 @@
     .leaflet-popup-content .v-go { color: #6ee7b7; } .leaflet-popup-content .v-maybe { color: #fcd34d; } .leaflet-popup-content .v-nogo { color: #fda4af; }
   </style>
 </head>
-<body class="min-h-screen text-slate-100 antialiased" data-mode="sunrise">
+<body class="dark min-h-screen text-slate-100 antialiased" data-mode="sunrise">
   <main class="mx-auto max-w-3xl px-4 py-8 sm:py-12">
     <header class="mb-6 flex items-start justify-between gap-4">
       <div>
         <p class="acc-300 text-sm uppercase tracking-widest">Madeira</p>
-        <h1 id="title" class="text-2xl sm:text-3xl font-semibold">Východ slunce na Pico do Arieiro</h1>
+        <h1 id="title" class="text-2xl sm:text-3xl font-semibold">Východ slunce – Pico do Arieiro</h1>
       </div>
       <div id="lang" class="flex shrink-0 overflow-hidden rounded-xl border border-white/15 text-sm" role="group" aria-label="Language">
         <button type="button" data-lang="cs" class="px-3 py-1.5">CZ</button>
@@ -51,17 +52,13 @@
       </div>
     </header>
 
-    <div id="mode" class="mb-4 hidden grid-cols-2 gap-1 rounded-2xl border border-white/10 bg-white/5 p-1" role="tablist" aria-label="Východ / Západ">
-      <button type="button" role="tab" data-mode="sunrise" class="rounded-xl px-4 py-2.5 text-sm font-semibold transition"></button>
-      <button type="button" role="tab" data-mode="sunset" class="rounded-xl px-4 py-2.5 text-sm font-semibold transition"></button>
-    </div>
+    <div id="spots" class="mb-4 hidden gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Spot"></div>
 
     <div id="state" class="rounded-2xl bg-white/5 p-6 text-slate-300" role="status" data-i18n="loading">Načítám předpověď…</div>
 
     <section id="content" class="hidden space-y-4">
       <!-- mapa -->
       <div id="map" class="h-[280px] w-full overflow-hidden rounded-2xl border border-white/10 shadow-xl" role="region" aria-label="Map"></div>
-      <div id="spots" class="hidden grid-cols-2 gap-2" role="tablist"></div>
 
       <!-- hlavní karta -->
       <article class="rounded-3xl border border-white/10 bg-white/5 p-6 sm:p-8 shadow-xl backdrop-blur">
@@ -168,8 +165,7 @@
   const T = {
     cs: {
       loading: "Načítám předpověď…",
-      modeSunrise: "🌅 Východ", modeSunset: "🌇 Západ",
-      titleSunrise: "Východ slunce na Pico do Arieiro", titleSunset: "Západ slunce na Ponta do Pargo",
+      titleSunrise: (n) => `Východ slunce – ${n}`, titleSunset: (n) => `Západ slunce – ${n}`,
       timeSunrise: "Východ slunce", timeSunset: "Západ slunce",
       horizon: "Nízké mraky na obzoru", canvas: "Mraky pro barvy",
       webcam: (name) => `Živá webkamera · ${name}`,
@@ -234,8 +230,7 @@
     },
     en: {
       loading: "Loading forecast…",
-      modeSunrise: "🌅 Sunrise", modeSunset: "🌇 Sunset",
-      titleSunrise: "Sunrise at Pico do Arieiro", titleSunset: "Sunset at Ponta do Pargo",
+      titleSunrise: (n) => `Sunrise – ${n}`, titleSunset: (n) => `Sunset – ${n}`,
       timeSunrise: "Sunrise", timeSunset: "Sunset",
       horizon: "Low clouds on horizon", canvas: "Clouds for colour",
       webcam: (name) => `Live webcam · ${name}`,
@@ -377,18 +372,12 @@
     if (url) { a.href = url; $("webcam-text").textContent = t().webcam(place); }
   }
 
-  function setMode(next) {
-    const sunset = next === "sunset" && data && data.sunset;
-    selectSpot(sunset ? "ponta_do_pargo" : (isMorning(spotKey) ? spotKey : "arieiro"), { fly: true });
-  }
-
   function allSpots() {
     const ts = data && data.tomorrow_spots;
     if (!ts) return [];
     return [...ts.morning.map((s) => ({ ...s, kind: "sunrise", time: s.sunrise })),
             ...ts.evening.map((s) => ({ ...s, kind: "sunset", time: s.sunset }))];
   }
-  const isMorning = (k) => allSpots().some((s) => s.key === k && s.kind === "sunrise");
 
   // jediné místo, které mění vybraný spot (z tlačítek i z mapy)
   function selectSpot(key, opts = {}) {
@@ -401,20 +390,24 @@
     mapFocus(key, opts.fly);
   }
 
+  const SEG = {
+    sunrise: { on: "border-orange-400/60 bg-orange-400/20 text-orange-200", icon: "🌅" },
+    sunset: { on: "border-pink-400/60 bg-pink-400/20 text-pink-200", icon: "🌇" },
+  };
+
   function renderSpots() {
-    const L = t(), morning = allSpots().filter((s) => s.kind === "sunrise");
-    const bar = $("spots"), visible = mode === "sunrise" && morning.length > 1;
-    bar.classList.toggle("hidden", !visible);
-    bar.classList.toggle("grid", visible);
-    bar.replaceChildren(...morning.map((s) => {
-      const on = s.key === spotKey, v = style(s.verdict);
-      const b = el("button", "rounded-xl border px-3 py-2 text-left text-sm transition " + (on ? "acc-on" : "border-white/10 bg-white/5 hover:bg-white/10"));
+    const L = t(), all = allSpots(), bar = $("spots");
+    bar.classList.toggle("hidden", all.length === 0);
+    bar.classList.toggle("flex", all.length > 0);
+    bar.replaceChildren(...all.map((s) => {
+      const on = s.key === spotKey, seg = SEG[s.kind];
+      const b = el("button", "min-w-max flex-1 rounded-xl border px-3 py-2.5 text-left text-sm font-semibold transition " +
+        (on ? seg.on : "border-white/10 bg-white/5 text-slate-300 hover:bg-white/10"));
       b.type = "button";
       b.setAttribute("role", "tab");
       b.setAttribute("aria-selected", on);
-      const row = el("span", "flex items-center gap-2 font-semibold");
-      row.append(el("span", `h-2.5 w-2.5 shrink-0 rounded-full ${v.dot}`), el("span", null, `${L.verdict[s.verdict] || s.verdict} · ${s.score_pct} %`));
-      b.append(el("span", "block truncate text-xs text-slate-400", s.name), row);
+      b.append(el("span", "block whitespace-nowrap", `${seg.icon} ${s.name.replace(/^(Miradouro da|Farol da) /, "")}`),
+        el("span", "block text-xs font-normal opacity-70", `${L.mapTime[s.kind]} ${s.time}`));
       b.addEventListener("click", () => selectSpot(s.key, { fly: true }));
       return b;
     }));
@@ -444,9 +437,9 @@
     if (map || !window.L || !data) return;
     LL = window.L;
     map = LL.map("map", { scrollWheelZoom: false }).setView([32.75, -16.98], 10);
-    LL.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-      maxZoom: 18, subdomains: "abcd",
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    LL.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map);
     allSpots().forEach((s) => {
       if (s.lat == null || s.lon == null) return;
@@ -479,19 +472,10 @@
   function renderMode() {
     const L = t(), sunset = mode === "sunset";
     document.body.dataset.mode = mode;
-    $("title").textContent = sunset ? L.titleSunset : L.titleSunrise;
+    $("title").textContent = (sunset ? L.titleSunset : L.titleSunrise)(curSpot().name);
     document.title = $("title").textContent;
-    const bar = $("mode"), has = !!(data && data.sunset);
-    bar.classList.toggle("hidden", !has);
-    bar.classList.toggle("grid", has);
-    bar.querySelectorAll("button").forEach((b) => {
-      const on = b.dataset.mode === mode;
-      b.textContent = b.dataset.mode === "sunset" ? L.modeSunset : L.modeSunrise;
-      b.setAttribute("aria-selected", on);
-      b.className = "rounded-xl px-4 py-2.5 text-sm font-semibold transition " + (on ? "seg-on" : "seg-off");
-    });
-    // výhled, počasí a historie jsou jen ke východu
-    ["outlook-wrap", "wx-card", "history"].forEach((id) => $(id).classList.toggle("hidden", sunset || spotKey !== "arieiro"));
+    // výhled, počasí a historie jsou jen k Arieiru
+    ["outlook-wrap", "wx-card", "history"].forEach((id) => $(id).classList.toggle("hidden", spotKey !== "arieiro"));
   }
 
   function renderWeather(day) {
@@ -548,7 +532,7 @@
 
   function applyLang() {
     document.documentElement.lang = lang;
-    if (!data) { $("title").textContent = t().titleSunrise; document.title = $("title").textContent; }
+    if (!data) { $("title").textContent = t().titleSunrise(ARIEIRO.name); document.title = $("title").textContent; }
     document.querySelectorAll("[data-i18n]").forEach((n) => { n.textContent = t()[n.dataset.i18n]; });
     document.querySelectorAll("#lang button").forEach((b) => {
       const on = b.dataset.lang === lang;
@@ -570,7 +554,6 @@
     try { localStorage.setItem("lang", lang); } catch (e) {}
     applyLang();
   }));
-  document.querySelectorAll("#mode button").forEach((b) => b.addEventListener("click", () => setMode(b.dataset.mode)));
   applyLang();
 
   fetch("./data.json", { cache: "no-cache" })
