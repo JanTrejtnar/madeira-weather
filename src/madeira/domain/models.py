@@ -21,6 +21,7 @@ class Location(BaseModel):
         "reference_west",
         "spot_sunrise",
         "spot_sunset",
+        "coast_escape",
     ]
 
 
@@ -47,6 +48,8 @@ class HourlyPoint(BaseModel):
     wind_direction_deg: float | None = None
     visibility_m: float | None = None
     pressure_msl_hpa: float | None = None
+    direct_radiation_wm2: float | None = None
+    sunshine_duration_s: float | None = None  # sekundy slunce v dané hodině (0–3600)
     levels: dict[int, PressureLevel] = Field(default_factory=dict)
 
 

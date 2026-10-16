@@ -158,6 +158,60 @@ class SunsetConfig(BaseModel):
     verdict: VerdictThresholds = Field(default_factory=VerdictThresholds)
 
 
+class EscapePoint(BaseModel):
+    """Pobřežní bod pro "Sunny Escape"; souřadnice a výška se posílají do Open-Meteo."""
+
+    key: str
+    name: str
+    lat: float
+    lon: float
+    elevation_m: float
+    name_gen: str | None = None  # 2. pád pro "jeďte do …" (česky); None = stejné jako name
+
+    def as_location(self) -> Location:
+        return Location(**self.model_dump(exclude={"name_gen"}), role="coast_escape")
+
+
+def _default_escape_points() -> list[EscapePoint]:
+    return [
+        EscapePoint(key="ponta_do_sol", name="Ponta do Sol", lat=32.6806, lon=-17.1042, elevation_m=20),
+        EscapePoint(key="calheta", name="Calheta / Jardim do Mar", name_gen="Calhety / Jardim do Mar", lat=32.7214, lon=-17.1742, elevation_m=15),
+        EscapePoint(key="machico", name="Machico", name_gen="Machica", lat=32.7183, lon=-16.7644, elevation_m=10),
+        EscapePoint(key="sao_vicente", name="São Vicente", lat=32.8028, lon=-17.0436, elevation_m=30),
+        EscapePoint(key="funchal", name="Funchal", name_gen="Funchalu", lat=32.65, lon=-16.9086, elevation_m=50),
+    ]
+
+
+class EscapeWeights(BaseModel):
+    sunshine: float = 0.40  # slunce (sunshine duration / přímé záření)
+    clouds: float = 0.40  # nízká + střední oblačnost
+    temperature: float = 0.20
+
+
+class EscapeCloudMix(BaseModel):
+    low: float = 0.45  # nízká a střední oblačnost zakrývá slunce nejvíc
+    mid: float = 0.35
+    high: float = 0.20
+
+
+class EscapeConfig(BaseModel):
+    """Nejslunnější pobřežní místo v okně hour_from–hour_to (místní čas, hour_to bez konce)."""
+
+    hour_from: int = 11
+    hour_to: int = 16
+    points: list[EscapePoint] = Field(default_factory=_default_escape_points)
+    weights: EscapeWeights = Field(default_factory=EscapeWeights)
+    cloud_mix: EscapeCloudMix = Field(default_factory=EscapeCloudMix)
+    max_radiation_wm2: float = 700  # přímé záření odpovídající plnému slunci (záloha bez sunshine_duration)
+    # [průměrná °C v okně, skóre 0–1]
+    temperature_curve: list[tuple[float, float]] = [
+        (14, 0.0), (18, 0.4), (22, 0.85), (25, 1.0), (28, 1.0), (33, 0.6),
+    ]
+    rain_min_mm: float = 0.1  # úhrn v okně od tohoto = srážky (pod tím jen stopy)
+    rain_base_factor: float = 0.5  # skóre se po prvních srážkách násobí tímto ...
+    rain_per_mm: float = 0.15  # ... a dál klesá o tolik za každý mm (min. 0)
+
+
 class BotConfig(BaseModel):
     digest_time: str = "20:00"  # místní čas Madeiry
     feedback_time: str = "10:00"
@@ -173,6 +227,7 @@ class Settings(BaseModel):
     spots: dict[str, SpotConfig] = Field(default_factory=_default_spots)
     bica_da_cana: BicaConfig = Field(default_factory=BicaConfig)
     sunset: SunsetConfig = Field(default_factory=SunsetConfig)
+    sunny_escape: EscapeConfig = Field(default_factory=EscapeConfig)
 
 
 def config_dir() -> Path:

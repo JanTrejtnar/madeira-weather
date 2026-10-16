@@ -37,6 +37,8 @@ SURFACE_VARS = [
     "wind_gusts_10m",
     "visibility",
     "pressure_msl",
+    "direct_radiation",
+    "sunshine_duration",
 ]
 LEVEL_VARS = [
     f"{name}_{lvl}hPa"
@@ -61,6 +63,8 @@ _SURFACE_MAP = {
     "wind_gusts_10m": "wind_gusts_kmh",
     "visibility": "visibility_m",
     "pressure_msl": "pressure_msl_hpa",
+    "direct_radiation": "direct_radiation_wm2",
+    "sunshine_duration": "sunshine_duration_s",
 }
 _LEVEL_MAP = {
     "temperature": "temperature_c",

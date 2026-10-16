@@ -9,10 +9,12 @@ from zoneinfo import ZoneInfo
 
 from madeira.analyzers.daily_weather import day_weather
 from madeira.analyzers.features import extract_sunrise_features
+from madeira.analyzers.sunny_escape import rank_locations, recommendation_cs
 from madeira.analyzers.sunrise import extract_spot_features, score_sunrise
 from madeira.analyzers.sunset import extract_sunset_features, score_sunset
-from madeira.domain.config import Settings
+from madeira.domain.config import EscapeConfig, Settings
 from madeira.domain.models import ForecastBundle, SunriseAnalysis, SunsetAnalysis
+from madeira.fetchers.open_meteo import OpenMeteoFetcher
 from madeira.services import forecast
 from madeira.storage.db import Store
 
@@ -203,6 +205,36 @@ def _alerts(a: SunriseAnalysis, f) -> list[dict]:
     return alerts
 
 
+def sunny_escape_section(cfg: EscapeConfig, bundle: ForecastBundle, now: datetime) -> dict | None:
+    """Nejslunnější pobřeží pro dnešek a zítřek; `winner`/`locations` platí pro výchozí den."""
+    local = now.astimezone(TZ)
+    days = {"today": local.date(), "tomorrow": local.date() + timedelta(days=1)}
+    out: dict = {}
+    for label, day in days.items():
+        rows = rank_locations(bundle, day, cfg)
+        if rows:
+            best = rows[0]
+            winner = {
+                "key": best["key"], "name": best["name"], "name_gen": best["name_gen"], "sun_score": best["sun_score"],
+                "temp_c": best["temp_c"], "precip_mm": best["precip_mm"], "sky": best["sky"],
+                "recommendation": recommendation_cs(label, best),
+            }
+            out[label] = {"date": day.isoformat(), "winner": winner, "locations": rows}
+    if not out:
+        return None
+    # po konci okna (16:00) už dnešek nemá cenu doporučovat
+    default = "today" if "today" in out and local.hour < cfg.hour_to else "tomorrow"
+    default = default if default in out else next(iter(out))
+    return {"window": [cfg.hour_from, cfg.hour_to], "day": default, **out[default], **out}
+
+
+def fetch_escape_bundle(cfg: EscapeConfig) -> ForecastBundle | None:
+    try:
+        return OpenMeteoFetcher(cache_dir=forecast.CACHE_DIR).fetch([p.as_location() for p in cfg.points], days=2)
+    except RuntimeError:
+        return None  # výpadek API nesmí shodit celý export
+
+
 def build_payload(
     settings: Settings,
     days: int = 3,
@@ -210,10 +242,14 @@ def build_payload(
     now: datetime | None = None,
     history: list[dict] | None = None,
     store: Store | None = None,
+    escape_bundle: ForecastBundle | None = None,
 ) -> dict:
     """Spočítá zítřek a výhled na `days` dní (první den = zítřek, místní čas Madeiry)."""
+    live = bundle is None
     bundle = bundle or forecast.load_bundle()
     now = now or datetime.now(UTC)
+    if escape_bundle is None and live:  # s předaným bundlem (testy) se nic nestahuje
+        escape_bundle = fetch_escape_bundle(settings.sunny_escape)
     first = now.astimezone(TZ).date() + timedelta(days=1)
     available = {d.date for d in bundle.forecasts["arieiro"].daily}
     entries = []
@@ -234,6 +270,7 @@ def build_payload(
     if not entries:
         raise RuntimeError("Model nevrátil data pro zítřek.")
     spots = tomorrow_spots(settings, bundle, first, now)
+    escape = sunny_escape_section(settings.sunny_escape, escape_bundle, now) if escape_bundle else None
     return {
         "generated_at": now.isoformat(timespec="seconds"),
         "model": bundle.model,
@@ -244,6 +281,7 @@ def build_payload(
         "sunset": _spot_summary(spots["evening"][0], "sunset"),
         "days": entries,
         "history": history or [],
+        **({"sunny_escape": escape} if escape else {}),
     }
 
 

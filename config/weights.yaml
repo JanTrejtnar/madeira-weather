@@ -89,3 +89,30 @@ bot:
   departure_before_min: 80    # odjezd z Funchalu před východem
   compare_from: "13:00"
   compare_to: "18:00"
+
+# Sunny Escape: nejslunnější pobřežní místo, když prší nebo je zataženo ve Funchalu / v horách.
+sunny_escape:
+  hour_from: 11              # okno hodnocení (místní čas); 16 = bez konce, tedy hodiny 11–15
+  hour_to: 16
+  points:
+    - {key: ponta_do_sol, name: "Ponta do Sol",            lat: 32.6806, lon: -17.1042, elevation_m: 20}  # JZ, statisticky nejslunnější
+    - {key: calheta,      name: "Calheta / Jardim do Mar", name_gen: "Calhety / Jardim do Mar", lat: 32.7214, lon: -17.1742, elevation_m: 15}  # západ
+    - {key: machico,      name: "Machico", name_gen: "Machica", lat: 32.7183, lon: -16.7644, elevation_m: 10}  # východ
+    - {key: sao_vicente,  name: "São Vicente",             lat: 32.8028, lon: -17.0436, elevation_m: 30}  # sever, deštivější (kontrast)
+    - {key: funchal,      name: "Funchal", name_gen: "Funchalu", lat: 32.6500, lon: -16.9086, elevation_m: 50}  # referenční základna
+  weights:
+    sunshine: 0.40           # bonus za slunce (sunshine duration, jinak přímé záření)
+    clouds: 0.40             # penalizace oblačnosti: hlavně nízká a střední
+    temperature: 0.20        # bonus za příjemnou teplotu
+  cloud_mix: {low: 0.45, mid: 0.35, high: 0.20}
+  max_radiation_wm2: 700     # záloha: přímé záření odpovídající plnému slunci
+  temperature_curve:         # [průměrná °C v okně, skóre 0–1]
+    - [14, 0.0]
+    - [18, 0.4]
+    - [22, 0.85]
+    - [25, 1.0]
+    - [28, 1.0]
+    - [33, 0.6]
+  rain_min_mm: 0.1           # úhrn v okně od tohoto = srážky → skóre se prudce srazí
+  rain_base_factor: 0.5      # ... na tento násobek
+  rain_per_mm: 0.15          # ... a dál o tolik za každý mm
