@@ -172,6 +172,26 @@ class Store:
             ).fetchall()
         return [dict(r) for r in rows]
 
+    def history_rows(self, up_to: date, limit: int = 60) -> list[dict]:
+        """Všechny dny s predikcí nebo hodnocením do `up_to` včetně; hodnocení může chybět."""
+        with closing(self._conn()) as conn:
+            rows = conn.execute(
+                """WITH dates AS (
+                       SELECT target_date FROM predictions UNION SELECT target_date FROM outcomes)
+                   SELECT d.target_date, o.outcome, p.model, p.score, p.verdict, p.inversion_pct
+                   FROM dates d
+                   LEFT JOIN outcomes o ON o.target_date = d.target_date
+                   LEFT JOIN predictions p ON p.id = (
+                       SELECT id FROM predictions
+                       WHERE target_date = d.target_date
+                         AND (created_at < sunrise_utc OR model = 'historical_forecast')
+                       ORDER BY (model = 'historical_forecast') ASC, created_at DESC LIMIT 1)
+                   WHERE d.target_date <= ? AND (p.id IS NOT NULL OR o.outcome IS NOT NULL)
+                   ORDER BY d.target_date DESC LIMIT ?""",
+                (up_to.isoformat(), limit),
+            ).fetchall()
+        return [dict(r) for r in rows]
+
     # --- odběratelé -------------------------------------------------------
     def subscribe(self, chat_id: int) -> None:
         with closing(self._conn()) as conn, conn:

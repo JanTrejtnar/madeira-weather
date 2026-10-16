@@ -13,6 +13,7 @@ from madeira.analyzers.sunrise import score_sunrise
 from madeira.domain.config import Settings
 from madeira.domain.models import ForecastBundle, SunriseAnalysis
 from madeira.services import forecast
+from madeira.storage.db import Store
 
 TZ = ZoneInfo("Atlantic/Madeira")
 ARIEIRO_ELEVATION_M = 1818
@@ -88,6 +89,7 @@ def build_payload(
     bundle: ForecastBundle | None = None,
     now: datetime | None = None,
     history: list[dict] | None = None,
+    store: Store | None = None,
 ) -> dict:
     """Spočítá zítřek a výhled na `days` dní (první den = zítřek, místní čas Madeiry)."""
     bundle = bundle or forecast.load_bundle()
@@ -101,6 +103,11 @@ def build_payload(
             break
         features = extract_sunrise_features(bundle, day, now, settings.sunrise.window)
         analysis = score_sunrise(features, settings)
+        if store is not None:  # predikce se zapíše, ať se den objeví v historii
+            store.log_prediction(
+                analysis, features, bundle.fetched_at_utc, bundle.model,
+                settings.sunrise.weights.model_dump(),
+            )
         entry = _day_entry(analysis, features, settings.bot.departure_before_min)
         entry["weather"] = day_weather(bundle, day)
         entries.append(entry)

@@ -70,3 +70,12 @@ Bez toho push z workflow selže (chyba 403).
 Poznámky:
 - GitHub spouští cron s odchylkou i desítek minut a po 60 dnech bez aktivity v repozitáři plánované běhy vypíná (stačí je znovu zapnout v záložce Actions).
 - V Actions není lokální databáze `data/madeira.db`, proto se historie predikcí přebírá z předchozího `data.json`. Aktualizuješ ji lokálním `madeira export-web` + commit + push.
+
+## Jak doplnit historii predikcí
+
+    .venv\Scripts\madeira rate 2026-10-15 cloud_sea    # cloud_sea | clear | mixed | fail
+    .venv\Scripts\madeira export-web
+    git add docs/data.json && git commit -m "Update history" && git pull --rebase && git push
+
+Hodnocení se ukládá do lokální `data/madeira.db`. V historii na webu jsou i dny bez hodnocení (zobrazí se „Nevíme, jak to dopadlo“),
+pokud pro ně existuje predikce; `madeira export-web` ji sám zapíše do databáze, takže stačí ho spouštět lokálně alespoň jednou za den.

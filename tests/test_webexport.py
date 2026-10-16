@@ -51,3 +51,18 @@ def test_read_history_fallback(tmp_path):
     assert webexport.read_history(f) == [{"date": "2026-10-13"}]
     f.write_text("not json", encoding="utf-8")
     assert webexport.read_history(f) == []
+
+
+def test_history_rows_include_unrated_days(tmp_path, monkeypatch):
+    from datetime import date
+
+    from madeira.storage.db import Store
+
+    monkeypatch.setattr("madeira.storage.db._now", lambda: NOW.isoformat(timespec="seconds"))
+    store = Store(tmp_path / "t.db")
+    webexport.build_payload(Settings(), days=2, bundle=_bundle(), now=NOW, store=store)
+    rows = store.history_rows(date(2026, 10, 20))
+    assert [r["target_date"] for r in rows] == ["2026-10-14", "2026-10-13"]
+    assert all(r["outcome"] is None and r["score"] is not None for r in rows)
+    assert store.history_rows(date(2026, 10, 13))[0]["target_date"] == "2026-10-13"
+    assert webexport.history_entries(rows)[0]["outcome"] is None

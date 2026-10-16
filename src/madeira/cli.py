@@ -132,10 +132,11 @@ def export_web(
     history: int = typer.Option(60, min=0, help="Kolik hodnocených dní historie přibalit"),
 ) -> None:
     """Uloží zítřek a krátký výhled do statického JSONu pro GitHub Pages."""
-    rows = Store().calibration_rows(limit=history)
-    # Bez lokální databáze (např. GitHub Actions) zachovej historii z předchozího exportu.
-    entries = webexport.history_entries(rows) if rows else webexport.read_history(out)
-    payload = webexport.build_payload(load_settings(), days, history=entries)
+    store = Store()
+    payload = webexport.build_payload(load_settings(), days, store=store)
+    # Historie z lokální DB; bez ní (např. GitHub Actions) zůstane z předchozího exportu.
+    rows = store.history_rows(forecast.today_local(), limit=history)
+    payload["history"] = webexport.history_entries(rows) if rows else webexport.read_history(out)
     webexport.write_payload(payload, out)
     t = payload["tomorrow"]
     console.print(f"Zapsáno {out}: {t['date']} {t['verdict']} {t['score_pct']} %")
