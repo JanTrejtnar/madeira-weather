@@ -42,3 +42,12 @@ def test_payload_has_weather():
     payload = webexport.build_payload(Settings(), days=3, bundle=_bundle(), now=NOW)
     w = payload["tomorrow"]["weather"]["funchal"]
     assert w["rain"] in {"none", "drizzle", "light", "moderate", "heavy"}
+
+
+def test_read_history_fallback(tmp_path):
+    assert webexport.read_history(tmp_path / "missing.json") == []
+    f = tmp_path / "data.json"
+    f.write_text('{"history": [{"date": "2026-10-13"}]}', encoding="utf-8")
+    assert webexport.read_history(f) == [{"date": "2026-10-13"}]
+    f.write_text("not json", encoding="utf-8")
+    assert webexport.read_history(f) == []

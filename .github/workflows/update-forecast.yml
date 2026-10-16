@@ -1,0 +1,42 @@
+name: Update forecast
+
+on:
+  schedule:
+    - cron: "30 19 * * *" # 19:30 UTC = 19:30 (zima) / 20:30 (léto) na Madeiře
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-forecast
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -e .
+
+      - name: Export web data
+        run: madeira export-web
+
+      - name: Commit and push if changed
+        run: |
+          if git diff --quiet -- docs/data.json; then
+            echo "No changes in docs/data.json"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/data.json
+          git commit -m "Update forecast data"
+          git push

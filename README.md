@@ -57,3 +57,16 @@ Statická stránka `docs/index.html` čte `docs/data.json` (Tailwind přes CDN, 
 3. Lokální náhled: `python -m http.server -d docs 8000` a otevři <http://localhost:8000> (`fetch` nefunguje z `file://`).
 
 `data.json` se mění jen při spuštění exportu; stránka zobrazuje čas poslední aktualizace a varuje, když jsou data starší než den.
+
+## Automatická aktualizace (GitHub Actions)
+
+Workflow `.github/workflows/update-forecast.yml` spouští `madeira export-web` každý den v **19:30 UTC**
+(na Madeiře 19:30 v zimě, 20:30 v létě) a také ručně: **Actions → Update forecast → Run workflow**.
+Pokud se `docs/data.json` změnil, workflow ho commitne a pushne zpět do `main`.
+
+Nutné nastavení: **Settings → Actions → General → Workflow permissions → Read and write permissions** → Save.
+Bez toho push z workflow selže (chyba 403).
+
+Poznámky:
+- GitHub spouští cron s odchylkou i desítek minut a po 60 dnech bez aktivity v repozitáři plánované běhy vypíná (stačí je znovu zapnout v záložce Actions).
+- V Actions není lokální databáze `data/madeira.db`, proto se historie predikcí přebírá z předchozího `data.json`. Aktualizuješ ji lokálním `madeira export-web` + commit + push.

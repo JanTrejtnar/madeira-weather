@@ -133,9 +133,9 @@ def export_web(
 ) -> None:
     """Uloží zítřek a krátký výhled do statického JSONu pro GitHub Pages."""
     rows = Store().calibration_rows(limit=history)
-    payload = webexport.build_payload(
-        load_settings(), days, history=webexport.history_entries(rows)
-    )
+    # Bez lokální databáze (např. GitHub Actions) zachovej historii z předchozího exportu.
+    entries = webexport.history_entries(rows) if rows else webexport.read_history(out)
+    payload = webexport.build_payload(load_settings(), days, history=entries)
     webexport.write_payload(payload, out)
     t = payload["tomorrow"]
     console.print(f"Zapsáno {out}: {t['date']} {t['verdict']} {t['score_pct']} %")

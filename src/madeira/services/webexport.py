@@ -133,6 +133,14 @@ def history_entries(rows: list[dict]) -> list[dict]:
     ]
 
 
+def read_history(path: Path) -> list[dict]:
+    """Historie z dříve exportovaného JSONu (prázdná, pokud soubor chybí nebo je rozbitý)."""
+    try:
+        return json.loads(path.read_text(encoding="utf-8")).get("history", [])
+    except (OSError, ValueError, AttributeError):
+        return []
+
+
 def write_payload(payload: dict, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
