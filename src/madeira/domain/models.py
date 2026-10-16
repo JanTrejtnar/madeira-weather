@@ -145,3 +145,12 @@ OUTCOME_LABELS = {
     "mixed": "⛅ Částečně zataženo",
     "fail": "🌫 V mlze / nepovedlo se",
 }
+
+# Ground truth lze zadat i rovnou jako verdikt (hlavně pro západy slunce, kde "inverze" nedává smysl).
+VERDICT_OUTCOMES = ("GO", "MAYBE", "NO_GO")
+VALID_OUTCOMES = (*OUTCOME_LABELS, *VERDICT_OUTCOMES)
+# Jak se hodnocení převádí na "skutečný verdikt" při vyhodnocení přesnosti modelu.
+OUTCOME_TO_VERDICT = {
+    "cloud_sea": "GO", "clear": "MAYBE", "mixed": "MAYBE", "fail": "NO_GO",
+    "GO": "GO", "MAYBE": "MAYBE", "NO_GO": "NO_GO",
+}
