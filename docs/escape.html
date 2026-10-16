@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Madeira Sunny Escape</title>
+  <meta name="description" content="Kam dnes na Madeiře vyrazit za sluncem / Where to chase the sun on Madeira today.">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MadeiraSky">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: radial-gradient(120% 60% at 50% 0%, rgba(251,191,36,.18), transparent 60%),
+                       linear-gradient(180deg, #0f172a 0%, #1c1917 100%) fixed; }
+    .seg-on { background: rgba(251,191,36,.2); color: #fde68a; }
+    .seg-off { color: #94a3b8; }
+    .seg-off:hover { background: rgba(255,255,255,.1); }
+  </style>
+</head>
+<body class="min-h-screen text-slate-100 antialiased">
+  <main class="mx-auto max-w-2xl px-4 py-8 sm:py-12" style="padding-top:max(2rem,env(safe-area-inset-top));padding-bottom:max(2rem,env(safe-area-inset-bottom))">
+    <nav class="mb-6 flex items-center justify-between gap-4">
+      <a href="./index.html" id="back" class="text-sm text-slate-400 transition hover:text-amber-200"></a>
+      <div id="lang" class="flex shrink-0 overflow-hidden rounded-xl border border-white/15 text-sm" role="group" aria-label="Language">
+        <button type="button" data-lang="cs" class="px-3 py-1.5">CZ</button>
+        <button type="button" data-lang="en" class="px-3 py-1.5">EN</button>
+      </div>
+    </nav>
+
+    <header class="mb-6 flex items-end justify-between gap-4">
+      <div>
+        <p class="text-sm uppercase tracking-widest text-amber-300/80">Madeira</p>
+        <h1 class="text-2xl font-semibold sm:text-3xl">Sunny Escape</h1>
+        <p id="note" class="mt-1 text-sm text-slate-400"></p>
+      </div>
+      <div id="days" class="hidden shrink-0 overflow-hidden rounded-xl border border-white/15 text-sm" role="group"></div>
+    </header>
+
+    <div id="state" class="rounded-2xl bg-white/5 p-6 text-slate-300" role="status"></div>
+
+    <section id="content" class="hidden space-y-4">
+      <article class="rounded-3xl border border-amber-300/30 bg-amber-300/10 p-6 shadow-xl backdrop-blur sm:p-8">
+        <p id="hero-kicker" class="text-xs uppercase tracking-widest text-amber-200/80"></p>
+        <h2 id="hero-title" class="mt-1 text-2xl font-bold text-amber-100 sm:text-3xl"></h2>
+        <div class="mt-6 flex items-center gap-5">
+          <span id="hero-icon" class="text-7xl leading-none sm:text-8xl" aria-hidden="true"></span>
+          <div>
+            <p id="hero-temp" class="text-6xl font-bold leading-none text-amber-100 sm:text-7xl"></p>
+            <p id="hero-sky" class="mt-2 text-slate-200"></p>
+          </div>
+        </div>
+        <dl class="mt-6 grid grid-cols-3 gap-3 text-center">
+          <div class="rounded-2xl bg-black/20 p-3">
+            <dt id="h-rain" class="text-xs uppercase tracking-wider text-slate-400"></dt>
+            <dd id="hero-rain" class="mt-1 text-xl font-semibold"></dd>
+          </div>
+          <div class="rounded-2xl bg-black/20 p-3">
+            <dt id="h-cloud" class="text-xs uppercase tracking-wider text-slate-400"></dt>
+            <dd id="hero-cloud" class="mt-1 text-xl font-semibold"></dd>
+          </div>
+          <div class="rounded-2xl bg-black/20 p-3">
+            <dt id="h-sun" class="text-xs uppercase tracking-wider text-slate-400"></dt>
+            <dd id="hero-sun" class="mt-1 text-xl font-semibold text-amber-200"></dd>
+          </div>
+        </dl>
+        <p id="hero-tip" class="mt-5 text-slate-200"></p>
+      </article>
+
+      <div>
+        <h2 id="others-title" class="mb-2 mt-6 text-sm uppercase tracking-widest text-slate-400"></h2>
+        <ul id="others" class="space-y-2"></ul>
+      </div>
+    </section>
+
+    <footer class="mt-10 text-xs text-slate-500">
+      <p id="updated"></p>
+      <p id="disclaimer" class="mt-1"></p>
+    </footer>
+  </main>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const T = {
+    cs: {
+      back: "← Zpět na Východy & Západy v horách", loading: "Načítám předpověď…",
+      note: (w) => `Nejslunnější pobřeží, ${w[0]}:00–${w[1]}:00`,
+      today: "Dnes", tomorrow: "Zítra", kicker: "Doporučení", others: "Ostatní místa",
+      title: (w, d) => `🏆 ${d === "today" ? "Dnes" : "Zítra"} jeďte do ${w.name_gen || w.name}`,
+      rain: "Srážky", cloud: "Oblačnost", sun: "Slunečnost",
+      sky: { clear: "Jasno", partly: "Polojasno", cloudy: "Zataženo", rain: "Déšť" },
+      dry: "Bez srážek", mm: (v) => `${v} mm`,
+      tip: (w, d) => w.sun_score >= 70 ? (w.precip_mm > 0 ? "Převážně slunečno, jen s občasnou přeháňkou." : "Slunečno a sucho – tady to vyhrává.")
+        : w.sun_score >= 40 ? "Bude to spíš proměnlivé, ale pořád nejlepší z nabídky." : "Nikde to dnes nevypadá na pláž – tohle je nejlepší z horšího.",
+      nodata: "Data o slunečnosti zatím nejsou k dispozici.",
+      error: "Předpověď se nepodařilo načíst", retry: "Zkus to prosím později.",
+      updated: "Naposledy aktualizováno", stale: "data jsou starší než den!",
+      disclaimer: "Model: Open-Meteo. Orientační předpověď, ne záruka; před odjezdem zkontroluj aktuální stav.",
+    },
+    en: {
+      back: "← Back to mountain Sunrises & Sunsets", loading: "Loading forecast…",
+      note: (w) => `Sunniest coastal spot, ${w[0]}:00–${w[1]}:00`,
+      today: "Today", tomorrow: "Tomorrow", kicker: "Recommendation", others: "Other places",
+      title: (w, d) => `🏆 Head to ${w.name} ${d === "today" ? "today" : "tomorrow"}`,
+      rain: "Rain", cloud: "Clouds", sun: "Sunshine",
+      sky: { clear: "Clear", partly: "Partly cloudy", cloudy: "Overcast", rain: "Rain" },
+      dry: "No rain", mm: (v) => `${v} mm`,
+      tip: (w, d) => w.sun_score >= 70 ? (w.precip_mm > 0 ? "Mostly sunny, with just the odd shower." : "Sunny and dry – this is the winner.")
+        : w.sun_score >= 40 ? "Changeable, but still the best on offer." : "No beach weather anywhere today – this is the least bad.",
+      nodata: "Sunshine data is not available yet.",
+      error: "Could not load the forecast", retry: "Please try again later.",
+      updated: "Last updated", stale: "data is more than a day old!",
+      disclaimer: "Model: Open-Meteo. Indicative forecast, not a guarantee; check current conditions before you leave.",
+    },
+  };
+  const SKY_ICON = { clear: "☀️", partly: "🌤", cloudy: "☁️", rain: "🌧" };
+
+  let lang = "", data = null, day = null;
+  try { lang = localStorage.getItem("lang") || ""; } catch (e) {}
+  if (!T[lang]) lang = (navigator.language || "cs").toLowerCase().startsWith("cs") ? "cs" : "en";
+  const t = () => T[lang];
+  const locale = () => (lang === "cs" ? "cs-CZ" : "en-GB");
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+  const mm = (v) => (v == null ? "–" : v === 0 ? t().dry : t().mm(v.toLocaleString(locale())));
+  const pct = (v) => (v == null ? "–" : `${v} %`);
+
+  function current() {
+    const se = data && data.sunny_escape;
+    if (!se) return null;
+    if (!day || !se[day]) day = se.day && se[se.day] ? se.day : ["today", "tomorrow"].find((k) => se[k]);
+    return day ? { se, d: se[day] } : null;
+  }
+
+  function render() {
+    const L = t(), cur = current();
+    document.documentElement.lang = lang;
+    $("back").textContent = L.back;
+    $("disclaimer").textContent = L.disclaimer;
+    document.querySelectorAll("#lang button").forEach((b) => {
+      const on = b.dataset.lang === lang;
+      b.setAttribute("aria-pressed", on);
+      b.className = "px-3 py-1.5 " + (on ? "seg-on" : "seg-off");
+    });
+    if (!data) { $("state").textContent = L.loading; return; }
+    if (data.generated_at) {
+      const g = new Date(data.generated_at), stale = (Date.now() - g.getTime()) / 36e5 > 24;
+      $("updated").textContent = `${L.updated}: ${g.toLocaleString(locale(), { dateStyle: "medium", timeStyle: "short" })}` + (stale ? ` – ${L.stale}` : "");
+      $("updated").className = stale ? "text-amber-400" : "";
+    }
+    if (!cur) {
+      $("content").classList.add("hidden");
+      $("state").classList.remove("hidden");
+      $("state").textContent = L.nodata;
+      return;
+    }
+    $("state").classList.add("hidden");
+    $("content").classList.remove("hidden");
+
+    const { se, d } = cur, w = d.winner, wr = d.locations.find((r) => r.key === w.key) || {};
+    $("note").textContent = L.note(se.window || [11, 16]);
+    const keys = ["today", "tomorrow"].filter((k) => se[k]);
+    $("days").classList.toggle("hidden", keys.length < 2);
+    $("days").classList.toggle("flex", keys.length >= 2);
+    $("days").replaceChildren(...keys.map((k) => {
+      const b = el("button", "px-3 py-1.5 " + (k === day ? "seg-on" : "seg-off"), L[k]);
+      b.type = "button";
+      b.setAttribute("aria-pressed", k === day);
+      b.addEventListener("click", () => { day = k; render(); });
+      return b;
+    }));
+
+    $("hero-kicker").textContent = L.kicker;
+    $("hero-title").textContent = L.title(w, day);
+    $("hero-icon").textContent = SKY_ICON[w.sky] || "☀️";
+    $("hero-temp").textContent = w.temp_c == null ? "–" : `${w.temp_c} °C`;
+    $("hero-sky").textContent = L.sky[w.sky] || "";
+    $("h-rain").textContent = L.rain;
+    $("h-cloud").textContent = L.cloud;
+    $("h-sun").textContent = L.sun;
+    $("hero-rain").textContent = mm(w.precip_mm);
+    $("hero-cloud").textContent = pct(wr.cloud_pct);
+    $("hero-sun").textContent = pct(w.sun_score);
+    $("hero-tip").textContent = L.tip(w, day);
+
+    $("others-title").textContent = L.others;
+    $("others").replaceChildren(...d.locations.filter((r) => r.key !== w.key).map((r) => {
+      const li = el("li", "rounded-2xl border border-white/10 bg-white/5 p-4");
+      const head = el("div", "flex items-center justify-between gap-3");
+      head.append(el("p", "min-w-0 truncate font-semibold", `${SKY_ICON[r.sky] || ""} ${r.name}`),
+        el("p", "shrink-0 text-lg font-bold text-amber-200", pct(r.sun_score)));
+      const bar = el("div", "mt-2 h-1.5 overflow-hidden rounded-full bg-white/10");
+      const fill = el("div", "h-full rounded-full bg-amber-400");
+      fill.style.width = `${Math.max(0, Math.min(100, r.sun_score))}%`;
+      bar.append(fill);
+      const stats = el("p", "mt-2 text-sm text-slate-300",
+        `${r.temp_c == null ? "–" : r.temp_c + " °C"} · ${L.cloud} ${pct(r.cloud_pct)} · ${L.rain} ${mm(r.precip_mm)}`);
+      li.append(head, bar, stats);
+      return li;
+    }));
+  }
+
+  document.querySelectorAll("#lang button").forEach((b) => b.addEventListener("click", () => {
+    lang = b.dataset.lang;
+    try { localStorage.setItem("lang", lang); } catch (e) {}
+    render();
+  }));
+  render();
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+  }
+
+  fetch("./data.json", { cache: "no-cache" })
+    .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+    .then((d) => { data = d; render(); })
+    .catch((e) => {
+      $("state").textContent = `${t().error} (${e.message}). ${t().retry}`;
+      $("state").className = "rounded-2xl bg-rose-500/10 p-6 text-rose-200 ring-1 ring-rose-400/30";
+    });
+})();
+</script>
+</body>
+</html>

@@ -146,3 +146,4 @@ def test_payload_includes_sunny_escape_only_when_bundle_given():
                          date(2026, 10, 12))
     payload = webexport.build_payload(settings, days=1, bundle=_bundle(), now=now, escape_bundle=escape)
     assert payload["sunny_escape"]["winner"]["name"]
+    assert {"sunrise", "sunset", "sunny_escape"} <= payload.keys()  # jeden společný data.json
