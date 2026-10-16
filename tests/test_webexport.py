@@ -79,6 +79,8 @@ def test_payload_has_tomorrow_spots():
     assert pargo["date"] == payload["tomorrow"]["date"]
     assert pargo["departure_funchal"] < pargo["sunset"]
     assert pargo["verdict"] in {"GO", "MAYBE", "NO_GO"}
+    for spot in spots["morning"] + spots["evening"]:  # mapa potřebuje souřadnice
+        assert isinstance(spot["lat"], float) and isinstance(spot["lon"], float)
     json.dumps(payload)  # musí jít serializovat
 
 

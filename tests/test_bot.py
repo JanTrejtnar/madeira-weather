@@ -46,7 +46,9 @@ def test_outcome_upsert_and_validation(store):
         store.set_outcome(d, "bogus")
 
 
-def test_calibration_view_uses_last_prediction_before_sunrise(store):
+def test_calibration_view_uses_last_prediction_before_sunrise(store, monkeypatch):
+    # created_at se bere z hodin; zafixujeme ho před východem, ať test nezávisí na dnešku
+    monkeypatch.setattr("madeira.storage.db._now", lambda: FETCHED.isoformat(timespec="seconds"))
     a, f = analysis_and_features()
     store.log_prediction(a, f, FETCHED, "best_match", {})
     store.set_outcome(a.target_date, "cloud_sea")

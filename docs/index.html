@@ -6,6 +6,8 @@
   <title>Východ a západ slunce – Madeira</title>
   <meta name="description" content="Předpověď východu slunce a moře mraků na Pico do Arieiro (Madeira) / Sunrise and cloud-sea forecast for Pico do Arieiro, Madeira.">
   <meta name="theme-color" content="#1e1b4b">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     /* akcent: oranžová = východ, růžová = západ (přepíná se atributem data-mode na <body>) */
@@ -20,6 +22,20 @@
     .seg-off { color: #94a3b8; }
     .seg-off:hover { background: rgba(255,255,255,.1); }
     summary::-webkit-details-marker { display: none; }
+    /* mapa */
+    #map { background: #0f172a; }
+    .leaflet-container { font: inherit; }
+    .pin-wrap { background: none; border: 0; }
+    .pin { position: relative; display: block; width: 18px; height: 18px; border-radius: 9999px; border: 2px solid #fff;
+           background: var(--pin); animation: pin-pulse 2s infinite; }
+    .pin.sel { width: 24px; height: 24px; margin: -3px 0 0 -3px; }
+    .pin-go { --pin: #34d399; } .pin-maybe { --pin: #fbbf24; } .pin-nogo { --pin: #fb7185; }
+    @keyframes pin-pulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--pin) 70%, transparent); }
+                           70% { box-shadow: 0 0 0 14px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+    @media (prefers-reduced-motion: reduce) { .pin { animation: none; } }
+    .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: #1e293b; color: #f1f5f9; }
+    .leaflet-popup-content { margin: 10px 14px; line-height: 1.4; }
+    .leaflet-popup-content .v-go { color: #6ee7b7; } .leaflet-popup-content .v-maybe { color: #fcd34d; } .leaflet-popup-content .v-nogo { color: #fda4af; }
   </style>
 </head>
 <body class="min-h-screen text-slate-100 antialiased" data-mode="sunrise">
@@ -43,6 +59,10 @@
     <div id="state" class="rounded-2xl bg-white/5 p-6 text-slate-300" role="status" data-i18n="loading">Načítám předpověď…</div>
 
     <section id="content" class="hidden space-y-4">
+      <!-- mapa -->
+      <div id="map" class="h-[280px] w-full overflow-hidden rounded-2xl border border-white/10 shadow-xl" role="region" aria-label="Map"></div>
+      <div id="spots" class="hidden grid-cols-2 gap-2" role="tablist"></div>
+
       <!-- hlavní karta -->
       <article class="rounded-3xl border border-white/10 bg-white/5 p-6 sm:p-8 shadow-xl backdrop-blur">
         <div class="flex items-start justify-between gap-4">
@@ -164,7 +184,7 @@
       sunsetAlert: (a) => ({ precip: `Srážky kolem západu: ${a.value} mm.`, horizon: `Nízké mraky na západním obzoru (${a.value} %) mohou zakrýt slunce.`,
                              visibility: `Snížená dohlednost (${a.value} km).`, no_cloud_data: "Chybí data o oblačnosti." })[a.code] || a.code,
       score: "% skóre", departure: "Odjezd z Funchalu", deck: "Hladina mraků",
-      above: "Arieiro nad mraky", wind: "Vítr", gust: "nárazy", outlook: "Výhled", tomorrow: "Zítra",
+      above: (n) => `${n} nad mraky`, wind: "Vítr", gust: "nárazy", outlook: "Výhled", tomorrow: "Zítra",
       history: "Historie predikcí", historyNote: "Predikce modelu vs. skutečnost podle ručního hodnocení (pokud je zadané).",
       hDate: "Datum", hPred: "Predikce", hInv: "Inverze", hActual: "Skutečnost",
       historyEmpty: "Zatím žádné dny v historii.", unknown: "❔ Nevíme, jak to dopadlo", backfillNote: "* zpětně dopočteno z archivovaných dat modelu",
@@ -181,6 +201,7 @@
       wxTitle: "Počasí během dne", wxNote: "Orientačně pro 7:00–20:00. Nemá vliv na skóre východu slunce.",
       place: { funchal: "Funchal (pobřeží)", arieiro: "Pico do Arieiro (hory)" },
       spot: { arieiro: "Pico do Arieiro", ponta_do_pargo: "Ponta do Pargo" },
+      mapTime: { sunrise: "Východ", sunset: "Západ" }, mapScore: "skóre",
       wx: {
         rain: (w) => ({
           none: "☀️ Nebude pršet, suchý den.",
@@ -198,13 +219,13 @@
           : w.gust_max_kmh < 70 ? `Vítr: silný, nárazy až ${w.gust_max_kmh} km/h.`
           : `Vítr: velmi silný, nárazy až ${w.gust_max_kmh} km/h.`,
       },
-      summary: (d, t) => [
+      summary: (d, t, sp) => [
         `${t.head[d.verdict]} Skóre ${d.score_pct} %.`,
         d.problem === "precip" ? "Největší problém jsou srážky."
           : d.problem === "fog" ? "Největší problém je mlha/mrak na vrcholu."
           : d.weakest ? `Nejslabší stránka: ${t.comp[d.weakest] || d.weakest}.` : "",
         ({ none: "Žádná výrazná vlhká vrstva pod vrcholem – moře mraků nepravděpodobné.",
-           above: `Vrstva mraků sahá asi do ${d.cloud_deck_top_m} m, Arieiro (1818 m) je nad ní o ~${d.summit_above_deck_m} m.`,
+           above: `Vrstva mraků sahá asi do ${d.cloud_deck_top_m} m, ${sp.name} (${sp.elevation_m} m) je nad ní o ~${d.summit_above_deck_m} m.`,
            edge: `Vrstva mraků sahá asi do ${d.cloud_deck_top_m} m – vrchol je na její hranici.`,
            inside: `Vlhká vrstva sahá až k ~${d.cloud_deck_top_m} m – vrchol bude pravděpodobně v mraku.` })[d.inversion_case] || "",
       ].filter(Boolean).join(" "),
@@ -229,7 +250,7 @@
       sunsetAlert: (a) => ({ precip: `Rain around sunset: ${a.value} mm.`, horizon: `Low clouds on the western horizon (${a.value}%) may hide the sun.`,
                              visibility: `Reduced visibility (${a.value} km).`, no_cloud_data: "Cloud cover data missing." })[a.code] || a.code,
       score: "% score", departure: "Leave Funchal", deck: "Cloud deck top",
-      above: "Arieiro above clouds", wind: "Wind", gust: "gusts", outlook: "Outlook", tomorrow: "Tomorrow",
+      above: (n) => `${n} above clouds`, wind: "Wind", gust: "gusts", outlook: "Outlook", tomorrow: "Tomorrow",
       history: "Prediction history", historyNote: "Model prediction vs. what actually happened (when rated by hand).",
       hDate: "Date", hPred: "Prediction", hInv: "Inversion", hActual: "Actual",
       historyEmpty: "No days yet.", unknown: "❔ We don't know how it turned out", backfillNote: "* back-computed from archived model data",
@@ -246,6 +267,7 @@
       wxTitle: "Weather during the day", wxNote: "Rough guide for 7:00–20:00. Does not affect the sunrise score.",
       place: { funchal: "Funchal (coast)", arieiro: "Pico do Arieiro (mountains)" },
       spot: { arieiro: "Pico do Arieiro", ponta_do_pargo: "Ponta do Pargo" },
+      mapTime: { sunrise: "Sunrise", sunset: "Sunset" }, mapScore: "score",
       wx: {
         rain: (w) => ({
           none: "☀️ No rain, a dry day.",
@@ -263,13 +285,13 @@
           : w.gust_max_kmh < 70 ? `Wind: strong, gusts up to ${w.gust_max_kmh} km/h.`
           : `Wind: very strong, gusts up to ${w.gust_max_kmh} km/h.`,
       },
-      summary: (d, t) => [
+      summary: (d, t, sp) => [
         `${t.head[d.verdict]} Score ${d.score_pct}%.`,
         d.problem === "precip" ? "The main problem is rain."
           : d.problem === "fog" ? "The main problem is fog/cloud at the summit."
           : d.weakest ? `Weakest factor: ${t.comp[d.weakest] || d.weakest}.` : "",
         ({ none: "No significant moist layer below the summit – a cloud sea is unlikely.",
-           above: `The cloud deck tops out around ${d.cloud_deck_top_m} m; Arieiro (1818 m) is ~${d.summit_above_deck_m} m above it.`,
+           above: `The cloud deck tops out around ${d.cloud_deck_top_m} m; ${sp.name} (${sp.elevation_m} m) is ~${d.summit_above_deck_m} m above it.`,
            edge: `The cloud deck tops out around ${d.cloud_deck_top_m} m – the summit sits right at its edge.`,
            inside: `The moist layer reaches ~${d.cloud_deck_top_m} m – the summit will probably be in cloud.` })[d.inversion_case] || "",
       ].filter(Boolean).join(" "),
@@ -283,7 +305,7 @@
     NO_GO: { badge: "bg-rose-500/20 text-rose-300 ring-1 ring-rose-400/40",          bar: "bg-rose-400",    dot: "bg-rose-400",    text: "text-rose-300" },
   };
 
-  let lang = "", data = null, selected = 0, mode = "sunrise";
+  let lang = "", data = null, selected = 0, mode = "sunrise", spotKey = "arieiro";
   try { lang = localStorage.getItem("lang") || ""; } catch (e) {}
   if (!T[lang]) lang = (navigator.language || "cs").toLowerCase().startsWith("cs") ? "cs" : "en";
   const t = () => T[lang];
@@ -296,12 +318,15 @@
   const style = (v) => STYLE[v] || STYLE.MAYBE;
   const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 
+  const ARIEIRO = { key: "arieiro", name: "Pico do Arieiro", elevation_m: 1818 };
+  const curSpot = () => allSpots().find((s) => s.key === spotKey) || ARIEIRO;
+
   function show(day, isTomorrow) {
-    const v = style(day.verdict), L = t();
+    const v = style(day.verdict), L = t(), sp = curSpot();
     $("day-label").textContent = `${isTomorrow ? L.tomorrow + " · " : ""}${L.days[parse(day.date).getDay()]} ${fmtDate(day.date)}`;
     $("time-label").textContent = L.timeSunrise;
     $("l-deck").textContent = L.deck;
-    $("l-above").textContent = L.above;
+    $("l-above").textContent = L.above(sp.name);
     $("time").textContent = day.sunrise;
     $("badge").textContent = L.verdict[day.verdict] || day.verdict;
     $("badge").className = `rounded-2xl px-5 py-2 text-2xl sm:text-4xl font-extrabold tracking-tight ${v.badge}`;
@@ -309,7 +334,7 @@
     $("range").textContent = day.score_range ? `(${day.score_range[0]}–${day.score_range[1]})` : "";
     $("bar").className = `h-full rounded-full ${v.bar}`;
     $("bar").style.width = `${Math.max(0, Math.min(100, day.score_pct))}%`;
-    $("summary").textContent = L.summary(day, L);
+    $("summary").textContent = L.summary(day, L, sp);
     $("warnings").replaceChildren(...(day.alerts || []).map((a) => el("li", null, "⚠ " + L.alert(a))));
     $("departure").textContent = day.departure_funchal;
     $("deck").textContent = m(day.cloud_deck_top_m);
@@ -317,7 +342,7 @@
     $("wind").textContent = day.wind_kmh == null ? "–" : `${day.wind_kmh} km/h ${compass(day.wind_dir_deg)}`;
     $("gust").textContent = day.gust_kmh == null ? "" : `${L.gust} ${day.gust_kmh} km/h`;
     renderWeather(day);
-    setWebcam(data.sunrise && data.sunrise.webcam_url, L.spot.arieiro);
+    setWebcam(sp.key === "arieiro" ? data.sunrise && data.sunrise.webcam_url : sp.webcam_url, sp.name);
   }
 
   function showSunset(s) {
@@ -353,10 +378,103 @@
   }
 
   function setMode(next) {
-    mode = next === "sunset" && data && data.sunset ? "sunset" : "sunrise";
+    const sunset = next === "sunset" && data && data.sunset;
+    selectSpot(sunset ? "ponta_do_pargo" : (isMorning(spotKey) ? spotKey : "arieiro"), { fly: true });
+  }
+
+  function allSpots() {
+    const ts = data && data.tomorrow_spots;
+    if (!ts) return [];
+    return [...ts.morning.map((s) => ({ ...s, kind: "sunrise", time: s.sunrise })),
+            ...ts.evening.map((s) => ({ ...s, kind: "sunset", time: s.sunset }))];
+  }
+  const isMorning = (k) => allSpots().some((s) => s.key === k && s.kind === "sunrise");
+
+  // jediné místo, které mění vybraný spot (z tlačítek i z mapy)
+  function selectSpot(key, opts = {}) {
+    const sp = allSpots().find((s) => s.key === key);
+    if (!sp) return;
+    spotKey = key;
+    mode = sp.kind === "sunset" ? "sunset" : "sunrise";
     try { localStorage.setItem("mode", mode); } catch (e) {}
     applyLang();
+    mapFocus(key, opts.fly);
   }
+
+  function renderSpots() {
+    const L = t(), morning = allSpots().filter((s) => s.kind === "sunrise");
+    const bar = $("spots"), visible = mode === "sunrise" && morning.length > 1;
+    bar.classList.toggle("hidden", !visible);
+    bar.classList.toggle("grid", visible);
+    bar.replaceChildren(...morning.map((s) => {
+      const on = s.key === spotKey, v = style(s.verdict);
+      const b = el("button", "rounded-xl border px-3 py-2 text-left text-sm transition " + (on ? "acc-on" : "border-white/10 bg-white/5 hover:bg-white/10"));
+      b.type = "button";
+      b.setAttribute("role", "tab");
+      b.setAttribute("aria-selected", on);
+      const row = el("span", "flex items-center gap-2 font-semibold");
+      row.append(el("span", `h-2.5 w-2.5 shrink-0 rounded-full ${v.dot}`), el("span", null, `${L.verdict[s.verdict] || s.verdict} · ${s.score_pct} %`));
+      b.append(el("span", "block truncate text-xs text-slate-400", s.name), row);
+      b.addEventListener("click", () => selectSpot(s.key, { fly: true }));
+      return b;
+    }));
+  }
+
+  // ---- mapa ----
+  let map = null, LL = null;
+  const markers = {};
+  const pinClass = (verdict) => ({ GO: "pin-go", MAYBE: "pin-maybe", NO_GO: "pin-nogo" })[verdict] || "pin-maybe";
+  const pinText = (verdict) => ({ GO: "v-go", MAYBE: "v-maybe", NO_GO: "v-nogo" })[verdict] || "v-maybe";
+
+  function popupNode(s) {
+    const L = t(), box = el("div");
+    box.append(el("strong", null, s.name), el("br"),
+      el("span", pinText(s.verdict) + " font-semibold", L.verdict[s.verdict] || s.verdict),
+      document.createTextNode(` · ${s.score_pct} % ${L.mapScore}`), el("br"),
+      document.createTextNode(`${L.mapTime[s.kind]} ${s.time}`));
+    return box;
+  }
+
+  function pinIcon(s) {
+    return LL.divIcon({ className: "pin-wrap", html: `<span class="pin ${pinClass(s.verdict)}${s.key === spotKey ? " sel" : ""}"></span>`,
+                        iconSize: [18, 18], iconAnchor: [9, 9], popupAnchor: [0, -12] });
+  }
+
+  function initMap() {
+    if (map || !window.L || !data) return;
+    LL = window.L;
+    map = LL.map("map", { scrollWheelZoom: false }).setView([32.75, -16.98], 10);
+    LL.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+      maxZoom: 18, subdomains: "abcd",
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    }).addTo(map);
+    allSpots().forEach((s) => {
+      if (s.lat == null || s.lon == null) return;
+      const mk = LL.marker([s.lat, s.lon], { icon: pinIcon(s), title: s.name, keyboard: true }).addTo(map);
+      mk.bindPopup(() => popupNode(allSpots().find((x) => x.key === s.key) || s));
+      mk.on("click", () => { if (spotKey !== s.key) selectSpot(s.key, { fly: false }); });
+      markers[s.key] = mk;
+    });
+    map.invalidateSize();
+  }
+
+  function renderMap() {
+    if (!map) return;
+    allSpots().forEach((s) => { if (markers[s.key]) markers[s.key].setIcon(pinIcon(s)); });
+  }
+
+  function mapFocus(key, fly) {
+    const mk = markers[key];
+    if (!map || !mk) return;
+    if (fly) {
+      map.once("moveend", () => mk.openPopup());
+      map.flyTo(mk.getLatLng(), 11);
+    } else mk.openPopup();
+  }
+
+  const fixMap = () => { if (map) map.invalidateSize(); };
+  window.addEventListener("resize", fixMap);
+  window.addEventListener("load", fixMap);
 
   function renderMode() {
     const L = t(), sunset = mode === "sunset";
@@ -373,7 +491,7 @@
       b.className = "rounded-xl px-4 py-2.5 text-sm font-semibold transition " + (on ? "seg-on" : "seg-off");
     });
     // výhled, počasí a historie jsou jen ke východu
-    ["outlook-wrap", "wx-card", "history"].forEach((id) => $(id).classList.toggle("hidden", sunset));
+    ["outlook-wrap", "wx-card", "history"].forEach((id) => $(id).classList.toggle("hidden", sunset || spotKey !== "arieiro"));
   }
 
   function renderWeather(day) {
@@ -439,8 +557,11 @@
     });
     if (data) {
       renderMode();
-      if (mode === "sunset") showSunset(data.sunset); else show(data.days[selected], selected === 0);
-      renderTabs(); renderHistory(); renderUpdated();
+      const morningSpot = allSpots().find((s) => s.key === spotKey && s.kind === "sunrise");
+      if (mode === "sunset") showSunset(data.sunset);
+      else if (morningSpot && spotKey !== "arieiro") show(morningSpot, true);
+      else show(data.days[selected], selected === 0);
+      renderTabs(); renderHistory(); renderUpdated(); renderSpots(); renderMap();
     }
   }
 
@@ -460,9 +581,12 @@
       let saved = "";
       try { saved = localStorage.getItem("mode") || ""; } catch (e) {}
       mode = saved === "sunset" && d.sunset ? "sunset" : "sunrise";
+      spotKey = mode === "sunset" ? "ponta_do_pargo" : "arieiro";
       $("state").classList.add("hidden");
       $("content").classList.remove("hidden");
+      initMap();
       applyLang();
+      setTimeout(fixMap, 0);
     })
     .catch((e) => {
       $("state").textContent = `${t().error} (${e.message}). ${t().retry}`;
