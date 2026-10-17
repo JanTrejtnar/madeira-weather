@@ -40,6 +40,27 @@ spots:
     type: coastal_sunset
     departure_from_funchal_min: 65
     webcam_url: "https://www.netmadeira.com/webcams-madeira/ponta-do-pargo"
+  pico_ruivo:               # nejvyšší vrchol (1862 m), stejný model inverze jako Arieiro (800 hPa)
+    name: "Pico Ruivo"
+    type: mountain_inversion
+    departure_from_funchal_min: 120   # ~60 min jízda na Achada do Teixeira + 45 min pěšky + rezerva
+  ponta_do_rosto:
+    name: "Miradouro da Ponta do Rosto"
+    type: coastal_sunrise
+    departure_from_funchal_min: 50    # ~35 min jízda + parkování a chůze + rezerva
+  cristo_rei:
+    name: "Miradouro do Cristo Rei"
+    type: coastal_sunset
+    departure_from_funchal_min: 25    # ~15 min jízda + chůze + rezerva
+# Východ na útesu Ponta do Rosto: východní obzor nad mořem musí být čistý, vítr na útesu mírný.
+coastal_sunrise:
+  max_horizon_low_clouds: 20   # nad tímto (%) nízké mraky na východě zakrývají slunce
+  max_gusts_kmh: 40            # nárazy nad tímto na útesu srážejí skóre
+  weights:
+    horizon_clarity: 0.45
+    cloud_canvas: 0.25
+    visibility: 0.15
+    wind: 0.15
 # Bica da Cana leží v 1560 m (≈ hladina 850 hPa), tedy pod Arieirem (1818 m): vrchol musí být nad
 # mraky už v ~1400 m, jinak se přelijí přes plošinu Paul da Serra. Východ se skóruje stejnou
 # heuristikou jako Arieiro (sunrise.*), tyto hodnoty ji jen posouvají.
@@ -116,3 +137,47 @@ sunny_escape:
   rain_min_mm: 0.1           # úhrn v okně od tohoto = srážky → skóre se prudce srazí
   rain_base_factor: 0.5      # ... na tento násobek
   rain_per_mm: 0.15          # ... a dál o tolik za každý mm
+
+# Fanal Forest: obrácená logika než hory. Hledáme hustou mlhu a nízký mrak, ale ne vichr a liják.
+# Skóre = vážený součet (vlhkost, základna mraků, dohlednost) × brána srážek × brána nárazů.
+fanal:
+  name: "Fanal Forest"
+  type: fog_seeker
+  lat: 32.8083
+  lon: -17.1417
+  elevation_m: 1150
+  # NetMadeira nemá kameru přímo na Fanalu ani Paul da Serra; nejbližší je Rabaçal (stejná výška, ~8 km)
+  webcam_url: "https://www.netmadeira.com/webcams-madeira/rabacal-madeira"
+  slot_hours: [9, 13, 17]     # denní sloty (místní čas)
+  window_from: 8              # nejlepší okno se hledá v hodinách 8–18 (včetně)
+  window_to: 18
+  cloud_base_m_per_c: 125     # základna mraků nad zemí ≈ 125 m za každý °C rozdílu T − rosný bod
+  weights:
+    humidity: 0.40
+    cloud_base: 0.35
+    visibility: 0.25
+  verdict:
+    go: 70                    # MYSTIC
+    maybe: 40                 # PARTIAL; pod tím CLEAR
+  curves:                     # [vstup, skóre 0–1]
+    humidity:                 # RH [%]; 85–100 % = maximum
+      - [60, 0]
+      - [85, 1]
+      - [100, 1]
+    cloud_base:               # m n. m.; 900–1300 = les je uvnitř mraku
+      - [700, 0]
+      - [900, 1]
+      - [1300, 1]
+      - [1600, 0.3]
+      - [2000, 0]
+    visibility:               # m; <400 ideál, <1000 dobré
+      - [400, 1]
+      - [1000, 0.6]
+      - [3000, 0.1]
+      - [10000, 0]
+    precip:                   # mm/h; mrholení do 1,5 nevadí, nad 3 skóre k nule
+      - [1.5, 1]
+      - [3, 0]
+    gusts:                    # km/h; nad 35 vichr trhá mlhu
+      - [35, 1]
+      - [60, 0.2]

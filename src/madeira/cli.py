@@ -80,7 +80,7 @@ def rate(
     console.print(f"Zapsáno: {OUTCOME_LABELS[outcome]}")
 
 
-LOCATION_HELP = "pico_arieiro | bica_da_cana | ponta_do_pargo"
+LOCATION_HELP = "pico_arieiro | pico_ruivo | bica_da_cana | ponta_do_rosto | ponta_do_pargo | cristo_rei"
 
 
 def _locations(value: str) -> list[str]:

@@ -92,6 +92,7 @@
     </section>
 
     <footer class="mt-10 text-xs text-slate-500">
+      <a href="./fanal.html" id="fanal" class="mb-3 inline-block text-sm text-emerald-200/80 transition hover:text-emerald-100"></a>
       <p id="updated"></p>
       <p id="disclaimer" class="mt-1"></p>
     </footer>
@@ -102,7 +103,7 @@
   const $ = (id) => document.getElementById(id);
   const T = {
     cs: {
-      back: "← Zpět na Východy & Západy v horách", loading: "Načítám předpověď…",
+      fanal: "🌲 Hledáte mlžný les? Fanal Fog Index →", back: "← Zpět na Východy & Západy v horách", loading: "Načítám předpověď…",
       note: (w) => `Nejslunnější pobřeží, ${w[0]}:00–${w[1]}:00`,
       today: "Dnes", tomorrow: "Zítra", kicker: "Doporučení", others: "Ostatní místa",
       title: (w, d) => `🏆 ${d === "today" ? "Dnes" : "Zítra"} jeďte do ${w.name_gen || w.name}`,
@@ -117,7 +118,7 @@
       disclaimer: "Model: Open-Meteo. Orientační předpověď, ne záruka; před odjezdem zkontroluj aktuální stav.",
     },
     en: {
-      back: "← Back to mountain Sunrises & Sunsets", loading: "Loading forecast…",
+      fanal: "🌲 Looking for a misty forest? Fanal Fog Index →", back: "← Back to mountain Sunrises & Sunsets", loading: "Loading forecast…",
       note: (w) => `Sunniest coastal spot, ${w[0]}:00–${w[1]}:00`,
       today: "Today", tomorrow: "Tomorrow", kicker: "Recommendation", others: "Other places",
       title: (w, d) => `🏆 Head to ${w.name} ${d === "today" ? "today" : "tomorrow"}`,
@@ -154,6 +155,7 @@
     const L = t(), cur = current();
     document.documentElement.lang = lang;
     $("back").textContent = L.back;
+    $("fanal").textContent = L.fanal;
     $("disclaimer").textContent = L.disclaimer;
     document.querySelectorAll("#lang button").forEach((b) => {
       const on = b.dataset.lang === lang;

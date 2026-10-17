@@ -1,10 +1,10 @@
 // Service worker: shell aplikace z cache (offline start), data.json network-first.
 // Při změně shellu zvyš VERSION, stará cache se při aktivaci smaže.
-const VERSION = "v3";
+const VERSION = "v4";
 const CACHE = `madeirasky-${VERSION}`;
 const CDN_HOSTS = ["unpkg.com", "cdn.tailwindcss.com"];
 const SHELL = [
-  "./", "./index.html", "./escape.html", "./manifest.json", "./icon.svg", "./icon-192.png", "./icon-512.png",
+  "./", "./index.html", "./escape.html", "./fanal.html", "./manifest.json", "./icon.svg", "./icon-192.png", "./icon-512.png",
   "./apple-touch-icon.png", "./flag-cz.svg", "./flag-gb.svg", "./favicon.svg", "./favicon.ico",
   "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
   "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",

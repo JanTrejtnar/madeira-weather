@@ -71,10 +71,13 @@ def test_history_rows_include_unrated_days(tmp_path, monkeypatch):
 def test_payload_has_tomorrow_spots():
     payload = webexport.build_payload(Settings(), days=3, bundle=_bundle(), now=NOW)
     spots = payload["tomorrow_spots"]
-    assert [s["key"] for s in spots["morning"]] == ["arieiro", "bica_da_cana"]
-    assert [s["key"] for s in spots["evening"]] == ["ponta_do_pargo"]
+    assert [s["key"] for s in spots["morning"]] == [
+        "arieiro", "pico_ruivo", "bica_da_cana", "ponta_do_rosto"
+    ]
+    assert [s["key"] for s in spots["evening"]] == ["ponta_do_pargo", "cristo_rei"]
     assert spots["morning"][0]["score_pct"] == payload["tomorrow"]["score_pct"]
-    assert spots["morning"][1]["elevation_m"] == 1560
+    assert spots["morning"][1]["elevation_m"] == 1862
+    assert spots["morning"][2]["elevation_m"] == 1560
     pargo = spots["evening"][0]
     assert pargo["date"] == payload["tomorrow"]["date"]
     assert pargo["departure_funchal"] < pargo["sunset"]
@@ -98,7 +101,7 @@ def test_payload_has_sunrise_and_sunset_roots():
     assert payload["sunrise"]["cloud_sea"]["probability_pct"] == payload["tomorrow"]["inversion_pct"]
     assert payload["sunrise"]["webcam_url"].endswith("/pico-do-arieiro")
     assert payload["sunset"]["webcam_url"].endswith("/ponta-do-pargo")
-    assert payload["tomorrow_spots"]["morning"][1]["webcam_url"] is None  # Bica: bez kamery
+    assert payload["tomorrow_spots"]["morning"][2]["webcam_url"] is None  # Bica: bez kamery
     assert payload["sunset"]["cloud_sea"] is None  # pobřežní západ: moře mraků se neskóruje
     json.dumps(payload)
 
@@ -106,7 +109,32 @@ def test_payload_has_sunrise_and_sunset_roots():
 def test_spot_days_cover_every_spot():
     payload = webexport.build_payload(Settings(), days=3, bundle=_bundle(), now=NOW)
     sd = payload["spot_days"]
-    assert set(sd) == {"arieiro", "bica_da_cana", "ponta_do_pargo"}
+    assert set(sd) == {
+        "arieiro", "pico_ruivo", "bica_da_cana", "ponta_do_rosto", "ponta_do_pargo", "cristo_rei"
+    }
     for key, rows in sd.items():
         assert rows and rows[0]["date"] == payload["tomorrow"]["date"]
         assert "weather" in rows[0]
+
+
+def test_sunrise_and_sunset_sections_list_every_spot():
+    payload = webexport.build_payload(Settings(), days=3, bundle=_bundle(), now=NOW)
+    expected = {
+        "sunrise": {"arieiro", "pico_ruivo", "bica_da_cana", "ponta_do_rosto"},
+        "sunset": {"ponta_do_pargo", "cristo_rei"},
+    }
+    for section, keys in expected.items():
+        spots = payload[section]["spots"]
+        assert set(spots) == keys
+        for s in spots.values():
+            assert isinstance(s["location"]["lat"], float) and isinstance(s["location"]["lon"], float)
+            for field in ("verdict", "score", "departure", "summary"):
+                assert s[field] is not None
+            assert s["departure"] < s["time"]
+    assert payload["sunrise"]["spots"]["arieiro"]["score"] == payload["sunrise"]["score"]
+    assert payload["sunrise"]["spots"]["pico_ruivo"]["cloud_sea"] is not None  # horská inverze
+    rosto = payload["sunrise"]["spots"]["ponta_do_rosto"]
+    assert rosto["cloud_sea"] is None and rosto["location"]["type"] == "coastal_sunrise"
+    assert rosto["horizon_low_cloud_pct"] is not None
+    assert payload["sunset"]["spots"]["cristo_rei"]["location"]["elevation_m"] == 180
+    json.dumps(payload)

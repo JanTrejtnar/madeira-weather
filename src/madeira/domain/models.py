@@ -22,6 +22,7 @@ class Location(BaseModel):
         "spot_sunrise",
         "spot_sunset",
         "coast_escape",
+        "fog_seeker",
     ]
 
 

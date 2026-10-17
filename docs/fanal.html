@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fanal Fog Index</title>
+  <meta name="description" content="Kdy je les Fanal na Madeiře zahalený do mlhy / When Fanal Forest on Madeira is wrapped in mystical fog.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://jantrejtnar.github.io/madeira-weather/fanal.html">
+  <meta property="og:title" content="Fanal Fog Index · Mlha a mystika v lese">
+  <meta property="og:description" content="Předpověď hustoty mlhy v lese Fanal. Zjistěte, kdy je atmosféra nejmystičtější.">
+  <meta property="og:image" content="https://jantrejtnar.github.io/madeira-weather/og-preview.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Fanal Fog Index · Mlha a mystika v lese">
+  <meta name="twitter:description" content="Předpověď hustoty mlhy v lese Fanal. Zjistěte, kdy je atmosféra nejmystičtější.">
+  <meta name="twitter:image" content="https://jantrejtnar.github.io/madeira-weather/og-preview.png">
+  <meta name="theme-color" content="#020617">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MadeiraSky">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: radial-gradient(120% 55% at 50% 0%, rgba(16,185,129,.16), transparent 60%),
+                       radial-gradient(90% 40% at 80% 100%, rgba(161,161,170,.10), transparent 70%),
+                       linear-gradient(180deg, #020617 0%, #0b1220 100%) fixed; }
+    .seg-on { background: rgba(16,185,129,.2); color: #a7f3d0; }
+    .seg-off { color: #94a3b8; }
+    .seg-off:hover { background: rgba(255,255,255,.1); }
+    .mist { animation: drift 14s ease-in-out infinite alternate; }
+    @keyframes drift { from { transform: translateX(-3%); opacity: .55; } to { transform: translateX(3%); opacity: .9; } }
+    @media (prefers-reduced-motion: reduce) { .mist { animation: none; } }
+  </style>
+</head>
+<body class="min-h-screen text-slate-100 antialiased">
+  <main class="mx-auto max-w-2xl px-4 py-8 sm:py-12" style="padding-top:max(2rem,env(safe-area-inset-top));padding-bottom:max(2rem,env(safe-area-inset-bottom))">
+    <nav class="mb-6 flex items-start justify-between gap-4">
+      <div class="flex flex-col gap-1 text-sm">
+        <a href="./index.html" id="back" class="text-slate-400 transition hover:text-emerald-200"></a>
+        <a href="./escape.html" id="escape" class="text-slate-500 transition hover:text-emerald-200"></a>
+      </div>
+      <div id="lang" class="flex shrink-0 overflow-hidden rounded-xl border border-white/15 text-sm" role="group" aria-label="Language">
+        <button type="button" data-lang="cs" class="inline-flex items-center gap-1.5 px-3 py-1.5" aria-label="Čeština"><img src="flag-cz.svg" alt="" width="20" height="14" class="h-3.5 w-5 rounded-[2px]">CZ</button>
+        <button type="button" data-lang="en" class="inline-flex items-center gap-1.5 px-3 py-1.5" aria-label="English"><img src="flag-gb.svg" alt="" width="20" height="14" class="h-3.5 w-5 rounded-[2px]">EN</button>
+      </div>
+    </nav>
+
+    <header class="mb-6 flex items-end justify-between gap-4">
+      <div>
+        <p class="text-sm uppercase tracking-widest text-emerald-300/80">Madeira · 1 150 m</p>
+        <h1 class="text-2xl font-semibold sm:text-3xl">Fanal Fog Index</h1>
+        <p id="note" class="mt-1 text-sm text-slate-400"></p>
+      </div>
+      <div id="days" class="hidden shrink-0 overflow-hidden rounded-xl border border-white/15 text-sm" role="group"></div>
+    </header>
+
+    <div id="state" class="rounded-2xl bg-white/5 p-6 text-slate-300" role="status"></div>
+
+    <section id="content" class="hidden space-y-4">
+      <article class="relative overflow-hidden rounded-3xl border border-emerald-300/25 bg-emerald-300/5 p-6 shadow-xl backdrop-blur sm:p-8">
+        <div class="mist pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-zinc-200/10 to-transparent" aria-hidden="true"></div>
+        <p id="kicker" class="relative text-xs uppercase tracking-widest text-emerald-200/80"></p>
+        <h2 id="status" class="relative mt-1 text-3xl font-bold text-emerald-100 sm:text-4xl"></h2>
+        <div class="relative mt-4 h-2 overflow-hidden rounded-full bg-white/10" role="presentation">
+          <div id="bar" class="h-full rounded-full bg-emerald-400 transition-all"></div>
+        </div>
+        <p id="summary" class="relative mt-4 text-slate-200"></p>
+        <p id="h-window" class="relative mt-4 text-xs uppercase tracking-wider text-slate-400"></p>
+        <p id="window" class="relative text-xl font-semibold text-emerald-100"></p>
+        <ul id="slots" class="relative mt-3 flex flex-wrap gap-2 text-sm"></ul>
+      </article>
+
+      <dl class="grid grid-cols-2 gap-3">
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <dt id="h-hum" class="text-xs uppercase tracking-wider text-slate-400"></dt>
+          <dd id="v-hum" class="mt-1 text-2xl font-semibold"></dd>
+          <p id="n-hum" class="mt-1 text-xs text-slate-500"></p>
+        </div>
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <dt id="h-base" class="text-xs uppercase tracking-wider text-slate-400"></dt>
+          <dd id="v-base" class="mt-1 text-2xl font-semibold"></dd>
+          <p id="n-base" class="mt-1 text-xs text-slate-500"></p>
+        </div>
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <dt id="h-wind" class="text-xs uppercase tracking-wider text-slate-400"></dt>
+          <dd id="v-wind" class="mt-1 text-2xl font-semibold"></dd>
+          <p id="n-wind" class="mt-1 text-xs text-slate-500"></p>
+        </div>
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <dt id="h-rain" class="text-xs uppercase tracking-wider text-slate-400"></dt>
+          <dd id="v-rain" class="mt-1 text-2xl font-semibold"></dd>
+          <p id="n-rain" class="mt-1 text-xs text-slate-500"></p>
+        </div>
+      </dl>
+
+      <article class="rounded-2xl border border-white/10 bg-white/5 p-5">
+        <h2 id="h-gear" class="text-sm uppercase tracking-widest text-slate-400"></h2>
+        <ul id="gear" class="mt-3 space-y-1.5 text-slate-200"></ul>
+      </article>
+
+      <a id="cam" href="#" target="_blank" rel="noopener" class="block rounded-2xl border border-emerald-300/30 bg-emerald-300/10 px-5 py-4 text-center font-semibold text-emerald-100 transition hover:bg-emerald-300/20"></a>
+    </section>
+
+    <footer class="mt-10 text-xs text-slate-500">
+      <p id="updated"></p>
+      <p id="disclaimer" class="mt-1"></p>
+    </footer>
+  </main>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const T = {
+    cs: {
+      back: "← Zpět na Hory (Arieiro)", escape: "☀️ Sunny Escape →", loading: "Načítám předpověď…",
+      note: "Průměr z denních slotů 9:00, 13:00 a 17:00",
+      today: "Dnes", tomorrow: "Zítra", kicker: "Fanal Fog Index",
+      status: { MYSTIC: "🌫️ MYSTICAL FOG", PARTIAL: "🌤️ PARTIAL FOG", CLEAR: "☀️ CLEAR · NO FOG" },
+      window: "Nejlepší atmosféra", noWindow: "Bez výrazné mlhy",
+      part: { morning: "Dopoledne", afternoon: "Odpoledne", evening: "Večer" },
+      hum: "Vlhkost", base: "Hladina mraků", wind: "Vítr (nárazy)", rain: "Dešťové srážky",
+      humNote: (v) => v >= 85 ? "ideální pro mlhu (85–100 %)" : "pod 85 % mlha řídne",
+      baseNote: (m, el) => m == null ? "" : m < 900 ? "pod lesem, v lese bude jasno" : m <= 1300 ? "les je přímo uvnitř mraku" : `${m - el} m nad lesem, jen cáry mlhy`,
+      windNote: (v) => v <= 35 ? "klid, mlha drží" : "silný vítr mlhu trhá",
+      rainNote: (v) => v < 0.2 ? "sucho" : v <= 1.5 ? "jemné mrholení nevadí" : v <= 3 ? "citelný déšť" : "liják, mlhu nečekejte",
+      noData: "bez dat", mmh: (v) => `${v.toLocaleString("cs-CZ")} mm/h`,
+      gear: "Co s sebou", gearRain: "🧥 Pláštěnka nebo nepromokavá bunda – mlha i mrholení vše promočí",
+      gearBoots: "🥾 Nepromokavé boty, v lese je bláto a mokré kameny",
+      gearWarm: "🧣 Teplá vrstva navíc, ve 1 150 m je citelně chladněji než u moře",
+      gearWind: "💨 Větrovka, nárazy nad 35 km/h",
+      gearCam: "📷 Foťák nebo mobil a utěrka na čočku; v mlze vyhrává široký záběr a kontrast stromů",
+      gearLight: "🔦 Čelovka, v mlze se rychle setmí",
+      cam: "📹 Zkontrolovat živou kameru poblíž", camNote: "Nejbližší kamera: Rabaçal (NetMadeira)",
+      nodata: "Data pro Fanal zatím nejsou k dispozici.",
+      error: "Předpověď se nepodařilo načíst", retry: "Zkus to prosím později.",
+      updated: "Naposledy aktualizováno", stale: "data jsou starší než den!",
+      disclaimer: "Model: Open-Meteo. Základna mraků je odhad z teploty a rosného bodu. Orientační předpověď, ne záruka; zkontroluj kameru.",
+    },
+    en: {
+      back: "← Back to Mountains (Arieiro)", escape: "☀️ Sunny Escape →", loading: "Loading forecast…",
+      note: "Average of the 9:00, 13:00 and 17:00 slots",
+      today: "Today", tomorrow: "Tomorrow", kicker: "Fanal Fog Index",
+      status: { MYSTIC: "🌫️ MYSTICAL FOG", PARTIAL: "🌤️ PARTIAL FOG", CLEAR: "☀️ CLEAR · NO FOG" },
+      window: "Best atmosphere", noWindow: "No pronounced fog",
+      part: { morning: "Morning", afternoon: "Afternoon", evening: "Evening" },
+      hum: "Humidity", base: "Cloud base", wind: "Wind (gusts)", rain: "Rainfall",
+      humNote: (v) => v >= 85 ? "ideal for fog (85–100 %)" : "below 85 % the fog thins out",
+      baseNote: (m, el) => m == null ? "" : m < 900 ? "below the forest, it will be clear up there" : m <= 1300 ? "the forest sits right inside the cloud" : `${m - el} m above the forest, only wisps of fog`,
+      windNote: (v) => v <= 35 ? "calm, the fog stays" : "strong wind tears the fog apart",
+      rainNote: (v) => v < 0.2 ? "dry" : v <= 1.5 ? "light drizzle is fine" : v <= 3 ? "noticeable rain" : "downpour, forget the fog",
+      noData: "no data", mmh: (v) => `${v.toLocaleString("en-GB")} mm/h`,
+      gear: "What to bring", gearRain: "🧥 Raincoat or waterproof jacket – fog and drizzle soak everything",
+      gearBoots: "🥾 Waterproof shoes, the forest is muddy with wet rocks",
+      gearWarm: "🧣 An extra warm layer, it is much cooler at 1,150 m than by the sea",
+      gearWind: "💨 Windbreaker, gusts above 35 km/h",
+      gearCam: "📷 Camera or phone and a lens cloth; in fog, wide shots and tree contrast win",
+      gearLight: "🔦 Headlamp, it gets dark quickly in fog",
+      cam: "📹 Check the live webcam nearby", camNote: "Nearest webcam: Rabaçal (NetMadeira)",
+      nodata: "Fanal data is not available yet.",
+      error: "Could not load the forecast", retry: "Please try again later.",
+      updated: "Last updated", stale: "data is more than a day old!",
+      disclaimer: "Model: Open-Meteo. Cloud base is estimated from temperature and dew point. Indicative forecast, not a guarantee; check the webcam.",
+    },
+  };
+  // české shrnutí posílá backend (d.summary), anglické se skládá ze stejných prahů
+  const summaryEn = (d) => d.verdict === "MYSTIC" ? `Dense fog sits right among the trees, ${d.wind_gusts <= 20 ? "light" : "moderate"} wind – bring your camera!`
+    : d.verdict === "PARTIAL" ? "Rolling wisps of fog with the odd break."
+    : d.rain >= 3 ? "Heavy rain kills the fog and the mood – just wet, not mystical."
+    : d.wind_gusts > 35 ? "Strong wind blows the fog away, no atmosphere today."
+    : "Clear or dry – just an ordinary green park without the atmosphere.";
+  const ICON = { MYSTIC: "🌫️", PARTIAL: "🌤️", CLEAR: "☀️" };
+
+  let lang = "", data = null, day = null;
+  try { lang = localStorage.getItem("lang") || ""; } catch (e) {}
+  if (!T[lang]) lang = (navigator.language || "cs").toLowerCase().startsWith("cs") ? "cs" : "en";
+  const t = () => T[lang];
+  const locale = () => (lang === "cs" ? "cs-CZ" : "en-GB");
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+  const hh = (h) => `${String(h).padStart(2, "0")}:00`;
+
+  function current() {
+    const f = data && data.fanal;
+    if (!f) return null;
+    if (!day || !f[day]) day = f.day && f[f.day] ? f.day : ["today", "tomorrow"].find((k) => f[k]);
+    return day ? { f, d: f[day] } : null;
+  }
+
+  function windowText(d) {
+    const L = t();
+    if (!d.best_window_hours) return L.noWindow;
+    const [a, b] = d.best_window_hours;
+    return `${a < 12 ? L.part.morning : a < 17 ? L.part.afternoon : L.part.evening} ${hh(a)}–${hh(b)}`;
+  }
+
+  function gear(d) {
+    const L = t(), items = [];
+    if (d.verdict !== "CLEAR" || d.rain >= 0.2) items.push(L.gearRain);
+    items.push(L.gearBoots, L.gearWarm);
+    if (d.wind_gusts > 35) items.push(L.gearWind);
+    if (d.verdict !== "CLEAR") items.push(L.gearCam, L.gearLight);
+    return items;
+  }
+
+  function render() {
+    const L = t(), cur = current();
+    document.documentElement.lang = lang;
+    $("back").textContent = L.back;
+    $("escape").textContent = L.escape;
+    $("note").textContent = L.note;
+    $("disclaimer").textContent = L.disclaimer;
+    document.querySelectorAll("#lang button").forEach((b) => {
+      const on = b.dataset.lang === lang;
+      b.setAttribute("aria-pressed", on);
+      b.className = "inline-flex items-center gap-1.5 px-3 py-1.5 " + (on ? "seg-on" : "seg-off");
+    });
+    if (!data) { $("state").textContent = L.loading; return; }
+    if (data.generated_at) {
+      const g = new Date(data.generated_at), stale = (Date.now() - g.getTime()) / 36e5 > 24;
+      $("updated").textContent = `${L.updated}: ${g.toLocaleString(locale(), { dateStyle: "medium", timeStyle: "short" })}` + (stale ? ` – ${L.stale}` : "");
+      $("updated").className = stale ? "text-amber-400" : "";
+    }
+    if (!cur) {
+      $("content").classList.add("hidden");
+      $("state").classList.remove("hidden");
+      $("state").textContent = L.nodata;
+      return;
+    }
+    $("state").classList.add("hidden");
+    $("content").classList.remove("hidden");
+
+    const { f, d } = cur, elev = (f.location && f.location.elevation_m) || 1150;
+    const keys = ["today", "tomorrow"].filter((k) => f[k]);
+    $("days").classList.toggle("hidden", keys.length < 2);
+    $("days").classList.toggle("flex", keys.length >= 2);
+    $("days").replaceChildren(...keys.map((k) => {
+      const b = el("button", "px-3 py-1.5 " + (k === day ? "seg-on" : "seg-off"), L[k]);
+      b.type = "button";
+      b.setAttribute("aria-pressed", k === day);
+      b.addEventListener("click", () => { day = k; render(); });
+      return b;
+    }));
+
+    $("kicker").textContent = L.kicker;
+    $("status").textContent = `${L.status[d.verdict] || d.verdict} · ${d.score} %`;
+    $("bar").style.width = `${Math.max(0, Math.min(100, d.score))}%`;
+    $("summary").textContent = lang === "cs" ? d.summary : summaryEn(d);
+    $("h-window").textContent = L.window;
+    $("window").textContent = windowText(d);
+    $("slots").replaceChildren(...(d.slots || []).map((s) =>
+      el("li", "rounded-full bg-black/25 px-3 py-1 text-slate-200", `${hh(s.hour)} ${ICON[s.verdict] || ""} ${s.score} %`)));
+
+    const num = (v, unit) => (v == null ? L.noData : `${v.toLocaleString(locale())} ${unit}`);
+    $("h-hum").textContent = L.hum;
+    $("v-hum").textContent = num(d.humidity, "%");
+    $("n-hum").textContent = d.humidity == null ? "" : L.humNote(d.humidity);
+    $("h-base").textContent = L.base;
+    $("v-base").textContent = num(d.cloud_base_m, "m");
+    $("n-base").textContent = L.baseNote(d.cloud_base_m, elev);
+    $("h-wind").textContent = L.wind;
+    $("v-wind").textContent = num(d.wind_gusts, "km/h");
+    $("n-wind").textContent = L.windNote(d.wind_gusts);
+    $("h-rain").textContent = L.rain;
+    $("v-rain").textContent = d.rain == null ? L.noData : L.mmh(d.rain);
+    $("n-rain").textContent = d.rain == null ? "" : L.rainNote(d.rain);
+
+    $("h-gear").textContent = L.gear;
+    $("gear").replaceChildren(...gear(d).map((g) => el("li", "", g)));
+    const cam = $("cam");
+    cam.textContent = L.cam;
+    cam.title = L.camNote;
+    if (f.webcam_url) cam.href = f.webcam_url; else cam.classList.add("hidden");
+  }
+
+  document.querySelectorAll("#lang button").forEach((b) => b.addEventListener("click", () => {
+    lang = b.dataset.lang;
+    try { localStorage.setItem("lang", lang); } catch (e) {}
+    render();
+  }));
+  render();
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+  }
+
+  fetch("./data.json", { cache: "no-cache" })
+    .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+    .then((d) => { data = d; render(); })
+    .catch((e) => {
+      $("state").textContent = `${t().error} (${e.message}). ${t().retry}`;
+      $("state").className = "rounded-2xl bg-rose-500/10 p-6 text-rose-200 ring-1 ring-rose-400/30";
+    });
+})();
+</script>
+</body>
+</html>

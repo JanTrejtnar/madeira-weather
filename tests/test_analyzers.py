@@ -262,3 +262,51 @@ def test_bica_tuning_shifts_thresholds():
     assert bica.probability_pct < plain.probability_pct
     s = Settings()
     assert score_sunrise(f, s, s.bica_da_cana.tuning()).score_pct <= score_sunrise(f, s).score_pct
+
+
+def test_new_spot_configuration():
+    s = Settings()
+    locs = {loc.key: loc for loc in load_locations()}
+    assert (locs["ponta_do_rosto"].lat, locs["ponta_do_rosto"].lon) == (32.7492, -16.7068)
+    assert locs["pico_ruivo"].elevation_m == 1862
+    assert locs["cristo_rei"].role == "spot_sunset"
+    assert s.spots["ponta_do_rosto"].type == "coastal_sunrise"
+    assert s.spots["pico_ruivo"].type == "mountain_inversion"
+    assert s.spots["cristo_rei"].type == "coastal_sunset"
+    assert s.spots["pico_ruivo"].departure_from_funchal_min > s.spots["arieiro"].departure_from_funchal_min
+
+
+def test_coastal_sunrise_rewards_clear_east_horizon_and_penalises_gusts():
+    from madeira.analyzers.coastal_sunrise import score_coastal_sunrise
+
+    s = Settings()
+    clear = features(east_low_cloud=10.0, mid_cloud=30.0, high_cloud=30.0, gust_kmh=15.0,
+                     visibility_km=25.0, dewpoint_depression_c=4.0)
+    base = score_coastal_sunrise(clear, s)
+    assert base.verdict == "GO" and base.gates["horizon"] == 1.0
+    blocked = score_coastal_sunrise(features(**{**clear.__dict__, "east_low_cloud": 70.0}), s)
+    assert blocked.gates["horizon"] < 1.0 and blocked.score_pct < 0.5 * base.score_pct
+    windy = score_coastal_sunrise(features(**{**clear.__dict__, "gust_kmh": 60.0}), s)
+    assert windy.score_pct < base.score_pct
+    wet = score_coastal_sunrise(features(**{**clear.__dict__, "precip_mm": 0.6}), s)
+    assert wet.gates["precip"] == 0.0 and wet.verdict == "NO_GO"
+
+
+def test_new_spots_end_to_end_on_fixture():
+    from madeira.analyzers.coastal_sunrise import score_coastal_sunrise
+    from madeira.analyzers.sunrise import extract_spot_features
+
+    bundle = parse_response(json.loads(FIXTURE.read_text()), load_locations(), "best_match", NOW)
+    target = bundle.forecasts["ponta_do_pargo"].daily[1].date
+    ruivo = analyze_sunrise(bundle, target, Settings(), NOW, spot="pico_ruivo")
+    assert 0 <= ruivo.score_pct <= 100
+    f, _ = extract_spot_features(bundle, target, Settings(), NOW, "ponta_do_rosto")
+    assert 0 <= score_coastal_sunrise(f, Settings()).score_pct <= 100
+    cristo = analyze_sunset_at(bundle, target, "cristo_rei")
+    assert 0 <= cristo.score_pct <= 100 and cristo.sunset_utc.date() == target
+
+
+def analyze_sunset_at(bundle, target, key):
+    from madeira.analyzers.sunset import extract_sunset_features
+
+    return score_sunset(extract_sunset_features(bundle, target, NOW, Settings(), spot_key=key), Settings())

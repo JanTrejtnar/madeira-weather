@@ -63,7 +63,7 @@ class SpotConfig(BaseModel):
     """Vyhlídkové místo: klíč odpovídá lokalitě v locations.yaml (souřadnice jsou tam)."""
 
     name: str
-    type: Literal["mountain_inversion", "coastal_sunset"]
+    type: Literal["mountain_inversion", "coastal_sunrise", "coastal_sunset"]
     departure_from_funchal_min: int  # odjezd z Funchalu před východem/západem (jízda + chůze)
     webcam_url: str | None = None  # živá webkamera (odkaz na webu)
 
@@ -86,6 +86,15 @@ def _default_spots() -> dict[str, SpotConfig]:
             type="coastal_sunset",
             departure_from_funchal_min=65,
             webcam_url="https://www.netmadeira.com/webcams-madeira/ponta-do-pargo",
+        ),
+        "pico_ruivo": SpotConfig(
+            name="Pico Ruivo", type="mountain_inversion", departure_from_funchal_min=120
+        ),
+        "ponta_do_rosto": SpotConfig(
+            name="Miradouro da Ponta do Rosto", type="coastal_sunrise", departure_from_funchal_min=50
+        ),
+        "cristo_rei": SpotConfig(
+            name="Miradouro do Cristo Rei", type="coastal_sunset", departure_from_funchal_min=25
         ),
     }
 
@@ -122,6 +131,14 @@ class BicaConfig(BaseModel):
             dry_layer_hpa=self.inversion.dry_layer_hpa,
             max_gusts_kmh=self.wind.max_gusts_kmh,
         )
+
+
+class CoastalSunriseConfig(BaseModel):
+    """Východ na útesu (Ponta do Rosto): čistý východní mořský horizont a mírný vítr."""
+
+    max_horizon_low_clouds: float = 20  # nad tímto (%) nízké mraky na východě zakrývají slunce
+    max_gusts_kmh: float = 40  # nárazy nad tímto na útesu srážejí skóre
+    weights: dict[str, float] = {"horizon_clarity": 0.45, "cloud_canvas": 0.25, "visibility": 0.15, "wind": 0.15}
 
 
 class SunsetGates(BaseModel):
@@ -212,6 +229,43 @@ class EscapeConfig(BaseModel):
     rain_per_mm: float = 0.15  # ... a dál klesá o tolik za každý mm (min. 0)
 
 
+class FanalWeights(BaseModel):
+    humidity: float = 0.40  # RH u povrchu a ve výšce lesa
+    cloud_base: float = 0.35  # základna mraků v úrovni lesa
+    visibility: float = 0.25  # nízká dohlednost = jsme uvnitř mraku
+
+
+class FanalCurves(BaseModel):
+    humidity: Curve = [(60, 0), (85, 1), (100, 1)]  # RH [%] -> 0..1; 85–100 % = maximum
+    cloud_base: Curve = [(700, 0), (900, 1), (1300, 1), (1600, 0.3), (2000, 0)]  # m n. m.; 900–1300 = les v mraku
+    visibility: Curve = [(400, 1), (1000, 0.6), (3000, 0.1), (10000, 0)]  # m; <400 ideál, <1000 dobré
+    precip: Curve = [(1.5, 1), (3, 0)]  # mm/h: mrholení do 1,5 nevadí, nad 3 skóre k nule
+    gusts: Curve = [(35, 1), (60, 0.2)]  # km/h: nad 35 vichr trhá mlhu
+
+
+class FanalConfig(BaseModel):
+    """Fanal Forest (1150 m): obrácená logika než hory, hledáme hustou mlhu bez vichru a lijáku."""
+
+    name: str = "Fanal Forest"
+    type: Literal["fog_seeker"] = "fog_seeker"
+    lat: float = 32.8083
+    lon: float = -17.1417
+    elevation_m: float = 1150
+    # NetMadeira nemá kameru přímo na Fanalu ani Paul da Serra; nejbližší je Rabaçal (stejná výška, ~8 km)
+    webcam_url: str = "https://www.netmadeira.com/webcams-madeira/rabacal-madeira"
+    slot_hours: list[int] = [9, 13, 17]  # denní sloty (místní čas)
+    window_from: int = 8  # hledání nejlepšího okna (místní čas, hodiny from..to včetně)
+    window_to: int = 18
+    cloud_base_m_per_c: float = 125  # základna mraků nad zemí ≈ 125 m za každý °C rozdílu T − rosný bod
+    weights: FanalWeights = Field(default_factory=FanalWeights)
+    curves: FanalCurves = Field(default_factory=FanalCurves)
+    verdict: VerdictThresholds = Field(default_factory=lambda: VerdictThresholds(go=70, maybe=40))
+
+    def as_location(self) -> Location:
+        return Location(key="fanal", name=self.name, lat=self.lat, lon=self.lon,
+                        elevation_m=self.elevation_m, role=self.type)
+
+
 class BotConfig(BaseModel):
     digest_time: str = "20:00"  # místní čas Madeiry
     feedback_time: str = "10:00"
@@ -227,7 +281,9 @@ class Settings(BaseModel):
     spots: dict[str, SpotConfig] = Field(default_factory=_default_spots)
     bica_da_cana: BicaConfig = Field(default_factory=BicaConfig)
     sunset: SunsetConfig = Field(default_factory=SunsetConfig)
+    coastal_sunrise: CoastalSunriseConfig = Field(default_factory=CoastalSunriseConfig)
     sunny_escape: EscapeConfig = Field(default_factory=EscapeConfig)
+    fanal: FanalConfig = Field(default_factory=FanalConfig)
 
 
 def config_dir() -> Path:

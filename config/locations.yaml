@@ -12,3 +12,7 @@ locations:
   - {key: ponta_do_pargo,  name: Farol da Ponta do Pargo,   lat: 32.8122, lon: -17.2638, elevation_m: 312,  role: spot_sunset}
   # Moře západně od ostrova: nízké mraky na obzoru a "plátno" pro barvy při pohledu z majáku.
   - {key: west_horizon,    name: Západní obzor,             lat: 32.8100, lon: -17.7500, elevation_m: 0,    role: reference_west}
+  # Další vyhlídky: východní pobřeží (útes 135 m), nejvyšší vrchol ostrova a Cristo Rei nad Garajau (výhled na Funchalský záliv).
+  - {key: ponta_do_rosto,  name: Miradouro da Ponta do Rosto, lat: 32.7492, lon: -16.7068, elevation_m: 135,  role: spot_sunrise}
+  - {key: pico_ruivo,      name: Pico Ruivo,                  lat: 32.7606, lon: -16.9431, elevation_m: 1862, role: spot_sunrise}
+  - {key: cristo_rei,      name: Miradouro do Cristo Rei,     lat: 32.6386, lon: -16.8507, elevation_m: 180,  role: spot_sunset}

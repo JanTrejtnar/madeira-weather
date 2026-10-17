@@ -60,7 +60,7 @@ def test_fetch_history_stores_predictions_for_every_spot(store):
     counts = forecast.fetch_history(
         Settings(), store, list(forecast.ALL_LOCATIONS), days=1, end=end, fetcher=FakeFetcher()
     )
-    assert counts == {"arieiro": 1, "bica_da_cana": 1, "ponta_do_pargo": 1}
+    assert counts == dict.fromkeys(forecast.ALL_LOCATIONS, 1)
     for key in forecast.ALL_LOCATIONS:
         row = store.latest_prediction(end, key)
         assert row is not None

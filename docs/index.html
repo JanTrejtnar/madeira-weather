@@ -43,6 +43,8 @@
     .seg-off { color: #94a3b8; }
     .seg-off:hover { background: rgba(255,255,255,.1); }
     summary::-webkit-details-marker { display: none; }
+    .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
     /* mapa */
     #map { background: #0f172a; }
     .leaflet-container { font: inherit; }
@@ -76,7 +78,7 @@
     </header>
 
     <div id="modes" class="mb-3 hidden grid-cols-2 gap-2" role="tablist" aria-label="Sunrise / Sunset"></div>
-    <div id="spots" class="mb-4 hidden gap-2 overflow-x-auto pb-1" role="group" aria-label="Spot"></div>
+    <div id="spots" class="no-scrollbar mb-4 hidden flex-nowrap gap-2 overflow-x-auto pb-1" role="group" aria-label="Spot"></div>
 
     <div id="state" class="rounded-2xl bg-white/5 p-6 text-slate-300" role="status" data-i18n="loading">Načítám předpověď…</div>
 
@@ -178,6 +180,7 @@
     </section>
 
     <footer class="mt-10 text-xs text-slate-500">
+      <a href="./fanal.html" data-i18n="navFanal" class="mb-3 inline-block text-sm text-emerald-200/80 transition hover:text-emerald-100"></a>
       <button id="install" type="button" data-i18n="install" class="mb-3 hidden rounded-lg border border-white/10 px-3 py-1.5 text-slate-300 transition hover:bg-white/10"></button>
       <p id="updated"></p>
       <p class="mt-1" data-i18n="disclaimer">Model: Open-Meteo. Orientační předpověď, ne záruka; před odjezdem zkontroluj aktuální stav.</p>
@@ -196,14 +199,17 @@
       horizon: "Nízké mraky na obzoru", canvas: "Mraky pro barvy",
       webcam: (name) => `Živá webkamera · ${name}`,
       sunsetHead: { GO: "Západ slunce vypadá slibně.", MAYBE: "Hazard, výsledek je nejistý.", NO_GO: "Dnes to nevypadá na západ, který by stál za cestu." },
-      sunsetComp: { horizon_clarity: "čistý obzor", cloud_canvas: "barvy oblohy", low_cloud_penalty: "mlha na vyhlídce", wind_comfort: "vítr" },
-      sunsetSummary: (d, t) => [
-        `${t.sunsetHead[d.verdict]} Skóre ${d.score} %.`,
+      sunsetComp: { visibility: "dohlednost", wind: "vítr", horizon_clarity: "čistý obzor", cloud_canvas: "barvy oblohy", low_cloud_penalty: "mlha na vyhlídce", wind_comfort: "vítr" },
+      sunsetSummary: (d, t, kind) => [
+        `${(kind === "sunrise" ? t.sunriseCoastalHead : t.sunsetHead)[d.verdict]} Skóre ${d.score} %.`,
         d.problem === "precip" ? "Největší problém jsou srážky."
           : d.problem === "horizon" ? "Největší problém jsou nízké mraky na obzoru."
           : d.weakest ? `Nejslabší stránka: ${t.sunsetComp[d.weakest] || d.weakest}.` : "",
       ].filter(Boolean).join(" "),
-      sunsetAlert: (a) => ({ precip: `Srážky kolem západu: ${a.value} mm.`, horizon: `Nízké mraky na západním obzoru (${a.value} %) mohou zakrýt slunce.`,
+      sunriseCoastalHead: { GO: "Východ slunce vypadá slibně.", MAYBE: "Hazard, výsledek je nejistý.", NO_GO: "Spíš zůstaň v posteli." },
+      horizonEast: "Nízké mraky na východě",
+      sunsetAlert: (a) => ({ gusts: `Silné nárazy větru na útesu (${a.value} km/h).`, horizon_east: `Nízké mraky na východním obzoru (${a.value} %) mohou zakrýt slunce.`,
+                             precip: `Srážky kolem západu: ${a.value} mm.`, horizon: `Nízké mraky na západním obzoru (${a.value} %) mohou zakrýt slunce.`,
                              visibility: `Snížená dohlednost (${a.value} km).`, no_cloud_data: "Chybí data o oblačnosti." })[a.code] || a.code,
       score: "% skóre", departure: "Odjezd z Funchalu", deck: "Hladina mraků",
       above: (n) => `${n} nad mraky`, wind: "Vítr", gust: "nárazy", outlook: "Výhled", tomorrow: "Zítra",
@@ -211,6 +217,7 @@
       hDate: "Datum", hPred: "Predikce", hInv: "Inverze", hActual: "Skutečnost",
       historyEmpty: "Zatím žádné dny v historii.", unknown: "❔ Nevíme, jak to dopadlo", backfillNote: "* zpětně dopočteno z archivovaných dat modelu",
       navEscape: "☀️ Hledáte slunce u moře? Zkusit Sunny Escape →",
+      navFanal: "🌲 Hledáte mlžný les? Fanal Fog Index →",
       install: "📲 Nainstalovat aplikaci",
       disclaimer: "Model: Open-Meteo. Orientační předpověď, ne záruka; před odjezdem zkontroluj aktuální stav.",
       updated: "Naposledy aktualizováno", stale: "data jsou starší než den!",
@@ -223,8 +230,8 @@
       head: { GO: "Vypadá to dobře.", MAYBE: "Hazard, výsledek je nejistý.", NO_GO: "Spíš zůstaň v posteli." },
       comp: { sky: "oblačnost", color: "barvy oblohy", visibility: "dohlednost", wind: "vítr", cloudsea: "moře mraků" },
       wxTitle: "Počasí během dne", wxNote: "Orientačně pro 7:00–20:00. Nemá vliv na skóre.",
-      place: { funchal: "Funchal (pobřeží)", arieiro: "Pico do Arieiro (hory)", bica_da_cana: "Bica da Cana (hory)", ponta_do_pargo: "Ponta do Pargo (pobřeží)" },
-      spot: { arieiro: "Pico do Arieiro", ponta_do_pargo: "Ponta do Pargo" },
+      place: { funchal: "Funchal (pobřeží)", arieiro: "Pico do Arieiro (hory)", pico_ruivo: "Pico Ruivo (hory)", bica_da_cana: "Bica da Cana (hory)",
+               ponta_do_rosto: "Ponta do Rosto (pobřeží)", ponta_do_pargo: "Ponta do Pargo (pobřeží)", cristo_rei: "Cristo Rei (pobřeží)" },
       mapTime: { sunrise: "Východ", sunset: "Západ" }, mapScore: "skóre",
       wx: {
         rain: (w) => ({
@@ -264,14 +271,17 @@
       horizon: "Low clouds on horizon", canvas: "Clouds for colour",
       webcam: (name) => `Live webcam · ${name}`,
       sunsetHead: { GO: "The sunset looks promising.", MAYBE: "A gamble, the outcome is uncertain.", NO_GO: "Not a sunset worth the trip today." },
-      sunsetComp: { horizon_clarity: "clear horizon", cloud_canvas: "sky colours", low_cloud_penalty: "fog at the viewpoint", wind_comfort: "wind" },
-      sunsetSummary: (d, t) => [
-        `${t.sunsetHead[d.verdict]} Score ${d.score}%.`,
+      sunsetComp: { visibility: "visibility", wind: "wind", horizon_clarity: "clear horizon", cloud_canvas: "sky colours", low_cloud_penalty: "fog at the viewpoint", wind_comfort: "wind" },
+      sunsetSummary: (d, t, kind) => [
+        `${(kind === "sunrise" ? t.sunriseCoastalHead : t.sunsetHead)[d.verdict]} Score ${d.score}%.`,
         d.problem === "precip" ? "The main problem is rain."
           : d.problem === "horizon" ? "The main problem is low cloud on the horizon."
           : d.weakest ? `Weakest factor: ${t.sunsetComp[d.weakest] || d.weakest}.` : "",
       ].filter(Boolean).join(" "),
-      sunsetAlert: (a) => ({ precip: `Rain around sunset: ${a.value} mm.`, horizon: `Low clouds on the western horizon (${a.value}%) may hide the sun.`,
+      sunriseCoastalHead: { GO: "The sunrise looks promising.", MAYBE: "A gamble, the outcome is uncertain.", NO_GO: "Better stay in bed." },
+      horizonEast: "Low clouds in the east",
+      sunsetAlert: (a) => ({ gusts: `Strong gusts on the cliff (${a.value} km/h).`, horizon_east: `Low clouds on the eastern horizon (${a.value}%) may hide the sun.`,
+                             precip: `Rain around sunset: ${a.value} mm.`, horizon: `Low clouds on the western horizon (${a.value}%) may hide the sun.`,
                              visibility: `Reduced visibility (${a.value} km).`, no_cloud_data: "Cloud cover data missing." })[a.code] || a.code,
       score: "% score", departure: "Leave Funchal", deck: "Cloud deck top",
       above: (n) => `${n} above clouds`, wind: "Wind", gust: "gusts", outlook: "Outlook", tomorrow: "Tomorrow",
@@ -279,6 +289,7 @@
       hDate: "Date", hPred: "Prediction", hInv: "Inversion", hActual: "Actual",
       historyEmpty: "No days yet.", unknown: "❔ We don't know how it turned out", backfillNote: "* back-computed from archived model data",
       navEscape: "☀️ Looking for sun by the sea? Try Sunny Escape →",
+      navFanal: "🌲 Looking for a misty forest? Fanal Fog Index →",
       install: "📲 Install app",
       disclaimer: "Model: Open-Meteo. Indicative forecast, not a guarantee; check current conditions before you leave.",
       updated: "Last updated", stale: "data is more than a day old!",
@@ -291,8 +302,8 @@
       head: { GO: "Looks good.", MAYBE: "A gamble, the outcome is uncertain.", NO_GO: "Better stay in bed." },
       comp: { sky: "cloud cover", color: "sky colours", visibility: "visibility", wind: "wind", cloudsea: "cloud sea" },
       wxTitle: "Weather during the day", wxNote: "Rough guide for 7:00–20:00. Does not affect the score.",
-      place: { funchal: "Funchal (coast)", arieiro: "Pico do Arieiro (mountains)", bica_da_cana: "Bica da Cana (mountains)", ponta_do_pargo: "Ponta do Pargo (coast)" },
-      spot: { arieiro: "Pico do Arieiro", ponta_do_pargo: "Ponta do Pargo" },
+      place: { funchal: "Funchal (coast)", arieiro: "Pico do Arieiro (mountains)", pico_ruivo: "Pico Ruivo (mountains)", bica_da_cana: "Bica da Cana (mountains)",
+               ponta_do_rosto: "Ponta do Rosto (coast)", ponta_do_pargo: "Ponta do Pargo (coast)", cristo_rei: "Cristo Rei (coast)" },
       mapTime: { sunrise: "Sunrise", sunset: "Sunset" }, mapScore: "score",
       wx: {
         rain: (w) => ({
@@ -345,6 +356,11 @@
   const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 
   const ARIEIRO = { key: "arieiro", name: "Pico do Arieiro", elevation_m: 1818 };
+  // krátké názvy tlačítek (vlastní jména, v obou jazycích stejné)
+  const SPOT_LABEL = { arieiro: "Pico do Arieiro", pico_ruivo: "Pico Ruivo", bica_da_cana: "Bica da Cana",
+                       ponta_do_rosto: "Ponta do Rosto", ponta_do_pargo: "Ponta do Pargo", cristo_rei: "Cristo Rei (Garajau)" };
+  const spotLabel = (s) => SPOT_LABEL[s.key] || s.name;
+  const isCoastalSunrise = (s) => s && s.type === "coastal_sunrise";
   const curSpot = () => allSpots().find((s) => s.key === spotKey) || ARIEIRO;
 
   function show(day, isTomorrow) {
@@ -373,16 +389,17 @@
 
   // denní záznam večerního spotu -> tvar kořenového klíče `sunset`
   function sunsetView(e, sp) {
-    return { ...e, time: e.sunset, departure: e.departure_funchal, score: e.score_pct,
+    return { ...e, time: e.sunset || e.sunrise, departure: e.departure_funchal, score: e.score_pct,
              wind: { kmh: e.wind_kmh, gust_kmh: e.gust_kmh, dir_deg: e.wind_dir_deg },
              clouds_canvas: { pct: e.canvas_cloud_pct }, webcam_url: sp.webcam_url };
   }
 
-  function showSunset(s, isTomorrow = true) {
+  // pobřežní vyhlídka (západ, nebo východ na útesu): karty horizont / mraky pro barvy místo hladiny mraků
+  function showSunset(s, isTomorrow = true, kind = "sunset", sp = curSpot()) {
     const v = style(s.verdict), L = t();
     $("day-label").textContent = `${isTomorrow ? L.tomorrow + " · " : ""}${L.days[parse(s.date).getDay()]} ${fmtDate(s.date)}`;
-    $("time-label").textContent = L.timeSunset;
-    $("l-deck").textContent = L.horizon;
+    $("time-label").textContent = kind === "sunrise" ? L.timeSunrise : L.timeSunset;
+    $("l-deck").textContent = kind === "sunrise" ? L.horizonEast : L.horizon;
     $("l-above").textContent = L.canvas;
     $("time").textContent = s.time;
     $("badge").textContent = L.verdict[s.verdict] || s.verdict;
@@ -391,7 +408,7 @@
     $("range").textContent = s.score_range ? `(${s.score_range[0]}–${s.score_range[1]})` : "";
     $("bar").className = `h-full rounded-full ${v.bar}`;
     $("bar").style.width = `${Math.max(0, Math.min(100, s.score))}%`;
-    $("summary").textContent = L.sunsetSummary(s, L);
+    $("summary").textContent = L.sunsetSummary(s, L, kind);
     $("warnings").replaceChildren(...(s.alerts || []).map((a) => el("li", null, "⚠ " + L.sunsetAlert(a))));
     $("departure").textContent = s.departure;
     const pct = (x) => (x == null ? "–" : `${x} %`);
@@ -401,7 +418,7 @@
     $("wind").textContent = w.kmh == null ? "–" : `${w.kmh} km/h ${compass(w.dir_deg)}`;
     $("gust").textContent = w.gust_kmh == null ? "" : `${L.gust} ${w.gust_kmh} km/h`;
     renderWeather(s);
-    setWebcam(s.webcam_url, L.spot.ponta_do_pargo);
+    setWebcam(s.webcam_url, spotLabel(sp));
   }
 
   function setWebcam(url, place) {
@@ -423,7 +440,8 @@
     const list = daysOf(spotKey), sp = curSpot();
     if (selected >= list.length) selected = 0;
     const d = list[selected];
-    if (mode === "sunset") showSunset(sunsetView(d, sp), selected === 0);
+    if (mode === "sunset") showSunset(sunsetView(d, sp), selected === 0, "sunset", sp);
+    else if (isCoastalSunrise(sp)) showSunset(sunsetView(d, sp), selected === 0, "sunrise", sp);
     else show(d, selected === 0);
   }
 
@@ -489,10 +507,14 @@
         (on ? seg.on : "border-white/10 bg-white/5 text-slate-300 hover:bg-white/10"));
       b.type = "button";
       b.setAttribute("aria-pressed", on);
-      b.append(el("span", "block whitespace-nowrap", s.name.replace(/^(Miradouro da|Farol da) /, "")), sub);
+      b.className += " shrink-0";
+      b.dataset.spot = s.key;
+      b.append(el("span", "block whitespace-nowrap", spotLabel(s)), sub);
       b.addEventListener("click", () => selectSpot(s.key, { fly: true }));
       return b;
     }));
+    const cur = bar.querySelector(`[data-spot="${spotKey}"]`);  // vybrané tlačítko v posuvném pásu vždy viditelné
+    if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: "nearest", inline: "center" });
   }
 
   // ---- mapa ----
@@ -519,6 +541,8 @@
     if (map || !window.L || !data) return;
     LL = window.L;
     map = LL.map("map", { scrollWheelZoom: false }).setView([32.75, -16.98], 10);
+    const pts = allSpots().filter((s) => s.lat != null && s.lon != null).map((s) => [s.lat, s.lon]);
+    if (pts.length > 1) map.fitBounds(pts, { padding: [28, 28], maxZoom: 11 });  // všechny špendlíky se vejdou i na mobilu
     LL.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',

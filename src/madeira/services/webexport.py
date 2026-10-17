@@ -7,12 +7,14 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+from madeira.analyzers import fanal
+from madeira.analyzers.coastal_sunrise import score_coastal_sunrise
 from madeira.analyzers.daily_weather import day_weather
 from madeira.analyzers.features import extract_sunrise_features
 from madeira.analyzers.sunny_escape import rank_locations, recommendation_cs
 from madeira.analyzers.sunrise import extract_spot_features, score_sunrise
 from madeira.analyzers.sunset import extract_sunset_features, score_sunset
-from madeira.domain.config import EscapeConfig, Settings
+from madeira.domain.config import EscapeConfig, FanalConfig, Settings
 from madeira.domain.models import ForecastBundle, SunriseAnalysis, SunsetAnalysis
 from madeira.fetchers.open_meteo import OpenMeteoFetcher
 from madeira.services import forecast
@@ -49,6 +51,47 @@ def _day_entry(analysis: SunriseAnalysis, features, departure_before_min: int) -
         "alerts": _alerts(analysis, features),
         "canvas_cloud_pct": _canvas_pct(features),
     }
+
+
+def _coastal_sunrise_entry(analysis: SunriseAnalysis, features, departure_before_min: int) -> dict:
+    """Východ na útesu: ranní klíče jako u hor (sunrise, departure), ale bez inverze; tvar horizontu jako u západu."""
+    sunrise = analysis.sunrise_utc.astimezone(TZ)
+    return {
+        "date": analysis.target_date.isoformat(),
+        "sunrise": f"{sunrise:%H:%M}",
+        "departure_funchal": f"{sunrise - timedelta(minutes=departure_before_min):%H:%M}",
+        "verdict": analysis.verdict,
+        "score_pct": round(analysis.score_pct),
+        "score_range": [round(analysis.score_range[0]), round(analysis.score_range[1])],
+        "confidence": analysis.confidence,
+        "horizon_low_cloud_pct": _round(features.east_low_cloud),
+        "canvas_cloud_pct": _canvas_pct(features),
+        "wind_kmh": _round(features.wind_kmh),
+        "gust_kmh": _round(features.gust_kmh),
+        "wind_dir_deg": _round(features.wind_dir_deg),
+        "visibility_km": None if features.visibility_km is None else round(features.visibility_km),
+        "precip_mm": round(features.precip_mm, 1),
+        "summary_cs": analysis.summary_cs,
+        "problem": "precip" if analysis.gates["precip"] < 1 else (
+            "horizon" if analysis.gates["horizon"] < 0.6 else None
+        ),
+        "weakest": _weakest(analysis),
+        "warnings": analysis.warnings,
+        "alerts": _coastal_sunrise_alerts(analysis, features),
+    }
+
+
+def _coastal_sunrise_alerts(a: SunriseAnalysis, f) -> list[dict]:
+    alerts = []
+    if a.gates["precip"] < 1:
+        alerts.append({"code": "precip", "value": round(f.precip_mm, 1)})
+    if a.gates["horizon"] < 1 and f.east_low_cloud is not None:
+        alerts.append({"code": "horizon_east", "value": round(f.east_low_cloud)})
+    if f.gust_kmh is not None and f.gust_kmh > 40:
+        alerts.append({"code": "gusts", "value": round(f.gust_kmh)})
+    if f.east_low_cloud is None and f.mid_cloud is None and f.high_cloud is None:
+        alerts.append({"code": "no_cloud_data"})
+    return alerts
 
 
 def _canvas_pct(features) -> int | None:
@@ -100,7 +143,7 @@ def _sunset_alerts(a: SunsetAnalysis, f) -> list[dict]:
 def _spot_summary(spot: dict, kind: str) -> dict:
     """Jednotný tvar pro kořenové klíče `sunrise` a `sunset` v data.json."""
     cloud_sea = None
-    if kind == "sunrise":  # moře mraků dává smysl jen na horské vyhlídce
+    if kind == "sunrise" and spot["type"] == "mountain_inversion":  # moře mraků jen na horské vyhlídce
         cloud_sea = {
             "probability_pct": spot["inversion_pct"],
             "deck_top_m": spot["cloud_deck_top_m"],
@@ -152,8 +195,8 @@ def _spot_meta(settings: Settings, bundle: ForecastBundle, key: str) -> dict:
     }
 
 
-MORNING_SPOTS = ("arieiro", "bica_da_cana")
-EVENING_SPOTS = ("ponta_do_pargo",)
+MORNING_SPOTS = ("arieiro", "pico_ruivo", "bica_da_cana", "ponta_do_rosto")
+EVENING_SPOTS = ("ponta_do_pargo", "cristo_rei")
 
 
 def spot_entry(settings: Settings, bundle: ForecastBundle, key: str, day, now: datetime) -> dict:
@@ -163,11 +206,13 @@ def spot_entry(settings: Settings, bundle: ForecastBundle, key: str, day, now: d
         features = extract_sunset_features(bundle, day, now, settings)
         return _sunset_entry(score_sunset(features, settings), features, departure)
     features, tuning = extract_spot_features(bundle, day, settings, now, key)
+    if settings.spots[key].type == "coastal_sunrise":
+        return _coastal_sunrise_entry(score_coastal_sunrise(features, settings), features, departure)
     return _day_entry(score_sunrise(features, settings, tuning), features, departure)
 
 
 def tomorrow_spots(settings: Settings, bundle: ForecastBundle, day, now: datetime) -> dict:
-    """Zítřejší ranní (Arieiro, Bica da Cana) a večerní (Ponta do Pargo) vyhlídky."""
+    """Zítřejší ranní (Arieiro, Pico Ruivo, Bica da Cana, Ponta do Rosto) a večerní vyhlídky."""
     def one(key):
         return _spot_meta(settings, bundle, key) | spot_entry(settings, bundle, key, day, now)
 
@@ -258,6 +303,89 @@ def fetch_escape_bundle(cfg: EscapeConfig) -> ForecastBundle | None:
         return None  # výpadek API nesmí shodit celý export
 
 
+def _fanal_summary(verdict: str, f: dict, cfg: FanalConfig) -> str:
+    c = cfg.curves
+    if verdict == "MYSTIC":
+        wind = "slabý vítr" if f["wind_gusts"] <= 20 else "mírný vítr"
+        return f"Hustá mlha sedí přímo mezi stromy, {wind} – vezměte foťák!"
+    if verdict == "PARTIAL":
+        return "Převalující se cáry mlhy, mezi nimi občasné protrhání."
+    if f["rain"] >= c.precip[-1][0]:
+        return "Silný déšť sráží mlhu i náladu – spíš jen mokro než mystika."
+    if f["wind_gusts"] > c.gusts[0][0]:
+        return "Silný vítr mlhu rozfoukává, atmosféra se nekoná."
+    return "Jasno nebo sucho – obyčejný zelený park bez atmosféry."
+
+
+def _fanal_day(cfg: FanalConfig, points, day, from_hour: int = 0) -> dict | None:
+    """Souhrn jednoho dne ze slotů (9/13/17 h): skóre = průměr slotů, nárazy a srážky = maximum."""
+    slots = fanal.slot_rows(points, day, cfg, from_hour)
+    if not slots:
+        return None
+    feats = [r["f"] for r in slots]
+
+    def mean(vals):
+        vals = [v for v in vals if v is not None]
+        return round(sum(vals) / len(vals)) if vals else None
+
+    score = round(sum(fanal.score_fog(f, cfg) for f in feats) / len(feats))
+    out = {
+        "date": day.isoformat(),
+        "verdict": fanal.verdict(score, cfg),
+        "score": score,
+        "humidity": mean(f.humidity_pct for f in feats),
+        "cloud_coverage_local": mean(f.cloud_cover_pct for f in feats),
+        "cloud_base_m": mean(f.cloud_base_m for f in feats),
+        "visibility_m": mean(f.visibility_m for f in feats),
+        "wind_gusts": round(max((f.gust_kmh for f in feats if f.gust_kmh is not None), default=0)),
+        "rain": round(max(f.precip_mm_h for f in feats), 1),
+    }
+    window = fanal.best_window(points, day, cfg, from_hour)
+    out["best_window_hours"] = list(window) if window else None
+    out["best_window"] = _fanal_window_cs(window)
+    out["summary"] = _fanal_summary(out["verdict"], out, cfg)
+    out["slots"] = [{"hour": r["hour"], "score": r["score"], "verdict": r["verdict"]} for r in slots]
+    return out
+
+
+def _fanal_window_cs(window: tuple[int, int] | None) -> str | None:
+    if window is None:
+        return None
+    start, end = window
+    part = "Dopoledne" if start < 12 else "Odpoledne" if start < 17 else "Večer"
+    return f"{part} {start:02d}:00–{end:02d}:00"
+
+
+def fanal_section(cfg: FanalConfig, bundle: ForecastBundle, now: datetime) -> dict | None:
+    """Fanal Fog Index pro dnešek (zbývající sloty) a zítřek; kořen platí pro výchozí den."""
+    fc = bundle.forecasts.get("fanal")
+    if fc is None:
+        return None
+    local = now.astimezone(TZ)
+    today = _fanal_day(cfg, fc.hourly, local.date(), local.hour)
+    tomorrow = _fanal_day(cfg, fc.hourly, local.date() + timedelta(days=1))
+    days = {k: v for k, v in (("today", today), ("tomorrow", tomorrow)) if v}
+    if not days:
+        return None
+    default = "today" if today else "tomorrow"  # dnešek bez zbývajících slotů se nedoporučuje
+    return {
+        "location": {"key": "fanal", "name": cfg.name, "type": cfg.type, "lat": cfg.lat, "lon": cfg.lon,
+                     "elevation_m": round(cfg.elevation_m)},
+        "webcam_url": cfg.webcam_url,
+        "day": default,
+        **days[default],
+        **days,
+    }
+
+
+def fetch_fanal_bundle(cfg: FanalConfig) -> ForecastBundle | None:
+    try:
+        loc = cfg.as_location()
+        return OpenMeteoFetcher(cache_dir=forecast.CACHE_DIR).fetch([loc], days=2)
+    except RuntimeError:
+        return None  # výpadek API nesmí shodit celý export
+
+
 def build_payload(
     settings: Settings,
     days: int = 3,
@@ -266,6 +394,7 @@ def build_payload(
     history: list[dict] | None = None,
     store: Store | None = None,
     escape_bundle: ForecastBundle | None = None,
+    fanal_bundle: ForecastBundle | None = None,
 ) -> dict:
     """Spočítá zítřek a výhled na `days` dní (první den = zítřek, místní čas Madeiry)."""
     live = bundle is None
@@ -273,6 +402,8 @@ def build_payload(
     now = now or datetime.now(UTC)
     if escape_bundle is None and live:  # s předaným bundlem (testy) se nic nestahuje
         escape_bundle = fetch_escape_bundle(settings.sunny_escape)
+    if fanal_bundle is None and live:
+        fanal_bundle = fetch_fanal_bundle(settings.fanal)
     first = now.astimezone(TZ).date() + timedelta(days=1)
     available = {d.date for d in bundle.forecasts["arieiro"].daily}
     entries = []
@@ -294,18 +425,23 @@ def build_payload(
         raise RuntimeError("Model nevrátil data pro zítřek.")
     spots = tomorrow_spots(settings, bundle, first, now)
     escape = sunny_escape_section(settings.sunny_escape, escape_bundle, now) if escape_bundle else None
+    fog = fanal_section(settings.fanal, fanal_bundle, now) if fanal_bundle else None
     return {
         "generated_at": now.isoformat(timespec="seconds"),
         "model": bundle.model,
         "location": {"name": "Pico do Arieiro", "elevation_m": ARIEIRO_ELEVATION_M},
         "tomorrow": entries[0],
         "tomorrow_spots": spots,
-        "sunrise": _spot_summary(spots["morning"][0], "sunrise"),
-        "sunset": _spot_summary(spots["evening"][0], "sunset"),
+        # kořen = výchozí spot (zpětná kompatibilita), `spots` = všechna místa podle klíče
+        "sunrise": _spot_summary(spots["morning"][0], "sunrise")
+        | {"spots": {s["key"]: _spot_summary(s, "sunrise") for s in spots["morning"]}},
+        "sunset": _spot_summary(spots["evening"][0], "sunset")
+        | {"spots": {s["key"]: _spot_summary(s, "sunset") for s in spots["evening"]}},
         "days": entries,
         "spot_days": spot_days(settings, bundle, first, days, now),
         "history": history or [],
         **({"sunny_escape": escape} if escape else {}),
+        **({"fanal": fog} if fog else {}),
     }
 
 

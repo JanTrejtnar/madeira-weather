@@ -7,6 +7,7 @@ from datetime import UTC, date, datetime, time, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+from madeira.analyzers.coastal_sunrise import score_coastal_sunrise
 from madeira.analyzers.features import extract_sunrise_features
 from madeira.analyzers.microclimate import compare_microclimates
 from madeira.analyzers.sunrise import extract_spot_features, score_sunrise
@@ -25,9 +26,12 @@ TZ = ZoneInfo("Atlantic/Madeira")
 CACHE_DIR = Path(__file__).resolve().parents[3] / ".cache"
 
 
-ALL_LOCATIONS = ("arieiro", "bica_da_cana", "ponta_do_pargo")
+ALL_LOCATIONS = (
+    "arieiro", "pico_ruivo", "bica_da_cana", "ponta_do_rosto", "ponta_do_pargo", "cristo_rei",
+)
 LOCATION_ALIASES = {"pico_arieiro": "arieiro", "pico_do_arieiro": "arieiro"}
-SUNSET_SPOTS = ("ponta_do_pargo",)
+SUNSET_SPOTS = ("ponta_do_pargo", "cristo_rei")
+COASTAL_SUNRISE_SPOTS = ("ponta_do_rosto",)
 
 
 def resolve_locations(value: str) -> list[str]:
@@ -96,6 +100,10 @@ def predict_spot(
         features = extract_sunset_features(bundle, day, now, settings, spot_key=key)
         analysis = score_sunset(features, settings)
         weights = settings.sunset.weights.model_dump()
+    elif key in COASTAL_SUNRISE_SPOTS:
+        features, _ = extract_spot_features(bundle, day, settings, now, key)
+        analysis = score_coastal_sunrise(features, settings)
+        weights = settings.coastal_sunrise.weights
     else:
         features, tuning = extract_spot_features(bundle, day, settings, now, key)
         analysis = score_sunrise(features, settings, tuning)
