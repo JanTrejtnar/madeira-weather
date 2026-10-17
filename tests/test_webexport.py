@@ -27,6 +27,16 @@ def test_payload_shape(tmp_path):
     assert datetime.fromisoformat(payload["generated_at"]).tzinfo == UTC
 
 
+def test_payload_has_morning_webcam_url():
+    payload = webexport.build_payload(Settings(), days=3, bundle=_bundle(), now=NOW)
+    day = NOW.astimezone(UTC).date()
+    assert payload["morning_webcam_date"] == day.isoformat()
+    assert payload["morning_webcam_url"] == (
+        "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/"
+        f"pico-do-arieiro/24h/{day:%Y_%m_%d}_08_00.jpg"
+    )
+
+
 def test_rain_levels():
     from madeira.analyzers.daily_weather import rain_level
 

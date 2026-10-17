@@ -116,7 +116,20 @@
             <path d="M11 3h6v6M17 3l-8 8M8 5H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-3"/>
           </svg>
         </a>
+        <button id="morning-btn" type="button"
+           class="mt-3 hidden items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-medium transition hover:bg-white/10">
+          <span id="morning-text"></span>
+        </button>
+        <img id="morning-probe" alt="" class="hidden" referrerpolicy="no-referrer">
       </article>
+
+      <!-- ranní snímek z NetMadeira (lightbox) -->
+      <div id="morning-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 p-4" role="dialog" aria-modal="true">
+        <figure class="max-h-full w-full max-w-3xl">
+          <img id="morning-img" alt="" class="max-h-[75vh] w-full rounded-xl object-contain" referrerpolicy="no-referrer">
+          <figcaption id="morning-caption" class="mt-3 text-center text-sm text-slate-200"></figcaption>
+        </figure>
+      </div>
 
       <!-- parametry -->
       <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -198,6 +211,9 @@
       timeSunrise: "Východ slunce", timeSunset: "Západ slunce",
       horizon: "Nízké mraky na obzoru", canvas: "Mraky pro barvy",
       webcam: (name) => `Živá webkamera · ${name}`,
+      morningBtn: "📷 Dnešní ranní pohled (08:00)",
+      morningCap: (p) => `Dnes v 08:00 · Model předpovídal: ${p}`,
+      morningCapNoPred: "Dnes v 08:00 · Snímek z NetMadeira",
       sunsetHead: { GO: "Západ slunce vypadá slibně.", MAYBE: "Hazard, výsledek je nejistý.", NO_GO: "Dnes to nevypadá na západ, který by stál za cestu." },
       sunsetComp: { visibility: "dohlednost", wind: "vítr", horizon_clarity: "čistý obzor", cloud_canvas: "barvy oblohy", low_cloud_penalty: "mlha na vyhlídce", wind_comfort: "vítr" },
       sunsetSummary: (d, t, kind) => [
@@ -270,6 +286,9 @@
       timeSunrise: "Sunrise", timeSunset: "Sunset",
       horizon: "Low clouds on horizon", canvas: "Clouds for colour",
       webcam: (name) => `Live webcam · ${name}`,
+      morningBtn: "📷 This morning's view (08:00)",
+      morningCap: (p) => `Today at 08:00 · Model predicted: ${p}`,
+      morningCapNoPred: "Today at 08:00 · Snapshot from NetMadeira",
       sunsetHead: { GO: "The sunset looks promising.", MAYBE: "A gamble, the outcome is uncertain.", NO_GO: "Not a sunset worth the trip today." },
       sunsetComp: { visibility: "visibility", wind: "wind", horizon_clarity: "clear horizon", cloud_canvas: "sky colours", low_cloud_penalty: "fog at the viewpoint", wind_comfort: "wind" },
       sunsetSummary: (d, t, kind) => [
@@ -428,6 +447,36 @@
     if (url) { a.href = url; $("webcam-text").textContent = t().webcam(place); }
   }
 
+  // ranní snímek NetMadeira: tlačítko se ukáže, až se snímek opravdu načte (jinak zůstane skryté)
+  let morningLoaded = "";
+  function renderMorning() {
+    const url = data && data.morning_webcam_url, btn = $("morning-btn"), probe = $("morning-probe");
+    const show = (on) => { btn.classList.toggle("hidden", !on); btn.classList.toggle("inline-flex", on); };
+    if (!url || spotKey !== "arieiro" || mode !== "sunrise") { show(false); return; }
+    $("morning-text").textContent = t().morningBtn;
+    if (morningLoaded === url) { show(true); return; }
+    show(false);
+    probe.onload = () => { morningLoaded = url; show(true); };
+    probe.onerror = () => { morningLoaded = ""; show(false); };
+    probe.src = url;
+  }
+
+  function openMorning(open) {
+    const m = $("morning-modal");
+    if (open) {
+      const L = t(), h = (data.history || []).find((r) => r.date === data.morning_webcam_date);
+      $("morning-img").src = data.morning_webcam_url;
+      $("morning-caption").textContent = h && h.score_pct != null
+        ? L.morningCap(`${L.verdict[h.verdict] || h.verdict} ${h.score_pct} %`) : L.morningCapNoPred;
+    }
+    m.classList.toggle("hidden", !open);
+    m.classList.toggle("flex", open);
+  }
+  $("morning-btn").addEventListener("click", () => openMorning(true));
+  $("morning-modal").addEventListener("click", () => openMorning(false));
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") openMorning(false); });
+  $("morning-img").addEventListener("error", () => { openMorning(false); morningLoaded = ""; renderMorning(); });
+
   // výhled na další dny; bez `spot_days` (starší data.json) jen Arieiro + zítřek ostatních
   function daysOf(key) {
     if (data.spot_days && data.spot_days[key] && data.spot_days[key].length) return data.spot_days[key];
@@ -582,6 +631,7 @@
     document.title = $("title").textContent;
     // historie predikcí (ručně hodnocené východy) existuje jen pro Arieiro
     $("history").classList.toggle("hidden", spotKey !== "arieiro");
+    renderMorning();
   }
 
   function renderWeather(day) {

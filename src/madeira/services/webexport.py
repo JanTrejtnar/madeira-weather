@@ -24,6 +24,18 @@ TZ = ZoneInfo("Atlantic/Madeira")
 ARIEIRO_ELEVATION_M = 1818
 
 
+NETMADEIRA_SNAPSHOT = (
+    "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/"
+    "pico-do-arieiro/24h/{:%Y_%m_%d}_{}.jpg"
+)
+MORNING_SNAPSHOT_SLOT = "08_00"  # ranní slot statických snímků timelapsu (UTC)
+
+
+def morning_webcam_url(day) -> str:
+    """URL ranního snímku timelapsu NetMadeira z Pico do Arieiro pro daný den (nic se nestahuje)."""
+    return NETMADEIRA_SNAPSHOT.format(day, MORNING_SNAPSHOT_SLOT)
+
+
 def _day_entry(analysis: SunriseAnalysis, features, departure_before_min: int) -> dict:
     sunrise = analysis.sunrise_utc.astimezone(TZ)
     deck = analysis.inversion.cloud_deck_top_m
@@ -430,6 +442,8 @@ def build_payload(
         "generated_at": now.isoformat(timespec="seconds"),
         "model": bundle.model,
         "location": {"name": "Pico do Arieiro", "elevation_m": ARIEIRO_ELEVATION_M},
+        "morning_webcam_url": morning_webcam_url(now.astimezone(UTC).date()),
+        "morning_webcam_date": now.astimezone(UTC).date().isoformat(),
         "tomorrow": entries[0],
         "tomorrow_spots": spots,
         # kořen = výchozí spot (zpětná kompatibilita), `spots` = všechna místa podle klíče
