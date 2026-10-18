@@ -43,6 +43,12 @@
     .seg-off { color: #94a3b8; }
     .seg-off:hover { background: rgba(255,255,255,.1); }
     summary::-webkit-details-marker { display: none; }
+    .hpanel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .25s ease; }
+    .hpanel > div { overflow: hidden; }
+    .hrow.open .hpanel { grid-template-rows: 1fr; }
+    .hrow .chev { transition: transform .2s ease; }
+    .hrow.open .chev { transform: rotate(180deg); }
+    @media (prefers-reduced-motion: reduce) { .hpanel, .hrow .chev { transition: none; } }
     .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     /* mapa */
@@ -173,19 +179,7 @@
         </summary>
         <div class="px-4 pb-4">
           <p class="mb-3 text-xs text-slate-400" data-i18n="historyNote">Predikce modelu vs. skutečnost podle ručního hodnocení.</p>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm">
-              <thead class="text-xs uppercase tracking-wider text-slate-400">
-                <tr>
-                  <th class="py-2 pr-3 font-medium" data-i18n="hDate">Datum</th>
-                  <th class="py-2 pr-3 font-medium" data-i18n="hPred">Predikce</th>
-                  <th class="py-2 pr-3 font-medium" data-i18n="hInv">Inverze</th>
-                  <th class="py-2 font-medium" data-i18n="hActual">Skutečnost</th>
-                </tr>
-              </thead>
-              <tbody id="history-rows" class="divide-y divide-white/5"></tbody>
-            </table>
-          </div>
+          <ul id="history-rows" class="divide-y divide-white/5"></ul>
           <p id="history-empty" class="hidden text-sm text-slate-400" data-i18n="historyEmpty">Zatím žádné dny v historii.</p>
           <p class="mt-3 text-xs text-slate-500" data-i18n="backfillNote">* zpětně dopočteno z archivovaných dat modelu</p>
         </div>
@@ -232,8 +226,21 @@
       score: "% skóre", departure: "Odjezd z Funchalu", deck: "Hladina mraků",
       above: (n) => `${n} nad mraky`, wind: "Vítr", gust: "nárazy", outlook: "Výhled", tomorrow: "Zítra",
       history: "Historie predikcí", historyNote: "Predikce modelu vs. skutečnost podle ručního hodnocení (pokud je zadané).",
-      hDate: "Datum", hPred: "Predikce", hInv: "Inverze", hActual: "Skutečnost",
-      historyEmpty: "Zatím žádné dny v historii.", unknown: "❔ Nevíme, jak to dopadlo", backfillNote: "* zpětně dopočteno z archivovaných dat modelu",
+      hActual: "Skutečnost", hDetail: "Detail dne",
+      hBase: "Základna mraků", hBaseNote: "odhad", hTopLabel: "Horní hranice mraků", hAbove: "nad mraky",
+      hHum: "Vlhkost na vrcholu", hDry: "suchý vzduch nad inverzí", hMoist: "vlhko i nad vrcholem",
+      hVis: "Dohlednost", hWindGust: "Vítr / nárazy", hGust: "poryvy",
+      hClouds: "Oblačnost", hLow: "nízká", hHigh: "vysoká", hCanvas: "střední/vysoká",
+      hTemp: "Teplota", hHorizon: "Nízké mraky na obzoru",
+      hProblem: { precip: "Srážky kolem události.", fog: "Vrchol byl v mraku/mlze.", horizon: "Nízké mraky zakrývaly obzor." },
+      hWeakest: (n) => `Nejslabší stránka: ${n}.`, hNoProblem: "Bez výraznějšího problému.",
+      hDiag: {
+        none: () => "Žádná výrazná vlhká vrstva pod vrcholem – moře mraků nebylo.",
+        above: (h) => `Inverze: mraky končily kolem ${num(h.cloud_top)} m a vrchol byl o ~${num(h.above_deck_m)} m nad nimi.`,
+        edge: (h) => `Vrchol byl na hranici vrstvy mraků (~${num(h.cloud_top)} m).`,
+        inside: (h) => `Vlhká vrstva sahala až k ~${num(h.cloud_top)} m – vrchol byl pravděpodobně v mraku.`,
+      },
+      historyEmpty: "Historie pro toto místo se začíná zaznamenávat.", unknown: "❔ Nevíme, jak to dopadlo", backfillNote: "* zpětně dopočteno z archivovaných dat modelu",
       navEscape: "☀️ Hledáte slunce u moře? Zkusit Sunny Escape →",
       navFanal: "🌲 Hledáte mlžný les? Fanal Fog Index →",
       install: "📲 Nainstalovat aplikaci",
@@ -309,8 +316,21 @@
       score: "% score", departure: "Leave Funchal", deck: "Cloud deck top",
       above: (n) => `${n} above clouds`, wind: "Wind", gust: "gusts", outlook: "Outlook", tomorrow: "Tomorrow",
       history: "Prediction history", historyNote: "Model prediction vs. what actually happened (when rated by hand).",
-      hDate: "Date", hPred: "Prediction", hInv: "Inversion", hActual: "Actual",
-      historyEmpty: "No days yet.", unknown: "❔ We don't know how it turned out", backfillNote: "* back-computed from archived model data",
+      hActual: "Actual", hDetail: "Day details",
+      hBase: "Cloud base", hBaseNote: "estimate", hTopLabel: "Cloud tops", hAbove: "above clouds",
+      hHum: "Humidity at summit", hDry: "dry air above the inversion", hMoist: "moist above the summit too",
+      hVis: "Visibility", hWindGust: "Wind / gusts", hGust: "gusts",
+      hClouds: "Cloud cover", hLow: "low", hHigh: "high", hCanvas: "mid/high",
+      hTemp: "Temperature", hHorizon: "Low clouds on horizon",
+      hProblem: { precip: "Rain around the event.", fog: "The summit was in cloud/fog.", horizon: "Low clouds hid the horizon." },
+      hWeakest: (n) => `Weakest factor: ${n}.`, hNoProblem: "No significant problem.",
+      hDiag: {
+        none: () => "No significant moist layer below the summit – no cloud sea.",
+        above: (h) => `Inversion: clouds topped out around ${num(h.cloud_top)} m and the summit was ~${num(h.above_deck_m)} m above them.`,
+        edge: (h) => `The summit sat right at the edge of the cloud deck (~${num(h.cloud_top)} m).`,
+        inside: (h) => `The moist layer reached ~${num(h.cloud_top)} m – the summit was probably in cloud.`,
+      },
+      historyEmpty: "History for this spot is only starting to be recorded.", unknown: "❔ We don't know how it turned out", backfillNote: "* back-computed from archived model data",
       navEscape: "☀️ Looking for sun by the sea? Try Sunny Escape →",
       navFanal: "🌲 Looking for a misty forest? Fanal Fog Index →",
       install: "📲 Install app",
@@ -642,8 +662,6 @@
     document.body.dataset.mode = mode;
     $("title").textContent = (sunset ? L.titleSunset : L.titleSunrise)(curSpot().name);
     document.title = $("title").textContent;
-    // historie predikcí (ručně hodnocené východy) existuje jen pro Arieiro
-    $("history").classList.toggle("hidden", spotKey !== "arieiro");
     renderMorning();
   }
 
@@ -677,33 +695,109 @@
     }));
   }
 
-  function renderHistory() {
-    const rows = data.history || [], L = t();
+  // historie vybraného spotu; Arieiro má navíc delší ručně hodnocenou historii v kořeni data.json
+  function currentSpotData() {
+    const grp = mode === "sunset" ? data.sunset : data.sunrise;
+    return (grp && grp.spots && grp.spots[spotKey]) || null;
+  }
+  const dash = "—";
+  const val = (v, unit = "") => (v == null ? dash : `${num(v)}${unit}`);
+  let openRow = null;
+
+  function histCell(icon, label, value, sub) {
+    const c = el("div", "rounded-lg bg-white/5 px-3 py-2");
+    c.append(el("p", "text-[11px] uppercase tracking-wider text-slate-400", `${icon} ${label}`),
+      el("p", "mt-0.5 text-base font-semibold text-slate-100", value));
+    if (sub) c.append(el("p", "text-xs text-slate-400", sub));
+    return c;
+  }
+
+  function diagnosis(h) {
+    const L = t(), names = { ...L.comp, ...L.sunsetComp }, r = h.reason;
+    if (h.inversion_case && L.hDiag[h.inversion_case]) {
+      let text = L.hDiag[h.inversion_case](h);
+      if (h.humidity_peak != null) text += ` ${L.hHum}: ${num(h.humidity_peak)} % (${h.humidity_peak < 40 ? L.hDry : L.hMoist}).`;
+      return text;
+    }
+    if (r) return r.problem ? L.hProblem[r.problem] : r.weakest ? L.hWeakest(names[r.weakest] || r.weakest) : L.hNoProblem;
+    return h.summary || dash;
+  }
+
+  function historyDetail(h) {
+    const L = t(), grid = el("div", "grid grid-cols-2 gap-2 sm:grid-cols-3");
+    const sign = (v) => (v >= 0 ? "+" : "") + num(v);
+    grid.append(
+      h.cloud_top != null
+        ? histCell("☁️", L.hTopLabel, `${num(h.cloud_top)} m`, h.above_deck_m != null ? `${sign(h.above_deck_m)} m ${L.hAbove}` : "")
+        : histCell("☁️", L.hBase, h.cloud_base == null ? dash : `~${num(h.cloud_base)} m`, h.cloud_base != null ? L.hBaseNote : ""),
+      h.humidity_peak != null
+        ? histCell("💧", L.hHum, `${num(h.humidity_peak)} %`, h.humidity_peak < 40 ? L.hDry : L.hMoist)
+        : histCell("👁", L.hVis, val(h.visibility_km, " km")),
+      histCell("💨", L.hWindGust, val(h.wind_speed, " km/h"), h.wind_gusts == null ? "" : `${L.hGust} ${num(h.wind_gusts)} km/h`),
+      histCell("🎨", L.hClouds, `${L.hLow} ${val(h.cloud_cover_low, " %")}`,
+        h.cloud_cover_high != null ? `${L.hHigh} ${num(h.cloud_cover_high)} %` : h.canvas_cloud != null ? `${L.hCanvas} ${num(h.canvas_cloud)} %` : ""),
+      histCell("🌡", L.hTemp, h.temp == null ? dash : `${num(h.temp)} °C`),
+      histCell("🌅", L.hHorizon, val(h.horizon_low_cloud, " %")),
+    );
+    const box = el("div", "mb-3 space-y-2 rounded-xl border border-white/10 bg-slate-900/80 p-3");
+    box.append(grid, el("p", "text-sm leading-relaxed text-slate-300", diagnosis(h)),
+      h.outcome ? el("p", "text-sm text-slate-200", `${L.hActual}: ${L.outcome[h.outcome] || h.outcome}`)
+                : el("p", "text-sm italic text-slate-500", L.unknown));
+    return box;
+  }
+
+  function renderHistory(spotData = currentSpotData()) {
+    const L = t();
+    const own = (spotData && spotData.history) || [];
+    const rows = spotKey === "arieiro" && (data.history || []).length ? data.history : own;
     $("history-empty").classList.toggle("hidden", rows.length > 0);
-    $("history-rows").replaceChildren(...rows.map((h) => {
-      const tr = el("tr");
-      const pred = el("td", "py-2 pr-3 whitespace-nowrap");
-      if (h.score_pct == null) pred.textContent = "–";
+    $("history-rows").replaceChildren(...rows.map((h, i) => {
+      const id = `${spotKey}|${h.date}`, isOpen = openRow === id;
+      const li = el("li", "hrow" + (isOpen ? " open" : ""));
+      const day = `${L.short[parse(h.date).getDay()]} ${fmtDate(h.date)}`;
+      const score = h.score != null ? h.score : h.score_pct;
+      const head = el("div", "flex items-center");
+      const btn = el("button", "flex min-h-[52px] flex-1 items-center gap-3 py-2 text-left");
+      btn.type = "button";
+      btn.setAttribute("aria-expanded", isOpen);
+      btn.setAttribute("aria-controls", `hp-${i}`);
+      btn.title = L.hDetail;
+      const when = el("span", "whitespace-nowrap text-sm text-slate-300", day + (h.time ? ` · ${h.time}` : ""));
+      const right = el("span", "ml-auto flex items-center gap-2");
+      if (score == null) right.append(el("span", "text-slate-500", dash));
       else {
-        pred.append(el("span", `font-semibold ${style(h.verdict).text}`, `${L.verdict[h.verdict] || h.verdict} `), el("span", "text-slate-300", `${h.score_pct} %`));
-        if (h.source === "backfill") pred.append(el("span", "text-slate-500", " *"));
+        right.append(el("span", `rounded-md px-2 py-0.5 text-xs font-semibold ${style(h.verdict).badge}`, L.verdict[h.verdict] || h.verdict),
+          el("span", "text-sm text-slate-300", `${score} %` + (h.source === "backfill" ? " *" : "")));
       }
-      const dateCell = el("td", "py-2 pr-3 whitespace-nowrap text-slate-300", `${L.short[parse(h.date).getDay()]} ${fmtDate(h.date)}`);
+      right.append(el("span", "chev text-slate-400", "▾"));
+      btn.append(when, right);
+      head.append(btn);
       if (h.webcam_url && !brokenSnaps.has(h.webcam_url)) {
-        const b = el("button", "ml-2 rounded-md px-1.5 py-0.5 hover:bg-white/10", "📷");
-        b.type = "button";
-        b.title = L.snapTitle;
-        b.setAttribute("aria-label", L.snapTitle);
-        b.addEventListener("click", () => {
+        const cam = el("button", "ml-1 min-h-[44px] min-w-[44px] rounded-md hover:bg-white/10", "📷");
+        cam.type = "button";
+        cam.title = L.snapTitle;
+        cam.setAttribute("aria-label", L.snapTitle);
+        cam.addEventListener("click", () => {
           const p = predText(h);
-          openSnapshot(h.webcam_url, p ? L.snapCap(`${L.short[parse(h.date).getDay()]} ${fmtDate(h.date)}`, p) : L.snapCapNoPred(`${L.short[parse(h.date).getDay()]} ${fmtDate(h.date)}`));
+          openSnapshot(h.webcam_url, p ? L.snapCap(day, p) : L.snapCapNoPred(day));
         });
-        dateCell.append(b);
+        head.append(cam);
       }
-      tr.append(dateCell, pred,
-        el("td", "py-2 pr-3 text-slate-300", h.inversion_pct == null ? "–" : `${h.inversion_pct} %`),
-        h.outcome ? el("td", "py-2", L.outcome[h.outcome] || h.outcome) : el("td", "py-2 italic text-slate-500", L.unknown));
-      return tr;
+      const panel = el("div", "hpanel");
+      panel.id = `hp-${i}`;
+      const inner = el("div");
+      inner.append(historyDetail(h));
+      panel.append(inner);
+      btn.addEventListener("click", () => {  // harmonika: otevře se jen jeden řádek
+        openRow = openRow === id ? null : id;
+        $("history-rows").querySelectorAll(".hrow").forEach((r) => {
+          const on = r === li && openRow === id;
+          r.classList.toggle("open", on);
+          r.querySelector("button[aria-expanded]").setAttribute("aria-expanded", on);
+        });
+      });
+      li.append(head, panel);
+      return li;
     }));
   }
 

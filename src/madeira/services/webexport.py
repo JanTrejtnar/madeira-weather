@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from types import SimpleNamespace
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -12,10 +13,19 @@ from madeira.analyzers.coastal_sunrise import score_coastal_sunrise
 from madeira.analyzers.daily_weather import day_weather
 from madeira.analyzers.features import extract_sunrise_features
 from madeira.analyzers.sunny_escape import rank_locations, recommendation_cs
+from madeira.analyzers import coastal_sunrise as _coastal
+from madeira.analyzers import sunrise as _sunrise
+from madeira.analyzers import sunset as _sunset
+from madeira.analyzers.inversion import summit_rh
 from madeira.analyzers.sunrise import extract_spot_features, score_sunrise
 from madeira.analyzers.sunset import extract_sunset_features, score_sunset
-from madeira.domain.config import EscapeConfig, FanalConfig, Settings
-from madeira.domain.models import ForecastBundle, SunriseAnalysis, SunsetAnalysis
+from madeira.domain.config import EscapeConfig, FanalConfig, Settings, load_locations
+from madeira.domain.models import (
+    OUTCOME_TO_VERDICT,
+    ForecastBundle,
+    SunriseAnalysis,
+    SunsetAnalysis,
+)
 from madeira.fetchers.open_meteo import OpenMeteoFetcher
 from madeira.services import forecast
 from madeira.storage.db import Store
@@ -165,7 +175,7 @@ def _sunset_alerts(a: SunsetAnalysis, f) -> list[dict]:
     return alerts
 
 
-def _spot_summary(spot: dict, kind: str) -> dict:
+def _spot_summary(spot: dict, kind: str, history: list[dict] | None = None) -> dict:
     """Jednotný tvar pro kořenové klíče `sunrise` a `sunset` v data.json."""
     cloud_sea = None
     if kind == "sunrise" and spot["type"] == "mountain_inversion":  # moře mraků jen na horské vyhlídce
@@ -200,6 +210,7 @@ def _spot_summary(spot: dict, kind: str) -> dict:
         "problem": spot["problem"],
         "weakest": spot["weakest"],
         "alerts": spot["alerts"],
+        "history": history or [],
     }
 
 
@@ -420,6 +431,7 @@ def build_payload(
     store: Store | None = None,
     escape_bundle: ForecastBundle | None = None,
     fanal_bundle: ForecastBundle | None = None,
+    spot_history: dict[str, list[dict]] | None = None,
 ) -> dict:
     """Spočítá zítřek a výhled na `days` dní (první den = zítřek, místní čas Madeiry)."""
     live = bundle is None
@@ -449,6 +461,12 @@ def build_payload(
     if not entries:
         raise RuntimeError("Model nevrátil data pro zítřek.")
     spots = tomorrow_spots(settings, bundle, first, now)
+    today_utc = now.astimezone(UTC).date()
+
+    def hist(key: str) -> list[dict]:
+        rows = (spot_history or {}).get(key, [])
+        return with_snapshot_links(rows, today_utc) if key == "arieiro" else rows  # snímky jen z Arieira
+
     escape = sunny_escape_section(settings.sunny_escape, escape_bundle, now) if escape_bundle else None
     fog = fanal_section(settings.fanal, fanal_bundle, now) if fanal_bundle else None
     return {
@@ -460,10 +478,10 @@ def build_payload(
         "tomorrow": entries[0],
         "tomorrow_spots": spots,
         # kořen = výchozí spot (zpětná kompatibilita), `spots` = všechna místa podle klíče
-        "sunrise": _spot_summary(spots["morning"][0], "sunrise")
-        | {"spots": {s["key"]: _spot_summary(s, "sunrise") for s in spots["morning"]}},
-        "sunset": _spot_summary(spots["evening"][0], "sunset")
-        | {"spots": {s["key"]: _spot_summary(s, "sunset") for s in spots["evening"]}},
+        "sunrise": _spot_summary(spots["morning"][0], "sunrise", hist(spots["morning"][0]["key"]))
+        | {"spots": {s["key"]: _spot_summary(s, "sunrise", hist(s["key"])) for s in spots["morning"]}},
+        "sunset": _spot_summary(spots["evening"][0], "sunset", hist(spots["evening"][0]["key"]))
+        | {"spots": {s["key"]: _spot_summary(s, "sunset", hist(s["key"])) for s in spots["evening"]}},
         "days": entries,
         "spot_days": spot_days(settings, bundle, first, days, now),
         "history": with_snapshot_links(history or [], now.astimezone(UTC).date()),
@@ -472,21 +490,162 @@ def build_payload(
     }
 
 
-def history_entries(rows: list[dict]) -> list[dict]:
-    """Řádky pohledu `calibration` (predikce vs. hodnocení) ve slim podobě pro web."""
-    return [
-        {
+HISTORY_SPOT_DAYS = 7  # kolik dní historie nese každý spot v `sunrise.spots` / `sunset.spots`
+CLOUD_BASE_M_PER_C = 125  # základna mraků ≈ 125 m nad místem za každý °C rozdílu T − rosný bod (jako u Fanalu)
+
+_COMPONENT_NAMES_CS = {**_sunrise._NAMES_CS, **_sunset._NAMES_CS, **_coastal._NAMES_CS}
+_PROBLEM_CS = {
+    "precip": "Srážky kolem události",
+    "fog": "Vrchol v mraku/mlze",
+    "horizon": "Nízké mraky na obzoru",
+}
+
+
+def _json(text: str | None, default):
+    try:
+        return json.loads(text) if text else default
+    except ValueError:
+        return default
+
+
+def _history_reason(row: dict) -> dict | None:
+    """Strukturovaný důvod skóre z uložených komponent a bran (frontend z něj skládá CZ/EN text)."""
+    comps = _json(row.get("components_json"), [])
+    gates = _json(row.get("gates_json"), {})
+    if not comps:
+        return None
+    problem = next(
+        (name for name, limit in (("precip", 1), ("fog", 0.6), ("horizon", 0.6))
+         if gates.get(name, 1) < limit),
+        None,
+    )
+    weakest = min(comps, key=lambda c: c["value"])
+    return {"problem": problem, "weakest": weakest["name"] if weakest["value"] < 0.6 else None}
+
+
+def _history_summary(reason: dict | None, deck: float | None) -> str | None:
+    if reason is None:
+        return None
+    if reason["problem"]:
+        text = _PROBLEM_CS[reason["problem"]]
+    elif reason["weakest"]:
+        text = f"Nejslabší stránka: {_COMPONENT_NAMES_CS.get(reason['weakest'], reason['weakest'])}"
+    else:
+        text = "Bez výraznějšího problému"
+    return text if deck is None else f"{text} · hladina mraků ~{round(deck)} m"
+
+
+def _num(value, digits: int = 0):
+    return None if value is None else round(value, digits) if digits else round(value)
+
+
+def _history_detail(row: dict, elevation_m: float | None) -> dict:
+    """Naměřené (předpovězené) parametry dne z uložených features; chybějící hodnoty jsou None."""
+    f = _json(row.get("features_json"), {})
+    rh = {int(k): v for k, v in (f.get("rh") or {}).items()}
+    z = {int(k): v for k, v in (f.get("z") or {}).items()}
+    summit = f.get("summit_m") or elevation_m
+    mountain = bool(summit and summit > 1000 and f.get("rh"))  # profil atmosféry dává smysl jen u hor
+    peak_rh = summit_rh(SimpleNamespace(rh=rh, z=z, summit_m=summit)) if mountain else None
+    deck = row.get("deck_top_m")
+    above = None if deck is None or not summit else summit - deck
+    dd = f.get("dewpoint_depression_c")
+    # odhad základny dává smysl, jen když nemáme horní hranici vrstvy pod místem (u inverze by byl nad vrcholem)
+    base = None if dd is None or not summit or deck is not None else (
+        round((summit + CLOUD_BASE_M_PER_C * max(dd, 0)) / 10) * 10
+    )
+    mids = [v for v in (f.get("mid_cloud"), f.get("high_cloud")) if v is not None]
+    vis_km = f.get("visibility_km")
+    if vis_km is None and f.get("visibility_m") is not None:
+        vis_km = f["visibility_m"] / 1000
+    return {
+        "time": _local_time(row.get("sunrise_utc")),
+        "cloud_base": base,  # odhad z T − rosný bod
+        "cloud_top": _num(deck),
+        "above_deck_m": _num(above),
+        "inversion_case": _inversion_case(deck, above) if mountain else None,
+        "cloud_cover_low": _num(f.get("low_cloud_summit", f.get("local_low_cloud"))),
+        "cloud_cover_high": _num(f.get("high_cloud")),
+        "canvas_cloud": _num(sum(mids) / len(mids)) if mids else _num(f.get("canvas_cloud")),
+        "horizon_low_cloud": _num(f.get("east_low_cloud", f.get("horizon_low_cloud"))),
+        "humidity_peak": _num(peak_rh),
+        "wind_speed": _num(f.get("wind_kmh")),
+        "wind_gusts": _num(f.get("gust_kmh")),
+        "temp": _num(f.get("temp_c"), 1),
+        "visibility_km": _num(vis_km),
+    }
+
+
+def _local_time(iso: str | None) -> str | None:
+    if not iso:
+        return None
+    return f"{datetime.fromisoformat(iso).replace(tzinfo=UTC).astimezone(TZ):%H:%M}"
+
+
+def history_entries(rows: list[dict], elevation_m: float | None = None) -> list[dict]:
+    """Řádky historie (predikce + případné hodnocení + detailní parametry) ve slim podobě pro web.
+
+    `score` je hlavní pole; `score_pct` zůstává kvůli starším klientům a popupu ranního snímku."""
+    out = []
+    for r in rows:
+        reason = _history_reason(r)
+        score = None if r["score"] is None else round(r["score"])
+        out.append({
             "date": r["target_date"],
-            "score_pct": None if r["score"] is None else round(r["score"]),
+            "score": score,
+            "score_pct": score,
             "verdict": r["verdict"],
+            "summary": _history_summary(reason, r.get("deck_top_m")),
+            "reason": reason,
             "inversion_pct": None if r["inversion_pct"] is None else round(r["inversion_pct"]),
             "outcome": r["outcome"],
+            "actual_verdict": OUTCOME_TO_VERDICT.get(r["outcome"]) if r["outcome"] else None,
             "source": "backfill" if r["model"] == "historical_forecast" else (
                 "forecast" if r["model"] else None
             ),
+            **_history_detail(r, elevation_m),
+        })
+    return out
+
+
+def collect_spot_history(
+    settings: Settings,
+    store: Store,
+    today: date,
+    previous: Path | None = None,
+    days: int = HISTORY_SPOT_DAYS,
+) -> dict[str, list[dict]]:
+    """Posledních `days` dní historie pro každý spot. Chybějící dny se doplní z archivovaných
+    předpovědí (backfill); při výpadku API zůstane historie z předchozího exportu."""
+    keys = (*MORNING_SPOTS, *EVENING_SPOTS)
+    elevations = {loc.key: loc.elevation_m for loc in load_locations()}
+
+    def rows_of(key: str) -> list[dict]:
+        return store.history_rows(today, limit=days, location=key)
+
+    missing = [k for k in keys if len(rows_of(k)) < days]
+    if missing:
+        try:
+            forecast.fetch_history(settings, store, missing, days=days)
+        except RuntimeError:
+            pass  # bez archivu se použije, co je v DB / v předchozím exportu
+    old = read_spot_history(previous) if previous else {}
+    return {
+        k: history_entries(rows_of(k), elevations.get(k)) or old.get(k, []) for k in keys
+    }
+
+
+def read_spot_history(path: Path) -> dict[str, list[dict]]:
+    """Per-spot historie z dříve exportovaného JSONu (prázdná, pokud soubor chybí nebo je rozbitý)."""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        return {
+            k: v.get("history", [])
+            for part in ("sunrise", "sunset")
+            for k, v in data[part].get("spots", {}).items()
         }
-        for r in rows
-    ]
+    except (OSError, ValueError, KeyError, AttributeError):
+        return {}
 
 
 def read_history(path: Path) -> list[dict]:

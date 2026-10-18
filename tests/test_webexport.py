@@ -157,3 +157,77 @@ def test_sunrise_and_sunset_sections_list_every_spot():
     assert rosto["horizon_low_cloud_pct"] is not None
     assert payload["sunset"]["spots"]["cristo_rei"]["location"]["elevation_m"] == 180
     json.dumps(payload)
+
+
+def _seeded_store(tmp_path, keys):
+    """DB se zpětnými predikcemi (model historical_forecast) z fixture pro dané spoty."""
+    from datetime import timedelta
+
+    from madeira.services import forecast
+    from madeira.storage.db import Store
+
+    class FakeFetcher:
+        def fetch_historical(self, locations, start, end):
+            return _bundle().model_copy(update={"model": "historical_forecast"})
+
+    store = Store(tmp_path / "t.db")
+    end = NOW.date() + timedelta(days=1)
+    forecast.fetch_history(Settings(), store, list(keys), days=1, end=end, fetcher=FakeFetcher())
+    return store, end
+
+
+def test_history_entries_carry_detail_metrics(tmp_path):
+    store, end = _seeded_store(tmp_path, ["arieiro", "ponta_do_pargo"])
+    arieiro = webexport.history_entries(store.history_rows(end, 7, "arieiro"), 1818)[0]
+    for field in ("date", "score", "verdict", "summary", "actual_verdict", "time", "cloud_base",
+                  "cloud_top", "cloud_cover_high", "cloud_cover_low", "humidity_peak",
+                  "wind_speed", "wind_gusts", "temp"):
+        assert field in arieiro
+    assert arieiro["score"] == arieiro["score_pct"] and arieiro["source"] == "backfill"
+    assert arieiro["inversion_case"] in {"none", "above", "edge", "inside"}
+    assert arieiro["humidity_peak"] is not None and arieiro["actual_verdict"] is None
+    assert arieiro["cloud_base"] is None or arieiro["cloud_top"] is None  # odhad základny jen bez vrstvy pod místem
+    pargo = webexport.history_entries(store.history_rows(end, 7, "ponta_do_pargo"), 312)[0]
+    assert pargo["humidity_peak"] is None and pargo["inversion_case"] is None  # profil jen u hor
+    assert pargo["cloud_base"] is not None and pargo["visibility_km"] is not None
+    json.dumps([arieiro, pargo])
+
+
+def test_history_entry_maps_outcome_to_actual_verdict():
+    row = {"target_date": "2026-10-10", "outcome": "cloud_sea", "model": None, "score": None,
+           "verdict": None, "inversion_pct": None}
+    e = webexport.history_entries([row])[0]
+    assert e["actual_verdict"] == "GO" and e["summary"] is None and e["cloud_top"] is None
+
+
+def test_each_spot_has_its_own_history(tmp_path):
+    store, end = _seeded_store(tmp_path, forecast_keys := webexport.MORNING_SPOTS + webexport.EVENING_SPOTS)
+    hist = webexport.collect_spot_history(Settings(), store, end, previous=tmp_path / "missing.json")
+    assert set(hist) == set(forecast_keys) and all(hist[k] for k in forecast_keys)
+    payload = webexport.build_payload(
+        Settings(), days=3, bundle=_bundle(), now=NOW, spot_history=hist
+    )
+    for section in ("sunrise", "sunset"):
+        for key, spot in payload[section]["spots"].items():
+            got = [{k: v for k, v in row.items() if k != "webcam_url"} for row in spot["history"]]
+            assert got == hist[key]  # snímky NetMadeira (webcam_url) přibývají jen u Arieira
+    assert payload["sunrise"]["history"] == payload["sunrise"]["spots"]["arieiro"]["history"]
+    assert "webcam_url" not in payload["sunrise"]["spots"]["pico_ruivo"]["history"][0]
+    json.dumps(payload)
+
+
+def test_collect_spot_history_falls_back_to_previous_export(tmp_path, monkeypatch):
+    from madeira.services import forecast
+    from madeira.storage.db import Store
+
+    def boom(*a, **k):
+        raise RuntimeError("API down")
+
+    monkeypatch.setattr(forecast, "fetch_history", boom)
+    previous = tmp_path / "data.json"
+    previous.write_text(json.dumps({
+        "sunrise": {"spots": {"arieiro": {"history": [{"date": "2026-10-12"}]}}},
+        "sunset": {"spots": {}},
+    }), encoding="utf-8")
+    hist = webexport.collect_spot_history(Settings(), Store(tmp_path / "e.db"), NOW.date(), previous)
+    assert hist["arieiro"] == [{"date": "2026-10-12"}] and hist["cristo_rei"] == []

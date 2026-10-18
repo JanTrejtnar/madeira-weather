@@ -240,24 +240,28 @@ class Store:
             ).fetchall()
         return [dict(r) for r in rows]
 
-    def history_rows(self, up_to: date, limit: int = 60) -> list[dict]:
+    def history_rows(
+        self, up_to: date, limit: int = 60, location: str = DEFAULT_LOCATION
+    ) -> list[dict]:
         """Všechny dny s predikcí nebo hodnocením do `up_to` včetně; hodnocení může chybět."""
         with closing(self._conn()) as conn:
             rows = conn.execute(
                 """WITH dates AS (
-                       SELECT target_date FROM predictions WHERE location_id = 'arieiro'
-                       UNION SELECT target_date FROM outcomes WHERE location_id = 'arieiro')
-                   SELECT d.target_date, o.outcome, p.model, p.score, p.verdict, p.inversion_pct
+                       SELECT target_date FROM predictions WHERE location_id = :loc
+                       UNION SELECT target_date FROM outcomes WHERE location_id = :loc)
+                   SELECT d.target_date, o.outcome, p.model, p.score, p.verdict, p.inversion_pct,
+                          p.deck_top_m, p.sunrise_utc, p.features_json, p.components_json,
+                          p.gates_json
                    FROM dates d
-                   LEFT JOIN outcomes o ON o.target_date = d.target_date AND o.location_id = 'arieiro'
+                   LEFT JOIN outcomes o ON o.target_date = d.target_date AND o.location_id = :loc
                    LEFT JOIN predictions p ON p.id = (
                        SELECT id FROM predictions
-                       WHERE target_date = d.target_date AND location_id = 'arieiro'
+                       WHERE target_date = d.target_date AND location_id = :loc
                          AND (created_at < sunrise_utc OR model = 'historical_forecast')
                        ORDER BY (model = 'historical_forecast') ASC, created_at DESC LIMIT 1)
-                   WHERE d.target_date <= ? AND (p.id IS NOT NULL OR o.outcome IS NOT NULL)
-                   ORDER BY d.target_date DESC LIMIT ?""",
-                (up_to.isoformat(), limit),
+                   WHERE d.target_date <= :up_to AND (p.id IS NOT NULL OR o.outcome IS NOT NULL)
+                   ORDER BY d.target_date DESC LIMIT :limit""",
+                {"loc": location, "up_to": up_to.isoformat(), "limit": limit},
             ).fetchall()
         return [dict(r) for r in rows]
 
