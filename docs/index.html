@@ -132,7 +132,7 @@
       <!-- ranní snímek z NetMadeira (lightbox) -->
       <div id="morning-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 p-4" role="dialog" aria-modal="true">
         <figure class="max-h-full w-full max-w-3xl">
-          <img id="morning-img" alt="" class="max-h-[75vh] w-full rounded-xl object-contain" referrerpolicy="no-referrer">
+          <div id="morning-imgs" class="grid gap-3 sm:grid-cols-2 [&>img:only-child]:sm:col-span-2"></div>
           <figcaption id="morning-caption" class="mt-3 text-center text-sm text-slate-200"></figcaption>
         </figure>
       </div>
@@ -492,9 +492,31 @@
   }
 
   let brokenSnaps = new Set();
-  function openSnapshot(url, caption) {
-    const m = $("morning-modal"), open = !!url;
-    if (open) { $("morning-img").src = url; $("morning-caption").textContent = caption; }
+  // lightbox s jednou nebo více fotkami vedle sebe; nenačtená fotka se odstraní, bez fotek se zavře
+  let snapPrimary = "";
+  function openSnapshot(urls, caption) {
+    const m = $("morning-modal"), box = $("morning-imgs"), open = !!(urls && urls.length);
+    box.replaceChildren();
+    if (open) {
+      snapPrimary = urls[0];
+      urls.forEach((u) => {
+        const img = el("img", "max-h-[70vh] w-full rounded-xl object-contain");
+        img.alt = "";
+        img.referrerPolicy = "no-referrer";
+        img.addEventListener("error", () => {
+          img.remove();
+          if (!box.children.length) {
+            openSnapshot(null);
+            if (u === snapPrimary || urls.includes(snapUrl("morning")) || urls.includes(snapUrl("sunset"))) { snapLoaded = ""; renderMorning(); }
+            brokenSnaps.add(snapPrimary);
+            renderHistory();
+          }
+        });
+        img.src = u;
+        box.append(img);
+      });
+      $("morning-caption").textContent = caption;
+    }
     m.classList.toggle("hidden", !open);
     m.classList.toggle("flex", open);
   }
@@ -505,21 +527,15 @@
   function openMorning() {
     const kind = snapKind();
     if (!kind) return;
-    const L = t(), time = data[kind + "_webcam_time"] || "";
+    const L = t(), times = data[kind + "_webcam_times"] || [data[kind + "_webcam_time"] || ""], time = times.join(" + ");
     const grp = kind === "sunset" ? data.sunset : data.sunrise;
     const hist = kind === "sunset" ? ((grp.spots || {})[spotKey] || {}).history || [] : data.history || [];
     const p = predText(hist.find((r) => r.date === data.morning_webcam_date));
-    openSnapshot(snapUrl(kind), p ? L.morningCap(time, p) : L.morningCapNoPred(time));
+    openSnapshot(data[kind + "_webcam_urls"] || [snapUrl(kind)], p ? L.morningCap(time, p) : L.morningCapNoPred(time));
   }
   $("morning-btn").addEventListener("click", openMorning);
   $("morning-modal").addEventListener("click", () => openSnapshot(null));
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") openSnapshot(null); });
-  $("morning-img").addEventListener("error", () => {
-    const url = $("morning-img").getAttribute("src");
-    openSnapshot(null);
-    if (url === snapUrl("morning") || url === snapUrl("sunset")) { snapLoaded = ""; renderMorning(); }
-    else { brokenSnaps.add(url); renderHistory(); }
-  });
 
   // výhled na další dny; bez `spot_days` (starší data.json) jen Arieiro + zítřek ostatních
   function daysOf(key) {
@@ -800,7 +816,8 @@
         cam.setAttribute("aria-label", L.snapTitle);
         cam.addEventListener("click", () => {
           const p = predText(h);
-          openSnapshot(h.webcam_url, p ? L.snapCap(day, h.webcam_time || "", p) : L.snapCapNoPred(day, h.webcam_time || ""));
+          const tm = (h.webcam_times || [h.webcam_time || ""]).join(" + ");
+          openSnapshot(h.webcam_urls || [h.webcam_url], p ? L.snapCap(day, tm, p) : L.snapCapNoPred(day, tm));
         });
         head.append(cam);
       }

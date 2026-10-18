@@ -59,11 +59,19 @@ def sunset_local(day: date, lat: float = ARIEIRO_LAT, lon: float = ARIEIRO_LON) 
     return (datetime(day.year, day.month, day.day, tzinfo=UTC) + timedelta(minutes=minutes_utc)).astimezone(TZ)
 
 
-def sunset_snapshot_slot(day: date) -> str:
-    """Nejbližší půlhodinový slot k západu slunce, např. `19_30`."""
+def _slot(minutes: int) -> str:
+    return f"{minutes // 60:02d}_{minutes % 60:02d}"
+
+
+def sunset_snapshot_slots(day: date) -> list[str]:
+    """Slot nejblíž západu slunce a ten následující (po západu, barvy oblohy), např. `19_30`, `20_00`."""
     t = sunset_local(day)
     half = round((t.hour * 60 + t.minute) / 30) * 30
-    return f"{half // 60:02d}_{half % 60:02d}"
+    return [_slot(half), _slot(half + 30)]
+
+
+def sunset_snapshot_slot(day: date) -> str:
+    return sunset_snapshot_slots(day)[0]
 
 
 def morning_webcam_url(day) -> str:
@@ -71,9 +79,13 @@ def morning_webcam_url(day) -> str:
     return NETMADEIRA_SNAPSHOT.format(day=day, slot=MORNING_SNAPSHOT_SLOT)
 
 
+def sunset_webcam_urls(day) -> list[str]:
+    """URL večerních snímků (západ a o půl hodiny později) z Pico do Arieiro pro daný den."""
+    return [NETMADEIRA_SNAPSHOT.format(day=day, slot=slot) for slot in sunset_snapshot_slots(day)]
+
+
 def sunset_webcam_url(day) -> str:
-    """URL večerního snímku (slot nejblíž západu slunce) z Pico do Arieiro pro daný den."""
-    return NETMADEIRA_SNAPSHOT.format(day=day, slot=sunset_snapshot_slot(day))
+    return sunset_webcam_urls(day)[0]
 
 
 def _slot_time(url_slot: str) -> str:
@@ -85,11 +97,13 @@ def with_snapshot_links(history: list[dict], today, evening: bool = False) -> li
     oldest = today - timedelta(days=SNAPSHOT_RETENTION_DAYS)
     out = []
     for row in history:
-        row = {k: v for k, v in row.items() if k not in ("webcam_url", "webcam_time")}
+        row = {k: v for k, v in row.items() if not k.startswith("webcam_")}
         day = date.fromisoformat(row["date"])
         if oldest <= day <= today:
-            row["webcam_url"] = sunset_webcam_url(day) if evening else morning_webcam_url(day)
-            row["webcam_time"] = _slot_time(sunset_snapshot_slot(day) if evening else MORNING_SNAPSHOT_SLOT)
+            urls = sunset_webcam_urls(day) if evening else [morning_webcam_url(day)]
+            slots = sunset_snapshot_slots(day) if evening else [MORNING_SNAPSHOT_SLOT]
+            row["webcam_url"], row["webcam_time"] = urls[0], _slot_time(slots[0])
+            row["webcam_urls"], row["webcam_times"] = urls, [_slot_time(x) for x in slots]
         out.append(row)
     return out
 
@@ -520,6 +534,8 @@ def build_payload(
         "morning_webcam_time": _slot_time(MORNING_SNAPSHOT_SLOT),
         "sunset_webcam_url": sunset_webcam_url(now.astimezone(UTC).date()),
         "sunset_webcam_time": _slot_time(sunset_snapshot_slot(now.astimezone(UTC).date())),
+        "sunset_webcam_urls": sunset_webcam_urls(now.astimezone(UTC).date()),
+        "sunset_webcam_times": [_slot_time(x) for x in sunset_snapshot_slots(now.astimezone(UTC).date())],
         "tomorrow": entries[0],
         "tomorrow_spots": spots,
         # kořen = výchozí spot (zpětná kompatibilita), `spots` = všechna místa podle klíče
