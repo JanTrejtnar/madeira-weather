@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date, datetime, timedelta
+from types import SimpleNamespace
 
 from madeira.analyzers.features import _avg, _max, window_values
+from madeira.analyzers.inversion import summit_clear_factor
 from madeira.analyzers.scoring_utils import pw
 from madeira.analyzers.sunrise import DEWPOINT_DEP, NEUTRAL, _confidence
 from madeira.domain.config import Settings
@@ -40,6 +42,7 @@ class SunsetFeatures:
     visibility_m: float | None
     dewpoint_depression_c: float | None
     temp_c: float | None
+    summit_clear: float | None = None  # jen vrcholy: 0..1, nakolik je vrchol nad mraky pod ním
 
 
 def extract_sunset_features(
@@ -49,7 +52,9 @@ def extract_sunset_features(
     settings: Settings,
     spot_key: str = "ponta_do_pargo",
     west_key: str = "west_horizon",
+    mountain: bool = False,
 ) -> SunsetFeatures:
+    """`spot_key` je klíč lokality v bundlu; `mountain` zapne model mraků pod vrcholem."""
     spot = bundle.forecasts[spot_key]
     day = next((d for d in spot.daily if d.date == target_date), None)
     if day is None:
@@ -77,6 +82,18 @@ def extract_sunset_features(
     ]
     temp = avg(lambda p: p.temperature_c)
     dew = avg(lambda p: p.dew_point_c)
+    clear = None
+    if mountain:  # profil atmosféry v okně západu: je vrchol nad vrstvou mraků?
+        def lvl(level: int, attr: str) -> float | None:
+            return avg(lambda p: getattr(p.levels[level], attr) if level in p.levels else None)
+
+        levels = (925, 850, 800, 700)
+        profile = SimpleNamespace(
+            z={lv: lvl(lv, "geopotential_height_m") for lv in levels},
+            rh={lv: lvl(lv, "relative_humidity_pct") for lv in levels},
+            summit_m=spot.location.elevation_m,
+        )
+        clear = summit_clear_factor(profile)
     return SunsetFeatures(
         target_date=target_date,
         sunset_utc=sunset,
@@ -91,11 +108,31 @@ def extract_sunset_features(
         visibility_m=avg(lambda p: p.visibility_m),
         dewpoint_depression_c=None if temp is None or dew is None else temp - dew,
         temp_c=temp,
+        summit_clear=clear,
+    )
+
+
+def _above_deck(f: SunsetFeatures) -> SunsetFeatures:
+    """Vrchol nad mraky: mraky pod ním západ neblokují, takže se tlumí (viz východ na horách)."""
+    if f.summit_clear is None:
+        return f
+    keep = 1 - f.summit_clear
+
+    def scale(v: float | None) -> float | None:
+        return None if v is None else v * keep
+
+    dd = f.dewpoint_depression_c
+    return replace(
+        f,
+        horizon_low_cloud=scale(f.horizon_low_cloud),
+        local_low_cloud=scale(f.local_low_cloud),
+        dewpoint_depression_c=None if dd is None else dd + f.summit_clear * max(0.0, 3.0 - dd),
     )
 
 
 def score_sunset(f: SunsetFeatures, settings: Settings) -> SunsetAnalysis:
     cfg = settings.sunset
+    f = _above_deck(f)
     curves = cfg.piecewise
     warnings: list[str] = []
     comps: list[tuple[str, float, str]] = []

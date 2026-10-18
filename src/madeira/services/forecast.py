@@ -27,10 +27,11 @@ CACHE_DIR = Path(__file__).resolve().parents[3] / ".cache"
 
 
 ALL_LOCATIONS = (
-    "arieiro", "pico_ruivo", "bica_da_cana", "ponta_do_rosto", "ponta_do_pargo", "cristo_rei",
+    "arieiro", "pico_ruivo", "bica_da_cana", "ponta_do_rosto",
+    "ponta_do_pargo", "cristo_rei", "arieiro_sunset", "pico_ruivo_sunset",
 )
 LOCATION_ALIASES = {"pico_arieiro": "arieiro", "pico_do_arieiro": "arieiro"}
-SUNSET_SPOTS = ("ponta_do_pargo", "cristo_rei")
+SUNSET_SPOTS = ("ponta_do_pargo", "cristo_rei", "arieiro_sunset", "pico_ruivo_sunset")
 COASTAL_SUNRISE_SPOTS = ("ponta_do_rosto",)
 
 
@@ -97,7 +98,11 @@ def predict_spot(
 ) -> SunriseAnalysis | SunsetAnalysis:
     """Skóre libovolného spotu (východ na horách / západ na pobřeží) + zalogování predikce."""
     if key in SUNSET_SPOTS:
-        features = extract_sunset_features(bundle, day, now, settings, spot_key=key)
+        spot = settings.spots[key]
+        features = extract_sunset_features(
+            bundle, day, now, settings, spot_key=spot.location or key,
+            mountain=spot.type == "mountain_sunset",
+        )
         analysis = score_sunset(features, settings)
         weights = settings.sunset.weights.model_dump()
     elif key in COASTAL_SUNRISE_SPOTS:

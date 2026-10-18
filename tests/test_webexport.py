@@ -93,7 +93,9 @@ def test_payload_has_tomorrow_spots():
     assert [s["key"] for s in spots["morning"]] == [
         "arieiro", "pico_ruivo", "bica_da_cana", "ponta_do_rosto"
     ]
-    assert [s["key"] for s in spots["evening"]] == ["ponta_do_pargo", "cristo_rei"]
+    assert [s["key"] for s in spots["evening"]] == [
+        "ponta_do_pargo", "cristo_rei", "arieiro_sunset", "pico_ruivo_sunset"
+    ]
     assert spots["morning"][0]["score_pct"] == payload["tomorrow"]["score_pct"]
     assert spots["morning"][1]["elevation_m"] == 1862
     assert spots["morning"][2]["elevation_m"] == 1560
@@ -129,7 +131,8 @@ def test_spot_days_cover_every_spot():
     payload = webexport.build_payload(Settings(), days=3, bundle=_bundle(), now=NOW)
     sd = payload["spot_days"]
     assert set(sd) == {
-        "arieiro", "pico_ruivo", "bica_da_cana", "ponta_do_rosto", "ponta_do_pargo", "cristo_rei"
+        "arieiro", "pico_ruivo", "bica_da_cana", "ponta_do_rosto", "ponta_do_pargo", "cristo_rei",
+        "arieiro_sunset", "pico_ruivo_sunset",
     }
     for key, rows in sd.items():
         assert rows and rows[0]["date"] == payload["tomorrow"]["date"]
@@ -140,7 +143,7 @@ def test_sunrise_and_sunset_sections_list_every_spot():
     payload = webexport.build_payload(Settings(), days=3, bundle=_bundle(), now=NOW)
     expected = {
         "sunrise": {"arieiro", "pico_ruivo", "bica_da_cana", "ponta_do_rosto"},
-        "sunset": {"ponta_do_pargo", "cristo_rei"},
+        "sunset": {"ponta_do_pargo", "cristo_rei", "arieiro_sunset", "pico_ruivo_sunset"},
     }
     for section, keys in expected.items():
         spots = payload[section]["spots"]
@@ -231,3 +234,17 @@ def test_collect_spot_history_falls_back_to_previous_export(tmp_path, monkeypatc
     }), encoding="utf-8")
     hist = webexport.collect_spot_history(Settings(), Store(tmp_path / "e.db"), NOW.date(), previous)
     assert hist["arieiro"] == [{"date": "2026-10-12"}] and hist["cristo_rei"] == []
+
+
+def test_mountain_sunset_spots_use_summit_location_data():
+    payload = webexport.build_payload(Settings(), days=3, bundle=_bundle(), now=NOW)
+    sunset = payload["sunset"]["spots"]
+    arieiro, ruivo = sunset["arieiro_sunset"], sunset["pico_ruivo_sunset"]
+    assert arieiro["location"]["elevation_m"] == 1818 and ruivo["location"]["elevation_m"] == 1862
+    assert arieiro["location"]["type"] == "mountain_sunset" and arieiro["cloud_sea"] is None
+    assert arieiro["webcam_url"].endswith("/pico-do-arieiro")
+    assert arieiro["departure"] < arieiro["time"]
+    sunrise = payload["sunrise"]["spots"]
+    assert (arieiro["location"]["lat"], arieiro["location"]["lon"]) == (
+        sunrise["arieiro"]["location"]["lat"], sunrise["arieiro"]["location"]["lon"])
+    assert payload["spot_days"]["arieiro_sunset"][0]["weather"].keys() == {"funchal", "arieiro"}

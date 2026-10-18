@@ -401,7 +401,8 @@
   const ARIEIRO = { key: "arieiro", name: "Pico do Arieiro", elevation_m: 1818 };
   // krátké názvy tlačítek (vlastní jména, v obou jazycích stejné)
   const SPOT_LABEL = { arieiro: "Pico do Arieiro", pico_ruivo: "Pico Ruivo", bica_da_cana: "Bica da Cana",
-                       ponta_do_rosto: "Ponta do Rosto", ponta_do_pargo: "Ponta do Pargo", cristo_rei: "Cristo Rei (Garajau)" };
+                       ponta_do_rosto: "Ponta do Rosto", ponta_do_pargo: "Ponta do Pargo", cristo_rei: "Cristo Rei (Garajau)",
+                       arieiro_sunset: "Pico do Arieiro", pico_ruivo_sunset: "Pico Ruivo" };
   const spotLabel = (s) => SPOT_LABEL[s.key] || s.name;
   const isCoastalSunrise = (s) => s && s.type === "coastal_sunrise";
   const curSpot = () => allSpots().find((s) => s.key === spotKey) || ARIEIRO;
@@ -641,7 +642,17 @@
 
   function renderMap() {
     if (!map) return;
-    allSpots().forEach((s) => { if (markers[s.key]) markers[s.key].setIcon(pinIcon(s)); });
+    const all = allSpots();
+    all.forEach((s) => {
+      const mk = markers[s.key];
+      if (!mk) return;
+      mk.setIcon(pinIcon(s));
+      // stejný vrchol má špendlík pro východ i západ: mimo aktivní režim se schová, ať se nepřekrývají
+      const twin = all.some((o) => o.key !== s.key && o.lat === s.lat && o.lon === s.lon);
+      const hide = twin && s.kind !== mode;
+      if (hide && map.hasLayer(mk)) map.removeLayer(mk);
+      else if (!hide && !map.hasLayer(mk)) mk.addTo(map);
+    });
   }
 
   function mapFocus(key, fly) {

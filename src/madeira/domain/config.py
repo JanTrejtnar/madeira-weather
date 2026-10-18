@@ -63,10 +63,10 @@ class SpotConfig(BaseModel):
     """Vyhlídkové místo: klíč odpovídá lokalitě v locations.yaml (souřadnice jsou tam)."""
 
     name: str
-    type: Literal["mountain_inversion", "coastal_sunrise", "coastal_sunset"]
+    type: Literal["mountain_inversion", "coastal_sunrise", "coastal_sunset", "mountain_sunset"]
     departure_from_funchal_min: int  # odjezd z Funchalu před východem/západem (jízda + chůze)
     webcam_url: str | None = None  # živá webkamera (odkaz na webu)
-
+    location: str | None = None  # klíč lokality v locations.yaml; None = klíč spotu (jeden vrchol, dva spoty)
 
 def _default_spots() -> dict[str, SpotConfig]:
     return {
@@ -95,6 +95,15 @@ def _default_spots() -> dict[str, SpotConfig]:
         ),
         "cristo_rei": SpotConfig(
             name="Miradouro do Cristo Rei", type="coastal_sunset", departure_from_funchal_min=25
+        ),
+        "arieiro_sunset": SpotConfig(
+            name="Pico do Arieiro", type="mountain_sunset", departure_from_funchal_min=80,
+            location="arieiro",
+            webcam_url="https://www.netmadeira.com/webcams-madeira/pico-do-arieiro",
+        ),
+        "pico_ruivo_sunset": SpotConfig(
+            name="Pico Ruivo", type="mountain_sunset", departure_from_funchal_min=120,
+            location="pico_ruivo",
         ),
     }
 

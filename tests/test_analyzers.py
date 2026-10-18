@@ -310,3 +310,25 @@ def analyze_sunset_at(bundle, target, key):
     from madeira.analyzers.sunset import extract_sunset_features
 
     return score_sunset(extract_sunset_features(bundle, target, NOW, Settings(), spot_key=key), Settings())
+
+
+def test_mountain_sunset_ignores_clouds_below_summit():
+    from dataclasses import replace
+
+    s = Settings()
+    base = sunset_features(horizon_low_cloud=60.0, local_low_cloud=80.0, dewpoint_depression_c=0.2)
+    under_summit = replace(base, summit_clear=1.0)  # vrchol nad mraky: moře mraků pod ním
+    in_cloud = replace(base, summit_clear=0.0)  # vrchol v mraku: bez úlevy
+    assert score_sunset(base, s).score_pct == score_sunset(in_cloud, s).score_pct
+    assert score_sunset(under_summit, s).score_pct > 3 * score_sunset(in_cloud, s).score_pct
+    assert score_sunset(under_summit, s).gates["horizon"] == 1.0
+
+
+def test_mountain_sunset_on_fixture_uses_profile():
+    from madeira.analyzers.sunset import extract_sunset_features
+
+    bundle = parse_response(json.loads(FIXTURE.read_text()), load_locations(), "best_match", NOW)
+    target = bundle.forecasts["arieiro"].daily[1].date
+    f = extract_sunset_features(bundle, target, NOW, Settings(), spot_key="arieiro", mountain=True)
+    assert f.summit_clear is not None and 0 <= f.summit_clear <= 1
+    assert extract_sunset_features(bundle, target, NOW, Settings(), spot_key="ponta_do_pargo").summit_clear is None

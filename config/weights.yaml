@@ -52,6 +52,19 @@ spots:
     name: "Miradouro do Cristo Rei"
     type: coastal_sunset
     departure_from_funchal_min: 25    # ~15 min jízda + chůze + rezerva
+  # Západ ze stejných vrcholů jako východ: vlastní klíč spotu (kvůli historii), data z lokality `location`.
+  # Mraky pod vrcholem (moře mraků) západ neblokují; do skóre vstupují jen mraky nad ním.
+  arieiro_sunset:
+    name: "Pico do Arieiro"
+    type: mountain_sunset
+    location: arieiro
+    departure_from_funchal_min: 80
+    webcam_url: "https://www.netmadeira.com/webcams-madeira/pico-do-arieiro"
+  pico_ruivo_sunset:
+    name: "Pico Ruivo"
+    type: mountain_sunset
+    location: pico_ruivo
+    departure_from_funchal_min: 120   # stejná cesta jako východ; zpět se sestupuje po setmění
 # Východ na útesu Ponta do Rosto: východní obzor nad mořem musí být čistý, vítr na útesu mírný.
 coastal_sunrise:
   max_horizon_low_clouds: 20   # nad tímto (%) nízké mraky na východě zakrývají slunce

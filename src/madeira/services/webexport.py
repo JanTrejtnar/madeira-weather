@@ -3,20 +3,20 @@
 from __future__ import annotations
 
 import json
-from types import SimpleNamespace
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
+from types import SimpleNamespace
 from zoneinfo import ZoneInfo
 
+from madeira.analyzers import coastal_sunrise as _coastal
 from madeira.analyzers import fanal
+from madeira.analyzers import sunrise as _sunrise
+from madeira.analyzers import sunset as _sunset
 from madeira.analyzers.coastal_sunrise import score_coastal_sunrise
 from madeira.analyzers.daily_weather import day_weather
 from madeira.analyzers.features import extract_sunrise_features
-from madeira.analyzers.sunny_escape import rank_locations, recommendation_cs
-from madeira.analyzers import coastal_sunrise as _coastal
-from madeira.analyzers import sunrise as _sunrise
-from madeira.analyzers import sunset as _sunset
 from madeira.analyzers.inversion import summit_rh
+from madeira.analyzers.sunny_escape import rank_locations, recommendation_cs
 from madeira.analyzers.sunrise import extract_spot_features, score_sunrise
 from madeira.analyzers.sunset import extract_sunset_features, score_sunset
 from madeira.domain.config import EscapeConfig, FanalConfig, Settings, load_locations
@@ -219,7 +219,7 @@ def _round(value: float | None) -> int | None:
 
 
 def _spot_meta(settings: Settings, bundle: ForecastBundle, key: str) -> dict:
-    loc = bundle.forecasts[key].location
+    loc = bundle.forecasts[settings.spots[key].location or key].location
     return {
         "key": key,
         "name": settings.spots[key].name,
@@ -232,14 +232,18 @@ def _spot_meta(settings: Settings, bundle: ForecastBundle, key: str) -> dict:
 
 
 MORNING_SPOTS = ("arieiro", "pico_ruivo", "bica_da_cana", "ponta_do_rosto")
-EVENING_SPOTS = ("ponta_do_pargo", "cristo_rei")
+EVENING_SPOTS = ("ponta_do_pargo", "cristo_rei", "arieiro_sunset", "pico_ruivo_sunset")
 
 
 def spot_entry(settings: Settings, bundle: ForecastBundle, key: str, day, now: datetime) -> dict:
     """Předpověď jednoho spotu na jeden den (ranní nebo večerní tvar podle spotu)."""
     departure = settings.spots[key].departure_from_funchal_min
     if key in EVENING_SPOTS:
-        features = extract_sunset_features(bundle, day, now, settings)
+        spot = settings.spots[key]
+        features = extract_sunset_features(
+            bundle, day, now, settings, spot_key=spot.location or key,
+            mountain=spot.type == "mountain_sunset",
+        )
         return _sunset_entry(score_sunset(features, settings), features, departure)
     features, tuning = extract_spot_features(bundle, day, settings, now, key)
     if settings.spots[key].type == "coastal_sunrise":
@@ -259,14 +263,15 @@ def spot_days(settings: Settings, bundle: ForecastBundle, first, days: int, now:
     """Výhled na `days` dní pro každý spot + počasí během dne (Funchal a samotný spot)."""
     out: dict[str, list[dict]] = {}
     for key in (*MORNING_SPOTS, *EVENING_SPOTS):
-        available = {d.date for d in bundle.forecasts[key].daily}
+        loc = settings.spots[key].location or key
+        available = {d.date for d in bundle.forecasts[loc].daily}
         rows = []
         for offset in range(days):
             day = first + timedelta(days=offset)
             if day not in available:
                 break
             entry = spot_entry(settings, bundle, key, day, now)
-            entry["weather"] = day_weather(bundle, day, ("funchal", key))
+            entry["weather"] = day_weather(bundle, day, ("funchal", loc))
             rows.append(entry)
         out[key] = rows
     return out
@@ -618,7 +623,8 @@ def collect_spot_history(
     """Posledních `days` dní historie pro každý spot. Chybějící dny se doplní z archivovaných
     předpovědí (backfill); při výpadku API zůstane historie z předchozího exportu."""
     keys = (*MORNING_SPOTS, *EVENING_SPOTS)
-    elevations = {loc.key: loc.elevation_m for loc in load_locations()}
+    by_location = {loc.key: loc.elevation_m for loc in load_locations()}
+    elevations = {k: by_location.get(settings.spots[k].location or k) for k in keys}
 
     def rows_of(key: str) -> list[dict]:
         return store.history_rows(today, limit=days, location=key)
