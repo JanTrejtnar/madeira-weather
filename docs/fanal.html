@@ -71,8 +71,7 @@
           <div id="bar" class="h-full rounded-full bg-emerald-400 transition-all"></div>
         </div>
         <p id="summary" class="relative mt-4 text-slate-200"></p>
-        <p id="h-window" class="relative mt-4 text-xs uppercase tracking-wider text-slate-400"></p>
-        <p id="window" class="relative text-xl font-semibold text-emerald-100"></p>
+        <p id="window" class="relative mt-4 text-xl font-semibold text-emerald-100"></p>
         <ul id="slots" class="relative mt-3 flex flex-wrap gap-2 text-sm"></ul>
       </article>
 
@@ -134,10 +133,10 @@
   const T = {
     cs: {
       back: "← Zpět na Hory (Arieiro)", escape: "☀️ Sunny Escape →", loading: "Načítám předpověď…",
-      note: "Průměr z denních slotů 9:00, 13:00 a 17:00",
+      note: "Skóre dne = nejlepší ze slotů 9:00, 13:00 a 17:00",
       today: "Dnes", tomorrow: "Zítra", kicker: "Fanal Fog Index",
       status: { MYSTIC: "🌫️ MYSTICAL FOG", PARTIAL: "🌤️ PARTIAL FOG", CLEAR: "☀️ CLEAR · NO FOG" },
-      window: "Nejlepší atmosféra", noWindow: "Bez výrazné mlhy",
+      window: "Doporučený čas návštěvy", noWindow: "Bez výrazné mlhy",
       part: { morning: "Dopoledne", afternoon: "Odpoledne", evening: "Večer" },
       hum: "Vlhkost", base: "Hladina mraků", wind: "Vítr (nárazy)", rain: "Dešťové srážky",
       humNote: (v) => v >= 85 ? "ideální pro mlhu (85–100 %)" : "pod 85 % mlha řídne",
@@ -172,10 +171,10 @@
     },
     en: {
       back: "← Back to Mountains (Arieiro)", escape: "☀️ Sunny Escape →", loading: "Loading forecast…",
-      note: "Average of the 9:00, 13:00 and 17:00 slots",
+      note: "Day score = best of the 9:00, 13:00 and 17:00 slots",
       today: "Today", tomorrow: "Tomorrow", kicker: "Fanal Fog Index",
       status: { MYSTIC: "🌫️ MYSTICAL FOG", PARTIAL: "🌤️ PARTIAL FOG", CLEAR: "☀️ CLEAR · NO FOG" },
-      window: "Best atmosphere", noWindow: "No pronounced fog",
+      window: "Recommended time to visit", noWindow: "No pronounced fog",
       part: { morning: "Morning", afternoon: "Afternoon", evening: "Evening" },
       hum: "Humidity", base: "Cloud base", wind: "Wind (gusts)", rain: "Rainfall",
       humNote: (v) => v >= 85 ? "ideal for fog (85–100 %)" : "below 85 % the fog thins out",
@@ -384,10 +383,10 @@
     $("status").textContent = `${L.status[d.verdict] || d.verdict} · ${d.score} %`;
     $("bar").style.width = `${Math.max(0, Math.min(100, d.score))}%`;
     $("summary").textContent = lang === "cs" ? d.summary : summaryEn(d);
-    $("h-window").textContent = L.window;
-    $("window").textContent = windowText(d);
+    $("window").textContent = d.best_window_hours ? `${L.window}: ${windowText(d)}` : windowText(d);
     $("slots").replaceChildren(...(d.slots || []).map((s) =>
-      el("li", "rounded-full bg-black/25 px-3 py-1 text-slate-200", `${hh(s.hour)} ${ICON[s.verdict] || ""} ${s.score} %`)));
+      el("li", "rounded-full px-3 py-1 text-slate-200 " + (s.hour === d.peak_hour ? "bg-emerald-400/20 ring-1 ring-emerald-300/40" : "bg-black/25"),
+        `${hh(s.hour)} ${ICON[s.verdict] || ""} ${s.score} %`)));
 
     const num = (v, unit) => (v == null ? L.noData : `${v.toLocaleString(locale())} ${unit}`);
     $("h-hum").textContent = L.hum;

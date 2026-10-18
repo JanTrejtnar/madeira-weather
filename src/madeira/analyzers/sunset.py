@@ -7,7 +7,7 @@ from datetime import date, datetime, timedelta
 from types import SimpleNamespace
 
 from madeira.analyzers.features import _avg, _max, window_values
-from madeira.analyzers.inversion import summit_clear_factor
+from madeira.analyzers.inversion import estimate_deck_top, summit_clear_factor, summit_rh
 from madeira.analyzers.scoring_utils import pw
 from madeira.analyzers.sunrise import DEWPOINT_DEP, NEUTRAL, _confidence
 from madeira.domain.config import Settings
@@ -43,6 +43,10 @@ class SunsetFeatures:
     dewpoint_depression_c: float | None
     temp_c: float | None
     summit_clear: float | None = None  # jen vrcholy: 0..1, nakolik je vrchol nad mraky pod ním
+    west_mid_cloud: float | None = None  # střední oblačnost na západě (zatažení)
+    rh_aloft: float | None = None  # jen vrcholy: RH v 800 hPa
+    summit_rh: float | None = None  # jen vrcholy: RH ve výšce vrcholu
+    deck_top_m: float | None = None  # jen vrcholy: horní hranice vlhké vrstvy
 
 
 def extract_sunset_features(
@@ -75,14 +79,10 @@ def extract_sunset_features(
     west_high = _avg(window_values(west, lambda p: p.cloud_cover_high_pct, start, end))
     canvas = [v for v in (west_mid, west_high) if v is not None]
 
-    precip = [
-        p.precipitation_mm or 0.0
-        for p in pts
-        if sunset - timedelta(minutes=90) <= p.time_utc <= sunset + timedelta(minutes=90)
-    ]
+    precip = [p.precipitation_mm or 0.0 for p in pts if start <= p.time_utc <= end]
     temp = avg(lambda p: p.temperature_c)
     dew = avg(lambda p: p.dew_point_c)
-    clear = None
+    clear = rh800 = peak_rh = deck_top = None
     if mountain:  # profil atmosféry v okně západu: je vrchol nad vrstvou mraků?
         def lvl(level: int, attr: str) -> float | None:
             return avg(lambda p: getattr(p.levels[level], attr) if level in p.levels else None)
@@ -94,6 +94,9 @@ def extract_sunset_features(
             summit_m=spot.location.elevation_m,
         )
         clear = summit_clear_factor(profile)
+        rh800 = profile.rh.get(800)
+        peak_rh = summit_rh(profile)
+        deck_top = estimate_deck_top(profile)
     return SunsetFeatures(
         target_date=target_date,
         sunset_utc=sunset,
@@ -109,6 +112,10 @@ def extract_sunset_features(
         dewpoint_depression_c=None if temp is None or dew is None else temp - dew,
         temp_c=temp,
         summit_clear=clear,
+        west_mid_cloud=west_mid,
+        rh_aloft=rh800,
+        summit_rh=peak_rh,
+        deck_top_m=deck_top,
     )
 
 
@@ -130,8 +137,30 @@ def _above_deck(f: SunsetFeatures) -> SunsetFeatures:
     )
 
 
+def _mountain_fog(f: SunsetFeatures, cfg) -> float:
+    """0..1: pravděpodobnost, že je vrchol přímo v mraku (RH v 800 hPa nebo ve výšce vrcholu)."""
+    parts = []
+    if f.rh_aloft is not None:
+        parts.append(pw(f.rh_aloft, [(cfg.fog_rh_clear, 0.0), (cfg.fog_rh_fog, 1.0)]))
+    if f.summit_rh is not None:
+        parts.append(pw(f.summit_rh, [(cfg.summit_rh_clear, 0.0), (cfg.summit_rh_fog, 1.0)]))
+    return max(parts, default=0.0)
+
+
+def _inversion_bonus(f: SunsetFeatures, cfg) -> float:
+    """Body navíc, když vrchol svítí nad mořem mraků (suchý vzduch nahoře, vrstva mraků nízko)."""
+    if f.summit_clear is None or f.deck_top_m is None or f.rh_aloft is None:
+        return 0.0
+    if f.rh_aloft >= cfg.bonus_rh_max or f.deck_top_m >= cfg.bonus_deck_max_m:
+        return 0.0
+    low = max(v for v in (f.horizon_low_cloud, f.local_low_cloud, 0.0) if v is not None)
+    return cfg.inversion_bonus * f.summit_clear * pw(low, cfg.bonus_low_cloud)
+
+
 def score_sunset(f: SunsetFeatures, settings: Settings) -> SunsetAnalysis:
     cfg = settings.sunset
+    bonus = _inversion_bonus(f, cfg.mountain)  # z původních (netlumených) hodnot mraků
+    fog = _mountain_fog(f, cfg.mountain) if f.summit_clear is not None else None
     f = _above_deck(f)
     curves = cfg.piecewise
     warnings: list[str] = []
@@ -185,7 +214,7 @@ def score_sunset(f: SunsetFeatures, settings: Settings) -> SunsetAnalysis:
         for name, value, expl in comps
         if weights[name] > 0
     ]
-    raw = sum(c.contribution for c in components)
+    raw = min(100.0, sum(c.contribution for c in components) + bonus)
 
     # --- brány: srážky = okamžité NO-GO, zakrytý obzor a špatná dohlednost skóre srazí ---
     g = cfg.gates
@@ -204,12 +233,21 @@ def score_sunset(f: SunsetFeatures, settings: Settings) -> SunsetAnalysis:
             f.visibility_m,
             [(g.min_visibility_m / 3, VISIBILITY_GATE_MIN), (g.min_visibility_m, 1.0)],
         )
+    if f.summit_clear is not None:  # model má u vrcholu přízemní dohlednost "z mraku": nad vrstvou neplatí
+        vis_gate = 1 - (1 - vis_gate) * (1 - f.summit_clear)
+    # zatažení: souvislá nízká/střední oblačnost na západě (100 % stratus) = slunce není vidět
+    cover = max((v for v in (f.horizon_low_cloud, f.west_mid_cloud) if v is not None), default=0.0)
+    overcast_gate = pw(cover, [(g.overcast_from, 1.0), (100, g.overcast_gate_min)])
     gates = {
         "precip": 1.0 if f.precip_mm <= g.max_precipitation_mm else 0.0,
         "horizon": round(horizon_gate, 2),
         "visibility": round(vis_gate, 2),
+        "overcast": round(overcast_gate, 2),
     }
-    score = raw * gates["precip"] * gates["horizon"] * gates["visibility"]
+    if fog is not None:  # mlha přímo na vrcholu
+        gates["fog"] = round(1 - cfg.mountain.fog_gate_strength * fog, 2)
+    score = raw * gates["precip"] * gates["horizon"] * gates["visibility"] * gates["overcast"]
+    score *= gates.get("fog", 1.0)
 
     if gates["precip"] < 1:
         warnings.append(f"Srážky kolem západu: {f.precip_mm:.1f} mm (NO-GO).")
@@ -219,6 +257,10 @@ def score_sunset(f: SunsetFeatures, settings: Settings) -> SunsetAnalysis:
         )
     if gates["visibility"] < 1:
         warnings.append(f"Snížená dohlednost ({f.visibility_m / 1000:.0f} km).")
+    if gates["overcast"] < 1:
+        warnings.append("Zataženo nízkou/střední oblačností na západě – slunce nebude vidět.")
+    if gates.get("fog", 1.0) < 0.6:
+        warnings.append("Vrchol bude pravděpodobně v mraku/mlze.")
 
     confidence, margin = _confidence(f.days_ahead)
     verdict = (
@@ -248,6 +290,10 @@ def _summary_cs(score, verdict, components, gates) -> str:
     weakest = min(components, key=lambda c: c.value)
     if gates["precip"] < 1:
         parts.append("Největší problém jsou srážky.")
+    elif gates.get("fog", 1.0) < 0.6:
+        parts.append("Největší problém je mlha/mrak na vrcholu.")
+    elif gates["overcast"] < 0.6:
+        parts.append("Největší problém je úplné zatažení.")
     elif gates["horizon"] < 0.6:
         parts.append("Největší problém jsou nízké mraky na obzoru.")
     elif weakest.value < 0.6:

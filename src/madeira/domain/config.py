@@ -150,10 +150,29 @@ class CoastalSunriseConfig(BaseModel):
     weights: dict[str, float] = {"horizon_clarity": 0.45, "cloud_canvas": 0.25, "visibility": 0.15, "wind": 0.15}
 
 
+Curve = list[tuple[float, float]]  # (vstup, skóre 0..100)
+
+
 class SunsetGates(BaseModel):
     max_precipitation_mm: float = 0.1  # více = NO-GO
     max_horizon_low_clouds: float = 30  # nad tímto nízké mraky na západě zakrývají slunce
     min_visibility_m: float = 15000
+    overcast_from: float = 80  # nízká/střední oblačnost na západě od tohoto (%) = zataženo, slunce není vidět
+    overcast_gate_min: float = 0.3  # při 100 % zatažení se skóre násobí tímto (→ pod 40 %, NO-GO)
+
+
+class MountainSunsetConfig(BaseModel):
+    """Západ z vrcholu (Arieiro, Ruivo): mraky pod vrcholem nevadí, mlha na vrcholu ano."""
+
+    fog_rh_clear: float = 85  # RH v 800 hPa pod tímto = bez mlhy (brána se nepoužije)
+    fog_rh_fog: float = 90  # RH v 800 hPa od tohoto = vrchol v mraku (brána na minimum)
+    summit_rh_clear: float = 85  # totéž pro RH přímo ve výšce vrcholu (850/800 hPa)
+    summit_rh_fog: float = 90
+    fog_gate_strength: float = 0.85  # o kolik brána sráží skóre při jisté mlze
+    inversion_bonus: float = 10  # body navíc za moře mraků pod vrcholem ("zlatá inverze")
+    bonus_rh_max: float = 70  # bonus jen když je RH v 800 hPa pod tímto (suchý vzduch nad vrstvou)
+    bonus_deck_max_m: float = 1400  # ... a horní hranice mraků je pod touto výškou
+    bonus_low_cloud: Curve = [(30, 0.0), (70, 1.0)]  # [nízká oblačnost %, podíl bonusu]
 
 
 class SunsetWeights(BaseModel):
@@ -161,9 +180,6 @@ class SunsetWeights(BaseModel):
     cloud_canvas: float = 0.35
     low_cloud_penalty: float = 0.15
     wind_comfort: float = 0.10
-
-
-Curve = list[tuple[float, float]]  # (vstup, skóre 0..100)
 
 
 class SunsetCurves(BaseModel):
@@ -178,6 +194,7 @@ class SunsetWindow(BaseModel):
 
 class SunsetConfig(BaseModel):
     gates: SunsetGates = Field(default_factory=SunsetGates)
+    mountain: MountainSunsetConfig = Field(default_factory=MountainSunsetConfig)
     weights: SunsetWeights = Field(default_factory=SunsetWeights)
     piecewise: SunsetCurves = Field(default_factory=SunsetCurves)
     window: SunsetWindow = Field(default_factory=SunsetWindow)
@@ -241,11 +258,11 @@ class EscapeConfig(BaseModel):
 class FanalDew(BaseModel):
     """Primární metrika: rosný bod. Orografická mlha globální modely nevidí v základně mraků, ale v T − Td."""
 
-    spread_extreme: float = 1.0  # T − Td do tohoto [°C] (nebo RH ≥ rh_extreme) = téměř jistě mlha
-    spread_likely: float = 2.0  # do tohoto (nebo RH ≥ rh_likely) = pravděpodobné cáry mlhy
-    spread_dry: float = 3.5  # nad tímto = suchý vzduch; mezi likely a dry body lineárně klesají k 0
-    rh_extreme: float = 92  # [%]
-    rh_likely: float = 85  # [%]
+    spread_extreme: float = 2.0  # T − Td do tohoto [°C] (nebo RH ≥ rh_extreme) = plný zisk (points_extreme)
+    spread_likely: float = 3.0  # do tohoto (nebo RH ≥ rh_likely) = částečný zisk (points_likely)
+    spread_dry: float = 4.0  # nad tímto = suchý vzduch; mezi likely a dry body lineárně klesají k 0
+    rh_extreme: float = 85  # [%] kalibrováno na orografickou kondenzaci na hřebeni (17.–18. 10. 2026)
+    rh_likely: float = 78  # [%]
     points_extreme: float = 50
     points_likely: float = 30
 
@@ -280,8 +297,7 @@ class FanalConfig(BaseModel):
     # NetMadeira nemá kameru přímo na Fanalu ani Paul da Serra; nejbližší je Rabaçal (stejná výška, ~8 km)
     webcam_url: str = "https://www.netmadeira.com/webcams-madeira/rabacal-madeira"
     slot_hours: list[int] = [9, 13, 17]  # denní sloty (místní čas)
-    window_from: int = 8  # hledání nejlepšího okna (místní čas, hodiny from..to včetně)
-    window_to: int = 18
+    window_hours: int = 3  # délka doporučeného okna od začátku nejlepšího slotu
     cloud_base_m_per_c: float = 125  # jen informativní odhad na webu, do skóre nevstupuje: základna mraků nad zemí ≈ 125 m za každý °C rozdílu T − rosný bod
     dew: FanalDew = Field(default_factory=FanalDew)
     wind: FanalWind = Field(default_factory=FanalWind)

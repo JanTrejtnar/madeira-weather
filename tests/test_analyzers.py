@@ -203,7 +203,7 @@ def test_sunset_perfect_evening_is_go():
     a = score_sunset(sunset_features(), Settings())
     assert a.verdict == "GO"
     assert a.score_pct == 100.0
-    assert a.gates == {"precip": 1.0, "horizon": 1.0, "visibility": 1.0}
+    assert a.gates == {"precip": 1.0, "horizon": 1.0, "visibility": 1.0, "overcast": 1.0}
 
 
 def test_sunset_canvas_curve_peaks_at_35_pct():
@@ -332,3 +332,55 @@ def test_mountain_sunset_on_fixture_uses_profile():
     f = extract_sunset_features(bundle, target, NOW, Settings(), spot_key="arieiro", mountain=True)
     assert f.summit_clear is not None and 0 <= f.summit_clear <= 1
     assert extract_sunset_features(bundle, target, NOW, Settings(), spot_key="ponta_do_pargo").summit_clear is None
+
+
+def test_sunset_clear_sky_is_go_and_clouds_add_drama():
+    s = Settings()
+    clear = score_sunset(sunset_features(canvas_cloud=0.0), s)
+    assert clear.verdict == "GO" and 75 <= clear.score_pct <= 85  # čisté nebe není trestáno
+    drama = score_sunset(sunset_features(canvas_cloud=35.0), s)
+    assert drama.score_pct >= 90  # 20–60 % vysokých/středních mraků = barevné plátno
+    assert score_sunset(sunset_features(canvas_cloud=55.0), s).score_pct >= 85
+
+
+def test_sunset_full_overcast_is_no_go():
+    s = Settings()
+    stratus = score_sunset(sunset_features(horizon_low_cloud=100.0, west_mid_cloud=100.0), s)
+    assert stratus.score_pct < 40 and stratus.verdict == "NO_GO"
+    mid_deck = score_sunset(sunset_features(canvas_cloud=50.0, west_mid_cloud=100.0), s)
+    assert mid_deck.gates["overcast"] == s.sunset.gates.overcast_gate_min and mid_deck.score_pct < 40
+
+
+def test_mountain_sunset_fog_gate_only_with_wet_summit():
+    from dataclasses import replace
+
+    s = Settings()
+    base = replace(
+        sunset_features(horizon_low_cloud=60.0, local_low_cloud=70.0, visibility_m=4500.0, canvas_cloud=0.0),
+        summit_clear=1.0, rh_aloft=30.0, summit_rh=40.0, deck_top_m=1100.0,
+    )
+    above = score_sunset(base, s)  # moře mraků pod vrcholem + model hlásí špatnou přízemní dohlednost
+    assert above.verdict == "GO" and above.gates["fog"] == 1.0 and above.gates["visibility"] == 1.0
+    assert above.score_pct > score_sunset(replace(base, deck_top_m=1700.0), s).score_pct  # bonus jen pod 1 400 m
+    foggy = score_sunset(replace(base, rh_aloft=88.0, summit_clear=0.0), s)
+    assert foggy.gates["fog"] < 0.6 and foggy.verdict == "NO_GO"
+    border = score_sunset(replace(base, rh_aloft=80.0, summit_rh=80.0), s)
+    assert border.gates["fog"] == 1.0  # pod 85 % se brána nepoužije
+
+
+def test_coastal_sunset_still_penalises_low_cloud_on_western_horizon():
+    s = Settings()
+    assert score_sunset(sunset_features(horizon_low_cloud=60.0), s).score_pct < 0.5 * score_sunset(sunset_features(), s).score_pct
+
+
+def test_sunset_precip_window_ends_15_min_after_sunset():
+    from madeira.analyzers.sunset import extract_sunset_features
+
+    bundle = parse_response(json.loads(FIXTURE.read_text()), load_locations(), "best_match", NOW)
+    target = bundle.forecasts["ponta_do_pargo"].daily[1].date
+    spot = bundle.forecasts["ponta_do_pargo"]
+    sunset = next(d.sunset_utc for d in spot.daily if d.date == target)
+    for p in spot.hourly:  # déšť jen v hodině 45+ min po západu → nesmí vstoupit do skóre
+        p.precipitation_mm = 5.0 if timedelta(minutes=46) <= p.time_utc - sunset <= timedelta(minutes=120) else 0.0
+    f = extract_sunset_features(bundle, target, NOW, Settings())
+    assert f.precip_mm == 0.0

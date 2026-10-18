@@ -7,7 +7,6 @@ body = rosný bod (max 50) + návětrný směr (+25 / −30) + dohlednost (max 2
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
 from datetime import date, datetime
 from zoneinfo import ZoneInfo
@@ -146,35 +145,5 @@ def slot_rows(points: list[HourlyPoint], day: date, cfg: FanalConfig, from_hour:
             continue
         f = extract_fog_features(p, cfg)
         score = score_fog(f, cfg)
-        rows.append({"hour": t.hour, "score": round(score), "verdict": verdict(score, cfg), "f": f})
+        rows.append({"hour": t.hour, "score": round(score), "raw": score, "verdict": verdict(score, cfg), "f": f})
     return sorted(rows, key=lambda r: r["hour"])
-
-
-def best_window(points: list[HourlyPoint], day: date, cfg: FanalConfig, from_hour: int = 0) -> tuple[int, int] | None:
-    """Nejdelší souvislý úsek hodin se skóre ≥ "maybe" (při shodě vyšší součet) jako (od, do) kde do je konec hodiny."""
-    hourly = {}
-    for p in points:
-        t = _local(p)
-        if t.date() == day and max(cfg.window_from, from_hour) <= t.hour <= cfg.window_to:
-            hourly[t.hour] = score_fog(extract_fog_features(p, cfg), cfg)
-    best: tuple[tuple[int, float], tuple[int, int]] | None = None
-    run: list[int] = []
-    for h in [*sorted(hourly), None]:
-        if h is not None and hourly[h] >= cfg.verdict.maybe and (not run or h == run[-1] + 1):
-            run.append(h)
-            continue
-        if run:
-            key = (len(run), sum(hourly[x] for x in run))
-            if best is None or key > best[0]:
-                best = (key, (run[0], run[-1] + 1))
-        run = [h] if h is not None and hourly[h] >= cfg.verdict.maybe else []
-    return best[1] if best else None
-
-
-def mean_direction(degrees: list[float]) -> float | None:
-    """Průměrný směr větru (vektorově, takže 350° a 10° dají 0°, ne 180°)."""
-    if not degrees:
-        return None
-    x = sum(math.sin(math.radians(d)) for d in degrees)
-    y = sum(math.cos(math.radians(d)) for d in degrees)
-    return None if abs(x) < 1e-9 and abs(y) < 1e-9 else math.degrees(math.atan2(x, y)) % 360

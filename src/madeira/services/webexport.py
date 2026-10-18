@@ -207,17 +207,29 @@ def _sunset_entry(analysis: SunsetAnalysis, features, departure_min: int) -> dic
         "visibility_km": None if features.visibility_m is None else round(features.visibility_m / 1000),
         "precip_mm": round(features.precip_mm, 1),
         "summary_cs": analysis.summary_cs,
-        "problem": "precip" if analysis.gates["precip"] < 1 else (
-            "horizon" if analysis.gates["horizon"] < 0.6 else None
-        ),
+        "problem": _sunset_problem(analysis),
         "weakest": _weakest(analysis),
         "warnings": analysis.warnings,
         "alerts": _sunset_alerts(analysis, features),
     }
 
 
+def _sunset_problem(a: SunsetAnalysis) -> str | None:
+    if a.gates["precip"] < 1:
+        return "precip"
+    if a.gates.get("fog", 1.0) < 0.6:
+        return "fog"
+    if a.gates["overcast"] < 0.6:
+        return "overcast"
+    return "horizon" if a.gates["horizon"] < 0.6 else None
+
+
 def _sunset_alerts(a: SunsetAnalysis, f) -> list[dict]:
     alerts = []
+    if a.gates.get("fog", 1.0) < 0.6:
+        alerts.append({"code": "fog"})
+    if a.gates["overcast"] < 0.6:
+        alerts.append({"code": "overcast"})
     if a.gates["precip"] < 1:
         alerts.append({"code": "precip", "value": round(f.precip_mm, 1)})
     if a.gates["horizon"] < 1 and f.horizon_low_cloud is not None:
@@ -440,39 +452,42 @@ def _fanal_history_summary(verdict: str, e: dict, cfg: FanalConfig) -> str:
 
 
 def _fanal_day(cfg: FanalConfig, points, day, from_hour: int = 0) -> dict | None:
-    """Souhrn jednoho dne ze slotů (9/13/17 h): skóre = průměr slotů, nárazy a srážky = maximum."""
+    """Peak Window: skóre a verdikt dne = nejlepší slot (9/13/17 h); všechny hodnoty jsou z tohoto slotu."""
     slots = fanal.slot_rows(points, day, cfg, from_hour)
     if not slots:
         return None
-    feats = [r["f"] for r in slots]
-
-    def mean(vals, digits=None):
-        vals = [v for v in vals if v is not None]
-        return round(sum(vals) / len(vals), digits) if vals else None
-
-    score = round(sum(fanal.score_fog(f, cfg) for f in feats) / len(feats))
-    wind_dir = fanal.mean_direction([f.wind_dir_deg for f in feats if f.wind_dir_deg is not None])
+    peak = max(slots, key=lambda r: (r["raw"], -r["hour"]))  # při shodě dřívější slot
+    f = peak["f"]
+    score = peak["score"]
+    rnd = lambda v, d=None: None if v is None else round(v, d)  # noqa: E731
     out = {
         "date": day.isoformat(),
-        "verdict": fanal.verdict(score, cfg),
+        "verdict": fanal.verdict(peak["raw"], cfg),
         "score": score,
-        "humidity": mean(f.surface_rh_pct if f.surface_rh_pct is not None else f.humidity_pct for f in feats),
-        "cloud_coverage_local": mean(f.cloud_cover_pct for f in feats),
-        "cloud_base_m": mean(f.cloud_base_m for f in feats),
-        "visibility_m": mean(f.visibility_m for f in feats),
-        "wind_gusts": round(max((f.gust_kmh for f in feats if f.gust_kmh is not None), default=0)),
-        "rain": round(max(f.precip_mm_h for f in feats), 1),
-        "temp": mean((f.temp_c for f in feats), 1),
-        "dew_point_spread": mean((f.spread_c for f in feats), 1),
-        "wind_speed": (None if (w := mean(f.wind_kmh for f in feats)) is None else round(w)),
-        "wind_dir_deg": None if wind_dir is None else round(wind_dir),
+        "peak_score": score,
+        "peak_hour": peak["hour"],
+        "humidity": rnd(f.surface_rh_pct if f.surface_rh_pct is not None else f.humidity_pct),
+        "cloud_coverage_local": rnd(f.cloud_cover_pct),
+        "cloud_base_m": rnd(f.cloud_base_m),
+        "visibility_m": rnd(f.visibility_m),
+        "wind_gusts": round(f.gust_kmh or 0),
+        "rain": round(f.precip_mm_h, 1),
+        "temp": rnd(f.temp_c, 1),
+        "dew_point_spread": rnd(f.spread_c, 1),
+        "wind_speed": rnd(f.wind_kmh),
+        "wind_dir_deg": rnd(f.wind_dir_deg),
     }
-    window = fanal.best_window(points, day, cfg, from_hour)
-    out["best_window_hours"] = list(window) if window else None
-    out["best_window"] = _fanal_window_cs(window)
+    clear = out["verdict"] == "CLEAR"  # bez mlhy není co doporučovat
+    out["best_window_hours"] = None if clear else [peak["hour"], peak["hour"] + cfg.window_hours]
+    out["best_window"] = None if clear else _fanal_window_cs(peak["hour"], cfg.window_hours)
     out["summary"] = _fanal_summary(out["verdict"], out, cfg)
     out["slots"] = [{"hour": r["hour"], "score": r["score"], "verdict": r["verdict"]} for r in slots]
     return out
+
+
+def _fanal_window_cs(start: int, length: int = 3) -> str:
+    part = "Dopoledne" if start < 12 else "Odpoledne" if start < 17 else "Večer"
+    return f"{part} {start:02d}:00–{start + length:02d}:00"
 
 
 SNAPSHOT_URL = ("https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/"
@@ -504,14 +519,6 @@ def fanal_history(cfg: FanalConfig, points, today, days: int = 7) -> list[dict]:
         ]
         rows.append(entry)
     return rows
-
-
-def _fanal_window_cs(window: tuple[int, int] | None) -> str | None:
-    if window is None:
-        return None
-    start, end = window
-    part = "Dopoledne" if start < 12 else "Odpoledne" if start < 17 else "Večer"
-    return f"{part} {start:02d}:00–{end:02d}:00"
 
 
 def fanal_section(cfg: FanalConfig, bundle: ForecastBundle, now: datetime) -> dict | None:
@@ -630,6 +637,7 @@ _PROBLEM_CS = {
     "precip": "Srážky kolem události",
     "fog": "Vrchol v mraku/mlze",
     "horizon": "Nízké mraky na obzoru",
+    "overcast": "Zataženo",
 }
 
 
@@ -647,7 +655,7 @@ def _history_reason(row: dict) -> dict | None:
     if not comps:
         return None
     problem = next(
-        (name for name, limit in (("precip", 1), ("fog", 0.6), ("horizon", 0.6))
+        (name for name, limit in (("precip", 1), ("fog", 0.6), ("overcast", 0.6), ("horizon", 0.6))
          if gates.get(name, 1) < limit),
         None,
     )

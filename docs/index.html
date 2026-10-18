@@ -216,12 +216,14 @@
       sunsetSummary: (d, t, kind) => [
         `${(kind === "sunrise" ? t.sunriseCoastalHead : t.sunsetHead)[d.verdict]} Skóre ${d.score} %.`,
         d.problem === "precip" ? "Největší problém jsou srážky."
+          : d.problem === "fog" ? "Největší problém je mlha/mrak na vrcholu."
+          : d.problem === "overcast" ? "Největší problém je úplné zatažení."
           : d.problem === "horizon" ? "Největší problém jsou nízké mraky na obzoru."
           : d.weakest ? `Nejslabší stránka: ${t.sunsetComp[d.weakest] || d.weakest}.` : "",
       ].filter(Boolean).join(" "),
       sunriseCoastalHead: { GO: "Východ slunce vypadá slibně.", MAYBE: "Hazard, výsledek je nejistý.", NO_GO: "Spíš zůstaň v posteli." },
       horizonEast: "Nízké mraky na východě",
-      sunsetAlert: (a) => ({ gusts: `Silné nárazy větru na útesu (${a.value} km/h).`, horizon_east: `Nízké mraky na východním obzoru (${a.value} %) mohou zakrýt slunce.`,
+      sunsetAlert: (a) => ({ fog: "Vrchol bude pravděpodobně v mraku/mlze.", overcast: "Zataženo – slunce nebude vidět.", gusts: `Silné nárazy větru na útesu (${a.value} km/h).`, horizon_east: `Nízké mraky na východním obzoru (${a.value} %) mohou zakrýt slunce.`,
                              precip: `Srážky kolem západu: ${a.value} mm.`, horizon: `Nízké mraky na západním obzoru (${a.value} %) mohou zakrýt slunce.`,
                              visibility: `Snížená dohlednost (${a.value} km).`, no_cloud_data: "Chybí data o oblačnosti." })[a.code] || a.code,
       score: "% skóre", departure: "Odjezd z Funchalu", deck: "Hladina mraků",
@@ -233,7 +235,7 @@
       hVis: "Dohlednost", hWindGust: "Vítr / nárazy", hGust: "poryvy",
       hClouds: "Oblačnost", hLow: "nízká", hHigh: "vysoká", hCanvas: "střední/vysoká",
       hTemp: "Teplota", hHorizon: "Nízké mraky na obzoru",
-      hProblem: { precip: "Srážky kolem události.", fog: "Vrchol byl v mraku/mlze.", horizon: "Nízké mraky zakrývaly obzor." },
+      hProblem: { overcast: "Zataženo, slunce nebylo vidět.", precip: "Srážky kolem události.", fog: "Vrchol byl v mraku/mlze.", horizon: "Nízké mraky zakrývaly obzor." },
       hWeakest: (n) => `Nejslabší stránka: ${n}.`, hNoProblem: "Bez výraznějšího problému.",
       hDiag: {
         none: () => "Žádná výrazná vlhká vrstva pod vrcholem – moře mraků nebylo.",
@@ -307,12 +309,14 @@
       sunsetSummary: (d, t, kind) => [
         `${(kind === "sunrise" ? t.sunriseCoastalHead : t.sunsetHead)[d.verdict]} Score ${d.score}%.`,
         d.problem === "precip" ? "The main problem is rain."
+          : d.problem === "fog" ? "The main problem is fog/cloud at the summit."
+          : d.problem === "overcast" ? "The main problem is full overcast."
           : d.problem === "horizon" ? "The main problem is low cloud on the horizon."
           : d.weakest ? `Weakest factor: ${t.sunsetComp[d.weakest] || d.weakest}.` : "",
       ].filter(Boolean).join(" "),
       sunriseCoastalHead: { GO: "The sunrise looks promising.", MAYBE: "A gamble, the outcome is uncertain.", NO_GO: "Better stay in bed." },
       horizonEast: "Low clouds in the east",
-      sunsetAlert: (a) => ({ gusts: `Strong gusts on the cliff (${a.value} km/h).`, horizon_east: `Low clouds on the eastern horizon (${a.value}%) may hide the sun.`,
+      sunsetAlert: (a) => ({ fog: "The summit will probably be in cloud/fog.", overcast: "Overcast – the sun will not be visible.", gusts: `Strong gusts on the cliff (${a.value} km/h).`, horizon_east: `Low clouds on the eastern horizon (${a.value}%) may hide the sun.`,
                              precip: `Rain around sunset: ${a.value} mm.`, horizon: `Low clouds on the western horizon (${a.value}%) may hide the sun.`,
                              visibility: `Reduced visibility (${a.value} km).`, no_cloud_data: "Cloud cover data missing." })[a.code] || a.code,
       score: "% score", departure: "Leave Funchal", deck: "Cloud deck top",
@@ -324,7 +328,7 @@
       hVis: "Visibility", hWindGust: "Wind / gusts", hGust: "gusts",
       hClouds: "Cloud cover", hLow: "low", hHigh: "high", hCanvas: "mid/high",
       hTemp: "Temperature", hHorizon: "Low clouds on horizon",
-      hProblem: { precip: "Rain around the event.", fog: "The summit was in cloud/fog.", horizon: "Low clouds hid the horizon." },
+      hProblem: { overcast: "Overcast, the sun was not visible.", precip: "Rain around the event.", fog: "The summit was in cloud/fog.", horizon: "Low clouds hid the horizon." },
       hWeakest: (n) => `Weakest factor: ${n}.`, hNoProblem: "No significant problem.",
       hDiag: {
         none: () => "No significant moist layer below the summit – no cloud sea.",
