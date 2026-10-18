@@ -238,18 +238,35 @@ class EscapeConfig(BaseModel):
     rain_per_mm: float = 0.15  # ... a dál klesá o tolik za každý mm (min. 0)
 
 
-class FanalWeights(BaseModel):
-    humidity: float = 0.40  # RH u povrchu a ve výšce lesa
-    cloud_base: float = 0.35  # základna mraků v úrovni lesa
-    visibility: float = 0.25  # nízká dohlednost = jsme uvnitř mraku
+class FanalDew(BaseModel):
+    """Primární metrika: rosný bod. Orografická mlha globální modely nevidí v základně mraků, ale v T − Td."""
+
+    spread_extreme: float = 1.0  # T − Td do tohoto [°C] (nebo RH ≥ rh_extreme) = téměř jistě mlha
+    spread_likely: float = 2.0  # do tohoto (nebo RH ≥ rh_likely) = pravděpodobné cáry mlhy
+    spread_dry: float = 3.5  # nad tímto = suchý vzduch; mezi likely a dry body lineárně klesají k 0
+    rh_extreme: float = 92  # [%]
+    rh_likely: float = 85  # [%]
+    points_extreme: float = 50
+    points_likely: float = 30
+
+
+class FanalWind(BaseModel):
+    """Návětrný směr: pasát ze severu tlačí vlhkost po svahu na plošinu, jižní vítr (föhn) ji vysouší."""
+
+    windward_from: float = 320  # severní až severovýchodní sektor (přes 0°) [°]
+    windward_to: float = 70
+    lee_from: float = 140  # jižní sektor [°]
+    lee_to: float = 220
+    speed_min: float = 8  # bonus jen při rychlosti větru v tomto rozsahu [km/h]
+    speed_max: float = 30
+    bonus: float = 25  # jen při vlhkém vzduchu (spread < spread_dry nebo RH ≥ rh_likely)
+    lee_penalty: float = 30
 
 
 class FanalCurves(BaseModel):
-    humidity: Curve = [(60, 0), (85, 1), (100, 1)]  # RH [%] -> 0..1; 85–100 % = maximum
-    cloud_base: Curve = [(700, 0), (900, 1), (1300, 1), (1600, 0.3), (2000, 0)]  # m n. m.; 900–1300 = les v mraku
-    visibility: Curve = [(400, 1), (1000, 0.6), (3000, 0.1), (10000, 0)]  # m; <400 ideál, <1000 dobré
+    visibility: Curve = [(400, 1), (1000, 0.6), (3000, 0.1), (10000, 0)]  # m -> 0..1 násobek bodů za dohlednost
     precip: Curve = [(1.5, 1), (3, 0)]  # mm/h: mrholení do 1,5 nevadí, nad 3 skóre k nule
-    gusts: Curve = [(35, 1), (60, 0.2)]  # km/h: nad 35 vichr trhá mlhu
+    gusts: Curve = [(50, 1), (80, 0.3)]  # km/h: model hlásí náraz 10 m i při reálné mlze v 39–72 km/h
 
 
 class FanalConfig(BaseModel):
@@ -265,8 +282,10 @@ class FanalConfig(BaseModel):
     slot_hours: list[int] = [9, 13, 17]  # denní sloty (místní čas)
     window_from: int = 8  # hledání nejlepšího okna (místní čas, hodiny from..to včetně)
     window_to: int = 18
-    cloud_base_m_per_c: float = 125  # základna mraků nad zemí ≈ 125 m za každý °C rozdílu T − rosný bod
-    weights: FanalWeights = Field(default_factory=FanalWeights)
+    cloud_base_m_per_c: float = 125  # jen informativní odhad na webu, do skóre nevstupuje: základna mraků nad zemí ≈ 125 m za každý °C rozdílu T − rosný bod
+    dew: FanalDew = Field(default_factory=FanalDew)
+    wind: FanalWind = Field(default_factory=FanalWind)
+    visibility_points: float = 25  # bonus za nízkou dohlednost (model ji často nevidí, proto jen bonus)
     curves: FanalCurves = Field(default_factory=FanalCurves)
     verdict: VerdictThresholds = Field(default_factory=lambda: VerdictThresholds(go=70, maybe=40))
 

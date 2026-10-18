@@ -105,7 +105,22 @@
       </article>
 
       <a id="cam" href="#" target="_blank" rel="noopener" class="block rounded-2xl border border-emerald-300/30 bg-emerald-300/10 px-5 py-4 text-center font-semibold text-emerald-100 transition hover:bg-emerald-300/20"></a>
+
+      <section id="history" class="hidden pt-4">
+        <h2 id="h-history" class="text-sm uppercase tracking-widest text-slate-400"></h2>
+        <p id="n-history" class="mt-1 text-xs text-slate-500"></p>
+        <ul id="history-list" class="mt-3 space-y-2"></ul>
+      </section>
     </section>
+
+    <div id="lightbox" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/85 p-4" role="dialog" aria-modal="true" aria-labelledby="lb-caption">
+      <figure class="relative max-h-full w-full max-w-3xl">
+        <img id="lb-img" alt="" class="max-h-[80vh] w-full rounded-xl bg-zinc-900 object-contain">
+        <p id="lb-missing" class="hidden rounded-xl bg-zinc-900 p-8 text-center text-slate-400"></p>
+        <figcaption id="lb-caption" class="mt-3 text-center text-sm text-slate-300"></figcaption>
+        <button id="lb-close" type="button" class="absolute -top-3 right-0 rounded-full bg-slate-800 px-3 py-1 text-slate-200 ring-1 ring-white/20 hover:bg-slate-700" aria-label="Close">✕</button>
+      </figure>
+    </div>
 
     <footer class="mt-10 text-xs text-slate-500">
       <p id="updated"></p>
@@ -127,7 +142,7 @@
       hum: "Vlhkost", base: "Hladina mraků", wind: "Vítr (nárazy)", rain: "Dešťové srážky",
       humNote: (v) => v >= 85 ? "ideální pro mlhu (85–100 %)" : "pod 85 % mlha řídne",
       baseNote: (m, el) => m == null ? "" : m < 900 ? "pod lesem, v lese bude jasno" : m <= 1300 ? "les je přímo uvnitř mraku" : `${m - el} m nad lesem, jen cáry mlhy`,
-      windNote: (v) => v <= 35 ? "klid, mlha drží" : "silný vítr mlhu trhá",
+      windNote: (v) => v <= 50 ? "mlha drží" : "silný vítr mlhu trhá",
       rainNote: (v) => v < 0.2 ? "sucho" : v <= 1.5 ? "jemné mrholení nevadí" : v <= 3 ? "citelný déšť" : "liják, mlhu nečekejte",
       noData: "bez dat", mmh: (v) => `${v.toLocaleString("cs-CZ")} mm/h`,
       gear: "Co s sebou", gearRain: "🧥 Pláštěnka nebo nepromokavá bunda – mlha i mrholení vše promočí",
@@ -137,6 +152,19 @@
       gearCam: "📷 Foťák nebo mobil a utěrka na čočku; v mlze vyhrává široký záběr a kontrast stromů",
       gearLight: "🔦 Čelovka, v mlze se rychle setmí",
       cam: "📹 Zkontrolovat živou kameru poblíž", camNote: "Nejbližší kamera: Rabaçal (NetMadeira)",
+      history: "Historie mlhy (posledních 7 dní)",
+      historyNote: "Skóre z modelových hodnot za 9:00, 13:00 a 17:00; snímky z kamery Rabaçal pomáhají ověřit, jak to dopadlo.",
+      photos: "Snímky z kamery", unavailable: "Snímek nedostupný", close: "Zavřít",
+      caption: (d, tm) => `Rabaçal webcam · ${d} v ${tm}`,
+      mHum: "Relativní vlhkost", mDew: "Rosný bod", mWind: "Vítr", mTemp: "Teplota",
+      mSpread: (v) => `rozdíl ${v} °C`,
+      dirs: ["S", "SV", "V", "JV", "J", "JZ", "Z", "SZ"],
+      histSummary: (e, L) => {
+        const m = e.metrics, deg = m.wind_dir;
+        const wind = deg == null ? "vítr bez dat" : deg >= 140 && deg <= 220 ? "jižní vítr (föhn)"
+          : (deg >= 320 || deg <= 70) ? `pasát (${L.dirs[Math.round(deg / 45) % 8]})` : `vítr ${L.dirs[Math.round(deg / 45) % 8]}`;
+        return `Vlhkost ${m.humidity == null ? "?" : m.humidity} %, ${wind} – ${{ MYSTIC: "hustá mlha", PARTIAL: "cáry mlhy", CLEAR: "bez mlhy" }[e.verdict]}`;
+      },
       nodata: "Data pro Fanal zatím nejsou k dispozici.",
       error: "Předpověď se nepodařilo načíst", retry: "Zkus to prosím později.",
       updated: "Naposledy aktualizováno", stale: "data jsou starší než den!",
@@ -152,7 +180,7 @@
       hum: "Humidity", base: "Cloud base", wind: "Wind (gusts)", rain: "Rainfall",
       humNote: (v) => v >= 85 ? "ideal for fog (85–100 %)" : "below 85 % the fog thins out",
       baseNote: (m, el) => m == null ? "" : m < 900 ? "below the forest, it will be clear up there" : m <= 1300 ? "the forest sits right inside the cloud" : `${m - el} m above the forest, only wisps of fog`,
-      windNote: (v) => v <= 35 ? "calm, the fog stays" : "strong wind tears the fog apart",
+      windNote: (v) => v <= 50 ? "the fog stays" : "strong wind tears the fog apart",
       rainNote: (v) => v < 0.2 ? "dry" : v <= 1.5 ? "light drizzle is fine" : v <= 3 ? "noticeable rain" : "downpour, forget the fog",
       noData: "no data", mmh: (v) => `${v.toLocaleString("en-GB")} mm/h`,
       gear: "What to bring", gearRain: "🧥 Raincoat or waterproof jacket – fog and drizzle soak everything",
@@ -162,6 +190,19 @@
       gearCam: "📷 Camera or phone and a lens cloth; in fog, wide shots and tree contrast win",
       gearLight: "🔦 Headlamp, it gets dark quickly in fog",
       cam: "📹 Check the live webcam nearby", camNote: "Nearest webcam: Rabaçal (NetMadeira)",
+      history: "Fog history (last 7 days)",
+      historyNote: "Score from model values at 9:00, 13:00 and 17:00; Rabaçal webcam snapshots help check how it turned out.",
+      photos: "Webcam snapshots", unavailable: "Snapshot unavailable", close: "Close",
+      caption: (d, tm) => `Rabaçal webcam · ${d} at ${tm}`,
+      mHum: "Relative humidity", mDew: "Dew point", mWind: "Wind", mTemp: "Temperature",
+      mSpread: (v) => `spread ${v} °C`,
+      dirs: ["N", "NE", "E", "SE", "S", "SW", "W", "NW"],
+      histSummary: (e, L) => {
+        const m = e.metrics, deg = m.wind_dir;
+        const wind = deg == null ? "no wind data" : deg >= 140 && deg <= 220 ? "southerly wind (foehn)"
+          : (deg >= 320 || deg <= 70) ? `trade wind (${L.dirs[Math.round(deg / 45) % 8]})` : `${L.dirs[Math.round(deg / 45) % 8]} wind`;
+        return `Humidity ${m.humidity == null ? "?" : m.humidity} %, ${wind} – ${{ MYSTIC: "dense fog", PARTIAL: "patchy fog", CLEAR: "no fog" }[e.verdict]}`;
+      },
       nodata: "Fanal data is not available yet.",
       error: "Could not load the forecast", retry: "Please try again later.",
       updated: "Last updated", stale: "data is more than a day old!",
@@ -172,7 +213,8 @@
   const summaryEn = (d) => d.verdict === "MYSTIC" ? `Dense fog sits right among the trees, ${d.wind_gusts <= 20 ? "light" : "moderate"} wind – bring your camera!`
     : d.verdict === "PARTIAL" ? "Rolling wisps of fog with the odd break."
     : d.rain >= 3 ? "Heavy rain kills the fog and the mood – just wet, not mystical."
-    : d.wind_gusts > 35 ? "Strong wind blows the fog away, no atmosphere today."
+    : d.wind_dir_deg != null && d.wind_dir_deg >= 140 && d.wind_dir_deg <= 220 ? "Southerly (foehn) wind dries the air, don't expect fog."
+    : d.wind_gusts > 50 ? "Strong wind blows the fog away, no atmosphere today."
     : "Clear or dry – just an ordinary green park without the atmosphere.";
   const ICON = { MYSTIC: "🌫️", PARTIAL: "🌤️", CLEAR: "☀️" };
 
@@ -205,6 +247,98 @@
     if (d.wind_gusts > 35) items.push(L.gearWind);
     if (d.verdict !== "CLEAR") items.push(L.gearCam, L.gearLight);
     return items;
+  }
+
+  const open = new Set();  // rozbalené dny přežijí překreslení (např. přepnutí jazyka)
+  const dateLabel = (iso) => new Date(iso + "T12:00:00").toLocaleDateString(locale(), { weekday: "short", day: "numeric", month: "numeric" });
+  const BADGE = { MYSTIC: "bg-emerald-400/20 text-emerald-200", PARTIAL: "bg-zinc-300/15 text-zinc-200", CLEAR: "bg-amber-300/15 text-amber-200" };
+
+  function openLightbox(e, snap) {
+    const L = t(), img = $("lb-img"), miss = $("lb-missing");
+    miss.classList.add("hidden");
+    img.classList.remove("hidden");
+    img.onerror = () => { img.classList.add("hidden"); miss.textContent = L.unavailable; miss.classList.remove("hidden"); };
+    img.alt = L.caption(dateLabel(e.date), snap.time);
+    img.src = snap.url;
+    $("lb-caption").textContent = L.caption(dateLabel(e.date), snap.time);
+    $("lb-close").setAttribute("aria-label", L.close);
+    $("lightbox").classList.remove("hidden");
+    $("lightbox").classList.add("flex");
+    $("lb-close").focus();
+  }
+  function closeLightbox() {
+    $("lightbox").classList.add("hidden");
+    $("lightbox").classList.remove("flex");
+    $("lb-img").removeAttribute("src");  // zastaví případné dotahování
+  }
+  $("lb-close").addEventListener("click", closeLightbox);
+  $("lightbox").addEventListener("click", (ev) => { if (ev.target === $("lightbox")) closeLightbox(); });
+  document.addEventListener("keydown", (ev) => { if (ev.key === "Escape") closeLightbox(); });
+
+  // Dostupnost snímku se ověřuje až po rozbalení dne a asynchronně, takže stránku nikdy neblokuje.
+  function snapshotButton(e, snap) {
+    const L = t(), b = el("button", "rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm text-slate-200 transition hover:bg-white/10", `📷 ${snap.time}`);
+    b.type = "button";
+    b.addEventListener("click", () => openLightbox(e, snap));
+    const probe = new Image();
+    probe.onerror = () => {
+      const gone = el("span", "rounded-xl border border-white/5 px-4 py-2 text-sm text-slate-500", `${snap.time} · ${L.unavailable}`);
+      b.replaceWith(gone);
+    };
+    probe.src = snap.url;
+    return b;
+  }
+
+  function historyRow(e) {
+    const L = t(), m = e.metrics, li = el("li", "overflow-hidden rounded-2xl border border-white/10 bg-white/5");
+    const head = el("button", "flex w-full items-center justify-between gap-3 p-4 text-left");
+    head.type = "button";
+    const isOpen = open.has(e.date);
+    head.setAttribute("aria-expanded", isOpen);
+    head.append(
+      el("span", "min-w-0 flex-1 font-semibold", dateLabel(e.date)),
+      el("span", "shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold " + (BADGE[e.verdict] || ""), `${ICON[e.verdict] || ""} ${e.verdict}`),
+      el("span", "w-12 shrink-0 text-right text-lg font-bold text-emerald-100", `${e.score} %`));
+    const body = el("div", "border-t border-white/10 p-4" + (isOpen ? "" : " hidden"));
+    body.append(el("p", "text-sm text-slate-300", lang === "cs" ? e.summary : L.histSummary(e, L)));
+    const grid = el("dl", "mt-3 grid grid-cols-2 gap-2 text-sm sm:grid-cols-4");
+    const cell = (k, v, sub) => {
+      const d = el("div", "rounded-xl bg-black/20 p-3");
+      d.append(el("dt", "text-[11px] uppercase tracking-wider text-slate-400", k), el("dd", "mt-0.5 font-semibold", v));
+      if (sub) d.append(el("p", "text-xs text-slate-500", sub));
+      return d;
+    };
+    const n = (v, u) => (v == null ? "–" : `${v.toLocaleString(locale())} ${u}`);
+    const dir = m.wind_dir == null ? "" : ` ${L.dirs[Math.round(m.wind_dir / 45) % 8]}`;
+    grid.append(
+      cell(L.mHum, n(m.humidity, "%")),
+      cell(L.mDew, n(m.dew_point, "°C"), m.dew_point_spread == null ? "" : L.mSpread(m.dew_point_spread.toLocaleString(locale()))),
+      cell(L.mWind, m.wind_speed == null ? "–" : `${m.wind_speed} km/h${dir}`),
+      cell(L.mTemp, n(m.temp, "°C")));
+    body.append(grid);
+    const photos = el("div", "mt-3");
+    photos.append(el("p", "mb-2 text-xs uppercase tracking-wider text-slate-400", L.photos));
+    const row = el("div", "flex flex-wrap gap-2");
+    let loaded = false;
+    const fill = () => { if (!loaded) { loaded = true; row.replaceChildren(...(e.snapshots || []).map((sn) => snapshotButton(e, sn))); } };
+    photos.append(row);
+    body.append(photos);
+    if (isOpen) fill();
+    head.addEventListener("click", () => {
+      const now = body.classList.toggle("hidden") === false;
+      head.setAttribute("aria-expanded", now);
+      if (now) { open.add(e.date); fill(); } else open.delete(e.date);
+    });
+    li.append(head, body);
+    return li;
+  }
+
+  function renderHistory(f) {
+    const L = t(), hist = (f.history || []);
+    $("history").classList.toggle("hidden", !hist.length);
+    $("h-history").textContent = L.history;
+    $("n-history").textContent = L.historyNote;
+    $("history-list").replaceChildren(...hist.map(historyRow));
   }
 
   function render() {
@@ -264,7 +398,8 @@
     $("n-base").textContent = L.baseNote(d.cloud_base_m, elev);
     $("h-wind").textContent = L.wind;
     $("v-wind").textContent = num(d.wind_gusts, "km/h");
-    $("n-wind").textContent = L.windNote(d.wind_gusts);
+    const dirTxt = d.wind_dir_deg == null || d.wind_speed == null ? "" : `${L.dirs[Math.round(d.wind_dir_deg / 45) % 8]} ${d.wind_speed} km/h · `;
+    $("n-wind").textContent = dirTxt + L.windNote(d.wind_gusts);
     $("h-rain").textContent = L.rain;
     $("v-rain").textContent = d.rain == null ? L.noData : L.mmh(d.rain);
     $("n-rain").textContent = d.rain == null ? "" : L.rainNote(d.rain);
@@ -275,6 +410,7 @@
     cam.textContent = L.cam;
     cam.title = L.camNote;
     if (f.webcam_url) cam.href = f.webcam_url; else cam.classList.add("hidden");
+    renderHistory(f);
   }
 
   document.querySelectorAll("#lang button").forEach((b) => b.addEventListener("click", () => {

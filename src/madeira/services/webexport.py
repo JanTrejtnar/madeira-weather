@@ -398,18 +398,45 @@ def fetch_escape_bundle(cfg: EscapeConfig) -> ForecastBundle | None:
         return None  # výpadek API nesmí shodit celý export
 
 
+_COMPASS_CS = ["severu", "severovýchodu", "východu", "jihovýchodu", "jihu", "jihozápadu", "západu", "severozápadu"]
+
+
+def _compass_cs(deg: float) -> str:
+    return _COMPASS_CS[round(deg / 45) % 8]
+
+
 def _fanal_summary(verdict: str, f: dict, cfg: FanalConfig) -> str:
-    c = cfg.curves
+    c, w = cfg.curves, cfg.wind
     if verdict == "MYSTIC":
-        wind = "slabý vítr" if f["wind_gusts"] <= 20 else "mírný vítr"
+        g = f["wind_gusts"]
+        wind = "slabý vítr" if g <= 20 else "mírný vítr" if g <= 35 else "svěží vítr"
         return f"Hustá mlha sedí přímo mezi stromy, {wind} – vezměte foťák!"
     if verdict == "PARTIAL":
         return "Převalující se cáry mlhy, mezi nimi občasné protrhání."
     if f["rain"] >= c.precip[-1][0]:
         return "Silný déšť sráží mlhu i náladu – spíš jen mokro než mystika."
+    if f.get("wind_dir_deg") is not None and fanal.in_sector(f["wind_dir_deg"], w.lee_from, w.lee_to):
+        return "Jižní vítr (föhn) vysouší vzduch, mlhu nečekejte."
     if f["wind_gusts"] > c.gusts[0][0]:
         return "Silný vítr mlhu rozfoukává, atmosféra se nekoná."
     return "Jasno nebo sucho – obyčejný zelený park bez atmosféry."
+
+
+def _fanal_history_summary(verdict: str, e: dict, cfg: FanalConfig) -> str:
+    """Např. "Vlhkost 95 %, pasát ze severu – hustá mlha" (z denních průměrů)."""
+    w = cfg.wind
+    deg = e["metrics"]["wind_dir"]
+    if deg is None:
+        wind = "vítr bez dat"
+    elif fanal.in_sector(deg, w.lee_from, w.lee_to):
+        wind = "jižní vítr (föhn)"
+    elif fanal.in_sector(deg, w.windward_from, w.windward_to):
+        wind = f"pasát ze {_compass_cs(deg)}"
+    else:
+        wind = f"vítr z {_compass_cs(deg)}"
+    tail = {"MYSTIC": "hustá mlha", "PARTIAL": "cáry mlhy", "CLEAR": "bez mlhy"}[verdict]
+    humidity = "?" if e["metrics"]["humidity"] is None else e["metrics"]["humidity"]
+    return f"Vlhkost {humidity} %, {wind} – {tail}"
 
 
 def _fanal_day(cfg: FanalConfig, points, day, from_hour: int = 0) -> dict | None:
@@ -419,21 +446,26 @@ def _fanal_day(cfg: FanalConfig, points, day, from_hour: int = 0) -> dict | None
         return None
     feats = [r["f"] for r in slots]
 
-    def mean(vals):
+    def mean(vals, digits=None):
         vals = [v for v in vals if v is not None]
-        return round(sum(vals) / len(vals)) if vals else None
+        return round(sum(vals) / len(vals), digits) if vals else None
 
     score = round(sum(fanal.score_fog(f, cfg) for f in feats) / len(feats))
+    wind_dir = fanal.mean_direction([f.wind_dir_deg for f in feats if f.wind_dir_deg is not None])
     out = {
         "date": day.isoformat(),
         "verdict": fanal.verdict(score, cfg),
         "score": score,
-        "humidity": mean(f.humidity_pct for f in feats),
+        "humidity": mean(f.surface_rh_pct if f.surface_rh_pct is not None else f.humidity_pct for f in feats),
         "cloud_coverage_local": mean(f.cloud_cover_pct for f in feats),
         "cloud_base_m": mean(f.cloud_base_m for f in feats),
         "visibility_m": mean(f.visibility_m for f in feats),
         "wind_gusts": round(max((f.gust_kmh for f in feats if f.gust_kmh is not None), default=0)),
         "rain": round(max(f.precip_mm_h for f in feats), 1),
+        "temp": mean((f.temp_c for f in feats), 1),
+        "dew_point_spread": mean((f.spread_c for f in feats), 1),
+        "wind_speed": (None if (w := mean(f.wind_kmh for f in feats)) is None else round(w)),
+        "wind_dir_deg": None if wind_dir is None else round(wind_dir),
     }
     window = fanal.best_window(points, day, cfg, from_hour)
     out["best_window_hours"] = list(window) if window else None
@@ -441,6 +473,37 @@ def _fanal_day(cfg: FanalConfig, points, day, from_hour: int = 0) -> dict | None
     out["summary"] = _fanal_summary(out["verdict"], out, cfg)
     out["slots"] = [{"hour": r["hour"], "score": r["score"], "verdict": r["verdict"]} for r in slots]
     return out
+
+
+SNAPSHOT_URL = ("https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/"
+                "rabacal-madeira/{date}/{hh}_{mm}.jpg")
+SNAPSHOT_TIMES = ("11:00", "15:00")
+
+
+def fanal_history(cfg: FanalConfig, points, today, days: int = 7) -> list[dict]:
+    """Posledních `days` dní před `today` (nejnovější první): skóre z modelových hodnot + snímky kamery."""
+    rows = []
+    for offset in range(1, days + 1):
+        day = today - timedelta(days=offset)
+        d = _fanal_day(cfg, points, day)
+        if d is None:
+            continue
+        spread, temp = d["dew_point_spread"], d["temp"]
+        metrics = {
+            "temp": temp,
+            "humidity": d["humidity"],
+            "dew_point": None if spread is None or temp is None else round(temp - spread, 1),
+            "dew_point_spread": spread,
+            "wind_speed": d["wind_speed"],
+            "wind_dir": d["wind_dir_deg"],
+        }
+        entry = {"date": d["date"], "score": d["score"], "verdict": d["verdict"], "metrics": metrics}
+        entry["summary"] = _fanal_history_summary(d["verdict"], entry, cfg)
+        entry["snapshots"] = [
+            {"time": t, "url": SNAPSHOT_URL.format(date=d["date"], hh=t[:2], mm=t[3:])} for t in SNAPSHOT_TIMES
+        ]
+        rows.append(entry)
+    return rows
 
 
 def _fanal_window_cs(window: tuple[int, int] | None) -> str | None:
@@ -464,6 +527,7 @@ def fanal_section(cfg: FanalConfig, bundle: ForecastBundle, now: datetime) -> di
         return None
     default = "today" if today else "tomorrow"  # dnešek bez zbývajících slotů se nedoporučuje
     return {
+        "history": fanal_history(cfg, fc.hourly, local.date()),
         "location": {"key": "fanal", "name": cfg.name, "type": cfg.type, "lat": cfg.lat, "lon": cfg.lon,
                      "elevation_m": round(cfg.elevation_m)},
         "webcam_url": cfg.webcam_url,
@@ -476,7 +540,7 @@ def fanal_section(cfg: FanalConfig, bundle: ForecastBundle, now: datetime) -> di
 def fetch_fanal_bundle(cfg: FanalConfig) -> ForecastBundle | None:
     try:
         loc = cfg.as_location()
-        return OpenMeteoFetcher(cache_dir=forecast.CACHE_DIR).fetch([loc], days=2)
+        return OpenMeteoFetcher(cache_dir=forecast.CACHE_DIR).fetch([loc], days=2, past_days=7)
     except RuntimeError:
         return None  # výpadek API nesmí shodit celý export
 

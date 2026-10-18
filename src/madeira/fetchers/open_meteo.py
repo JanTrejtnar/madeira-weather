@@ -148,8 +148,10 @@ class OpenMeteoFetcher:
         digest = hashlib.sha256(json.dumps(params, sort_keys=True).encode()).hexdigest()[:16]
         return self.cache_dir / f"open_meteo_{digest}.json"
 
-    def fetch(self, locations: list[Location], days: int = 7) -> ForecastBundle:
+    def fetch(self, locations: list[Location], days: int = 7, past_days: int = 0) -> ForecastBundle:
         params = self._params(locations, days)
+        if past_days:  # modelové hodnoty za uplynulé dny (pro historii)
+            params["past_days"] = past_days
         return self._fetch(params, URL, self.ttl_s, locations, self.model)
 
     def fetch_historical(self, locations: list[Location], start: date, end: date) -> ForecastBundle:
