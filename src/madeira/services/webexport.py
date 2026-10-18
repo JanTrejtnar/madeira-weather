@@ -39,7 +39,8 @@ NETMADEIRA_SNAPSHOT = (
     "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/"
     "pico-do-arieiro/{day:%Y-%m-%d}/{slot}.jpg"
 )
-MORNING_SNAPSHOT_SLOT = "08_00"  # ranní slot timelapsu (půlhodinové sloty v místním čase Madeiry)
+MORNING_SNAPSHOT_SLOTS = ["08_00", "08_30"]  # ranní sloty timelapsu (půlhodinové, místní čas Madeiry)
+MORNING_SNAPSHOT_SLOT = MORNING_SNAPSHOT_SLOTS[0]
 SNAPSHOT_RETENTION_DAYS = 7  # NetMadeira drží snímky jen týden zpět
 ARIEIRO_LAT, ARIEIRO_LON = 32.7358, -16.9291
 
@@ -74,9 +75,13 @@ def sunset_snapshot_slot(day: date) -> str:
     return sunset_snapshot_slots(day)[0]
 
 
+def morning_webcam_urls(day) -> list[str]:
+    """URL ranních snímků (08:00 a o půl hodiny později) timelapsu NetMadeira z Arieira (nic se nestahuje)."""
+    return [NETMADEIRA_SNAPSHOT.format(day=day, slot=slot) for slot in MORNING_SNAPSHOT_SLOTS]
+
+
 def morning_webcam_url(day) -> str:
-    """URL ranního snímku timelapsu NetMadeira z Pico do Arieiro pro daný den (nic se nestahuje)."""
-    return NETMADEIRA_SNAPSHOT.format(day=day, slot=MORNING_SNAPSHOT_SLOT)
+    return morning_webcam_urls(day)[0]
 
 
 def sunset_webcam_urls(day) -> list[str]:
@@ -100,8 +105,8 @@ def with_snapshot_links(history: list[dict], today, evening: bool = False) -> li
         row = {k: v for k, v in row.items() if not k.startswith("webcam_")}
         day = date.fromisoformat(row["date"])
         if oldest <= day <= today:
-            urls = sunset_webcam_urls(day) if evening else [morning_webcam_url(day)]
-            slots = sunset_snapshot_slots(day) if evening else [MORNING_SNAPSHOT_SLOT]
+            urls = sunset_webcam_urls(day) if evening else morning_webcam_urls(day)
+            slots = sunset_snapshot_slots(day) if evening else MORNING_SNAPSHOT_SLOTS
             row["webcam_url"], row["webcam_time"] = urls[0], _slot_time(slots[0])
             row["webcam_urls"], row["webcam_times"] = urls, [_slot_time(x) for x in slots]
         out.append(row)
@@ -532,6 +537,8 @@ def build_payload(
         "morning_webcam_url": morning_webcam_url(now.astimezone(UTC).date()),
         "morning_webcam_date": now.astimezone(UTC).date().isoformat(),
         "morning_webcam_time": _slot_time(MORNING_SNAPSHOT_SLOT),
+        "morning_webcam_urls": morning_webcam_urls(now.astimezone(UTC).date()),
+        "morning_webcam_times": [_slot_time(x) for x in MORNING_SNAPSHOT_SLOTS],
         "sunset_webcam_url": sunset_webcam_url(now.astimezone(UTC).date()),
         "sunset_webcam_time": _slot_time(sunset_snapshot_slot(now.astimezone(UTC).date())),
         "sunset_webcam_urls": sunset_webcam_urls(now.astimezone(UTC).date()),

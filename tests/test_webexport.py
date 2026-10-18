@@ -46,6 +46,12 @@ def test_history_snapshot_links_limited_to_seven_days():
     assert out[2]["webcam_url"].endswith("/2026-10-18/08_00.jpg")
 
 
+def test_morning_snapshots_have_second_photo():
+    payload = webexport.build_payload(Settings(), days=3, bundle=_bundle(), now=NOW)
+    assert payload["morning_webcam_times"] == ["08:00", "08:30"]
+    assert payload["morning_webcam_urls"][1].endswith("/08_30.jpg")
+
+
 def test_rain_levels():
     from madeira.analyzers.daily_weather import rain_level
 
