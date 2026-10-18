@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-18T16:12:18+00:00",
+  "generated_at": "2026-10-18T16:19:21+00:00",
   "model": "best_match",
   "location": {
     "name": "Pico do Arieiro",
@@ -303,10 +303,10 @@
         "sunset": "19:30",
         "departure_funchal": "18:10",
         "verdict": "NO_GO",
-        "score_pct": 12,
+        "score_pct": 2,
         "score_range": [
-          8,
-          18
+          0,
+          7
         ],
         "confidence": "HIGH",
         "horizon_low_cloud_pct": 19,
@@ -316,13 +316,17 @@
         "wind_dir_deg": 325,
         "visibility_km": 2,
         "precip_mm": 0.0,
-        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 12 %. Nejslabší stránka: barvy oblohy (střední/vysoká oblačnost 90 %).",
-        "problem": null,
+        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 2 %. Největší problém je mlha/mrak na vrcholu.",
+        "problem": "fog",
         "weakest": "cloud_canvas",
         "warnings": [
-          "Snížená dohlednost (2 km)."
+          "Snížená dohlednost (2 km).",
+          "Vrchol bude pravděpodobně v mraku/mlze."
         ],
         "alerts": [
+          {
+            "code": "fog"
+          },
           {
             "code": "visibility",
             "value": 2
@@ -341,10 +345,10 @@
         "sunset": "19:30",
         "departure_funchal": "17:30",
         "verdict": "NO_GO",
-        "score_pct": 12,
+        "score_pct": 2,
         "score_range": [
-          8,
-          18
+          0,
+          7
         ],
         "confidence": "HIGH",
         "horizon_low_cloud_pct": 19,
@@ -354,13 +358,17 @@
         "wind_dir_deg": 325,
         "visibility_km": 2,
         "precip_mm": 0.0,
-        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 12 %. Nejslabší stránka: barvy oblohy (střední/vysoká oblačnost 90 %).",
-        "problem": null,
+        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 2 %. Největší problém je mlha/mrak na vrcholu.",
+        "problem": "fog",
         "weakest": "cloud_canvas",
         "warnings": [
-          "Snížená dohlednost (2 km)."
+          "Snížená dohlednost (2 km).",
+          "Vrchol bude pravděpodobně v mraku/mlze."
         ],
         "alerts": [
+          {
+            "code": "fog"
+          },
           {
             "code": "visibility",
             "value": 2
@@ -2494,10 +2502,10 @@
         "time": "19:30",
         "departure": "18:10",
         "verdict": "NO_GO",
-        "score": 12,
+        "score": 2,
         "score_range": [
-          8,
-          18
+          0,
+          7
         ],
         "confidence": "HIGH",
         "cloud_sea": null,
@@ -2511,10 +2519,13 @@
         },
         "horizon_low_cloud_pct": 19,
         "visibility_km": 2,
-        "summary": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 12 %. Nejslabší stránka: barvy oblohy (střední/vysoká oblačnost 90 %).",
-        "problem": null,
+        "summary": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 2 %. Největší problém je mlha/mrak na vrcholu.",
+        "problem": "fog",
         "weakest": "cloud_canvas",
         "alerts": [
+          {
+            "code": "fog"
+          },
           {
             "code": "visibility",
             "value": 2
@@ -2810,10 +2821,10 @@
         "time": "19:30",
         "departure": "17:30",
         "verdict": "NO_GO",
-        "score": 12,
+        "score": 2,
         "score_range": [
-          8,
-          18
+          0,
+          7
         ],
         "confidence": "HIGH",
         "cloud_sea": null,
@@ -2827,10 +2838,13 @@
         },
         "horizon_low_cloud_pct": 19,
         "visibility_km": 2,
-        "summary": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 12 %. Nejslabší stránka: barvy oblohy (střední/vysoká oblačnost 90 %).",
-        "problem": null,
+        "summary": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 2 %. Největší problém je mlha/mrak na vrcholu.",
+        "problem": "fog",
         "weakest": "cloud_canvas",
         "alerts": [
+          {
+            "code": "fog"
+          },
           {
             "code": "visibility",
             "value": 2
@@ -4175,10 +4189,10 @@
         "sunset": "19:30",
         "departure_funchal": "18:10",
         "verdict": "NO_GO",
-        "score_pct": 12,
+        "score_pct": 2,
         "score_range": [
-          8,
-          18
+          0,
+          7
         ],
         "confidence": "HIGH",
         "horizon_low_cloud_pct": 19,
@@ -4188,13 +4202,17 @@
         "wind_dir_deg": 325,
         "visibility_km": 2,
         "precip_mm": 0.0,
-        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 12 %. Nejslabší stránka: barvy oblohy (střední/vysoká oblačnost 90 %).",
-        "problem": null,
+        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 2 %. Největší problém je mlha/mrak na vrcholu.",
+        "problem": "fog",
         "weakest": "cloud_canvas",
         "warnings": [
-          "Snížená dohlednost (2 km)."
+          "Snížená dohlednost (2 km).",
+          "Vrchol bude pravděpodobně v mraku/mlze."
         ],
         "alerts": [
+          {
+            "code": "fog"
+          },
           {
             "code": "visibility",
             "value": 2
@@ -4230,10 +4248,10 @@
         "sunset": "19:29",
         "departure_funchal": "18:09",
         "verdict": "NO_GO",
-        "score_pct": 28,
+        "score_pct": 4,
         "score_range": [
-          18,
-          38
+          0,
+          14
         ],
         "confidence": "MEDIUM",
         "horizon_low_cloud_pct": 37,
@@ -4243,14 +4261,18 @@
         "wind_dir_deg": 8,
         "visibility_km": 11,
         "precip_mm": 0.0,
-        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 28 %. Nejslabší stránka: mlha na vyhlídce (nízká oblačnost na vyhlídce 100 %, rozdíl T − rosný bod 1.2 °C).",
-        "problem": null,
+        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 4 %. Největší problém je mlha/mrak na vrcholu.",
+        "problem": "fog",
         "weakest": "low_cloud_penalty",
         "warnings": [
           "Nízké mraky na západním obzoru (37 %) mohou zakrýt slunce.",
-          "Snížená dohlednost (11 km)."
+          "Snížená dohlednost (11 km).",
+          "Vrchol bude pravděpodobně v mraku/mlze."
         ],
         "alerts": [
+          {
+            "code": "fog"
+          },
           {
             "code": "horizon",
             "value": 37
@@ -4289,11 +4311,11 @@
         "date": "2026-10-21",
         "sunset": "19:27",
         "departure_funchal": "18:07",
-        "verdict": "MAYBE",
-        "score_pct": 65,
+        "verdict": "GO",
+        "score_pct": 82,
         "score_range": [
-          55,
-          75
+          72,
+          92
         ],
         "confidence": "MEDIUM",
         "horizon_low_cloud_pct": 57,
@@ -4303,18 +4325,11 @@
         "wind_dir_deg": 47,
         "visibility_km": 12,
         "precip_mm": 0.0,
-        "summary_cs": "Hazard, výsledek je nejistý. Skóre 65 %. Nejslabší stránka: barvy oblohy (střední/vysoká oblačnost 0 %).",
+        "summary_cs": "Západ slunce vypadá slibně. Skóre 82 %. Nejslabší stránka: barvy oblohy (střední/vysoká oblačnost 0 %).",
         "problem": null,
         "weakest": "cloud_canvas",
-        "warnings": [
-          "Snížená dohlednost (12 km)."
-        ],
-        "alerts": [
-          {
-            "code": "visibility",
-            "value": 12
-          }
-        ],
+        "warnings": [],
+        "alerts": [],
         "weather": {
           "funchal": {
             "rain": "none",
@@ -4347,10 +4362,10 @@
         "sunset": "19:30",
         "departure_funchal": "17:30",
         "verdict": "NO_GO",
-        "score_pct": 12,
+        "score_pct": 2,
         "score_range": [
-          8,
-          18
+          0,
+          7
         ],
         "confidence": "HIGH",
         "horizon_low_cloud_pct": 19,
@@ -4360,13 +4375,17 @@
         "wind_dir_deg": 325,
         "visibility_km": 2,
         "precip_mm": 0.0,
-        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 12 %. Nejslabší stránka: barvy oblohy (střední/vysoká oblačnost 90 %).",
-        "problem": null,
+        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 2 %. Největší problém je mlha/mrak na vrcholu.",
+        "problem": "fog",
         "weakest": "cloud_canvas",
         "warnings": [
-          "Snížená dohlednost (2 km)."
+          "Snížená dohlednost (2 km).",
+          "Vrchol bude pravděpodobně v mraku/mlze."
         ],
         "alerts": [
+          {
+            "code": "fog"
+          },
           {
             "code": "visibility",
             "value": 2
@@ -4402,10 +4421,10 @@
         "sunset": "19:29",
         "departure_funchal": "17:29",
         "verdict": "NO_GO",
-        "score_pct": 28,
+        "score_pct": 4,
         "score_range": [
-          18,
-          38
+          0,
+          14
         ],
         "confidence": "MEDIUM",
         "horizon_low_cloud_pct": 37,
@@ -4415,14 +4434,18 @@
         "wind_dir_deg": 8,
         "visibility_km": 11,
         "precip_mm": 0.0,
-        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 28 %. Nejslabší stránka: mlha na vyhlídce (nízká oblačnost na vyhlídce 100 %, rozdíl T − rosný bod 1.2 °C).",
-        "problem": null,
+        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 4 %. Největší problém je mlha/mrak na vrcholu.",
+        "problem": "fog",
         "weakest": "low_cloud_penalty",
         "warnings": [
           "Nízké mraky na západním obzoru (37 %) mohou zakrýt slunce.",
-          "Snížená dohlednost (11 km)."
+          "Snížená dohlednost (11 km).",
+          "Vrchol bude pravděpodobně v mraku/mlze."
         ],
         "alerts": [
+          {
+            "code": "fog"
+          },
           {
             "code": "horizon",
             "value": 37
@@ -4461,11 +4484,11 @@
         "date": "2026-10-21",
         "sunset": "19:27",
         "departure_funchal": "17:27",
-        "verdict": "MAYBE",
-        "score_pct": 65,
+        "verdict": "GO",
+        "score_pct": 82,
         "score_range": [
-          55,
-          75
+          72,
+          92
         ],
         "confidence": "MEDIUM",
         "horizon_low_cloud_pct": 57,
@@ -4475,18 +4498,11 @@
         "wind_dir_deg": 47,
         "visibility_km": 12,
         "precip_mm": 0.0,
-        "summary_cs": "Hazard, výsledek je nejistý. Skóre 65 %. Nejslabší stránka: barvy oblohy (střední/vysoká oblačnost 0 %).",
+        "summary_cs": "Západ slunce vypadá slibně. Skóre 82 %. Nejslabší stránka: barvy oblohy (střední/vysoká oblačnost 0 %).",
         "problem": null,
         "weakest": "cloud_canvas",
-        "warnings": [
-          "Snížená dohlednost (12 km)."
-        ],
-        "alerts": [
-          {
-            "code": "visibility",
-            "value": 12
-          }
-        ],
+        "warnings": [],
+        "alerts": [],
         "weather": {
           "funchal": {
             "rain": "none",
@@ -5251,17 +5267,17 @@
     "history": [
       {
         "date": "2026-10-17",
-        "score": 45,
-        "verdict": "PARTIAL",
+        "score": 75,
+        "verdict": "MYSTIC",
         "metrics": {
-          "temp": 15.6,
-          "humidity": 86,
-          "dew_point": 13.3,
-          "dew_point_spread": 2.3,
-          "wind_speed": 12,
-          "wind_dir": 43
+          "temp": 14.0,
+          "humidity": 89,
+          "dew_point": 12.2,
+          "dew_point_spread": 1.8,
+          "wind_speed": 9,
+          "wind_dir": 50
         },
-        "summary": "Vlhkost 86 %, pasát ze severovýchodu – cáry mlhy",
+        "summary": "Vlhkost 89 %, pasát ze severovýchodu – hustá mlha",
         "snapshots": [
           {
             "time": "11:00",
@@ -5275,17 +5291,17 @@
       },
       {
         "date": "2026-10-16",
-        "score": 27,
-        "verdict": "CLEAR",
+        "score": 50,
+        "verdict": "PARTIAL",
         "metrics": {
-          "temp": 16.0,
-          "humidity": 86,
-          "dew_point": 13.6,
-          "dew_point_spread": 2.4,
+          "temp": 13.8,
+          "humidity": 92,
+          "dew_point": 12.5,
+          "dew_point_spread": 1.3,
           "wind_speed": 6,
-          "wind_dir": 61
+          "wind_dir": 79
         },
-        "summary": "Vlhkost 86 %, pasát ze severovýchodu – bez mlhy",
+        "summary": "Vlhkost 92 %, vítr z východu – cáry mlhy",
         "snapshots": [
           {
             "time": "11:00",
@@ -5299,17 +5315,17 @@
       },
       {
         "date": "2026-10-15",
-        "score": 21,
-        "verdict": "CLEAR",
+        "score": 50,
+        "verdict": "PARTIAL",
         "metrics": {
-          "temp": 15.5,
-          "humidity": 87,
-          "dew_point": 13.2,
-          "dew_point_spread": 2.3,
-          "wind_speed": 4,
-          "wind_dir": 46
+          "temp": 12.5,
+          "humidity": 99,
+          "dew_point": 12.4,
+          "dew_point_spread": 0.1,
+          "wind_speed": 6,
+          "wind_dir": 76
         },
-        "summary": "Vlhkost 87 %, pasát ze severovýchodu – bez mlhy",
+        "summary": "Vlhkost 99 %, vítr z východu – cáry mlhy",
         "snapshots": [
           {
             "time": "11:00",
@@ -5323,17 +5339,17 @@
       },
       {
         "date": "2026-10-14",
-        "score": 28,
-        "verdict": "CLEAR",
+        "score": 75,
+        "verdict": "MYSTIC",
         "metrics": {
-          "temp": 14.5,
-          "humidity": 85,
-          "dew_point": 12.0,
-          "dew_point_spread": 2.5,
-          "wind_speed": 7,
-          "wind_dir": 50
+          "temp": 12.6,
+          "humidity": 88,
+          "dew_point": 10.6,
+          "dew_point_spread": 2.0,
+          "wind_speed": 10,
+          "wind_dir": 55
         },
-        "summary": "Vlhkost 85 %, pasát ze severovýchodu – bez mlhy",
+        "summary": "Vlhkost 88 %, pasát ze severovýchodu – hustá mlha",
         "snapshots": [
           {
             "time": "11:00",
@@ -5347,17 +5363,17 @@
       },
       {
         "date": "2026-10-13",
-        "score": 10,
-        "verdict": "CLEAR",
+        "score": 48,
+        "verdict": "PARTIAL",
         "metrics": {
-          "temp": 14.4,
-          "humidity": 75,
-          "dew_point": 10.0,
-          "dew_point_spread": 4.4,
+          "temp": 12.3,
+          "humidity": 81,
+          "dew_point": 9.2,
+          "dew_point_spread": 3.1,
           "wind_speed": 13,
-          "wind_dir": 53
+          "wind_dir": 56
         },
-        "summary": "Vlhkost 75 %, pasát ze severovýchodu – bez mlhy",
+        "summary": "Vlhkost 81 %, pasát ze severovýchodu – cáry mlhy",
         "snapshots": [
           {
             "time": "11:00",
@@ -5371,17 +5387,17 @@
       },
       {
         "date": "2026-10-12",
-        "score": 28,
-        "verdict": "CLEAR",
+        "score": 55,
+        "verdict": "PARTIAL",
         "metrics": {
-          "temp": 14.1,
-          "humidity": 85,
-          "dew_point": 11.6,
-          "dew_point_spread": 2.5,
-          "wind_speed": 6,
-          "wind_dir": 41
+          "temp": 15.6,
+          "humidity": 83,
+          "dew_point": 12.8,
+          "dew_point_spread": 2.8,
+          "wind_speed": 8,
+          "wind_dir": 34
         },
-        "summary": "Vlhkost 85 %, pasát ze severovýchodu – bez mlhy",
+        "summary": "Vlhkost 83 %, pasát ze severovýchodu – cáry mlhy",
         "snapshots": [
           {
             "time": "11:00",
@@ -5395,17 +5411,17 @@
       },
       {
         "date": "2026-10-11",
-        "score": 28,
-        "verdict": "CLEAR",
+        "score": 76,
+        "verdict": "MYSTIC",
         "metrics": {
-          "temp": 14.7,
-          "humidity": 86,
-          "dew_point": 12.3,
-          "dew_point_spread": 2.4,
+          "temp": 12.1,
+          "humidity": 99,
+          "dew_point": 12.0,
+          "dew_point_spread": 0.1,
           "wind_speed": 8,
-          "wind_dir": 35
+          "wind_dir": 45
         },
-        "summary": "Vlhkost 86 %, pasát ze severovýchodu – bez mlhy",
+        "summary": "Vlhkost 99 %, pasát ze severovýchodu – hustá mlha",
         "snapshots": [
           {
             "time": "11:00",
@@ -5430,7 +5446,9 @@
     "day": "today",
     "date": "2026-10-18",
     "verdict": "CLEAR",
-    "score": 26,
+    "score": 36,
+    "peak_score": 36,
+    "peak_hour": 17,
     "humidity": 88,
     "cloud_coverage_local": 67,
     "cloud_base_m": 1400,
@@ -5447,14 +5465,16 @@
     "slots": [
       {
         "hour": 17,
-        "score": 26,
+        "score": 36,
         "verdict": "CLEAR"
       }
     ],
     "today": {
       "date": "2026-10-18",
       "verdict": "CLEAR",
-      "score": 26,
+      "score": 36,
+      "peak_score": 36,
+      "peak_hour": 17,
       "humidity": 88,
       "cloud_coverage_local": 67,
       "cloud_base_m": 1400,
@@ -5471,7 +5491,7 @@
       "slots": [
         {
           "hour": 17,
-          "score": 26,
+          "score": 36,
           "verdict": "CLEAR"
         }
       ]
@@ -5479,22 +5499,24 @@
     "tomorrow": {
       "date": "2026-10-19",
       "verdict": "PARTIAL",
-      "score": 43,
+      "score": 68,
+      "peak_score": 68,
+      "peak_hour": 13,
       "humidity": 91,
-      "cloud_coverage_local": 81,
-      "cloud_base_m": 1329,
-      "visibility_m": 14880,
+      "cloud_coverage_local": 100,
+      "cloud_base_m": 1338,
+      "visibility_m": 840,
       "wind_gusts": 26,
-      "rain": 0.1,
-      "temp": 12.5,
-      "dew_point_spread": 1.4,
+      "rain": 0.0,
+      "temp": 13.1,
+      "dew_point_spread": 1.5,
       "wind_speed": 8,
-      "wind_dir_deg": 28,
+      "wind_dir_deg": 24,
       "best_window_hours": [
-        8,
-        11
+        13,
+        16
       ],
-      "best_window": "Dopoledne 08:00–11:00",
+      "best_window": "Odpoledne 13:00–16:00",
       "summary": "Převalující se cáry mlhy, mezi nimi občasné protrhání.",
       "slots": [
         {
@@ -5504,13 +5526,13 @@
         },
         {
           "hour": 13,
-          "score": 48,
+          "score": 68,
           "verdict": "PARTIAL"
         },
         {
           "hour": 17,
-          "score": 30,
-          "verdict": "CLEAR"
+          "score": 50,
+          "verdict": "PARTIAL"
         }
       ]
     }

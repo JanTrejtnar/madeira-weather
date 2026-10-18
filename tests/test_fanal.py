@@ -44,8 +44,8 @@ def test_weights_yaml_defines_fanal_as_fog_seeker():
     cfg = load_settings().fanal
     assert (cfg.lat, cfg.lon, cfg.elevation_m, cfg.type) == (32.8083, -17.1417, 1150, "fog_seeker")
     assert (cfg.verdict.go, cfg.verdict.maybe) == (70, 40)
-    assert (cfg.dew.spread_extreme, cfg.dew.spread_likely, cfg.dew.spread_dry) == (1.0, 2.0, 3.5)
-    assert (cfg.dew.rh_extreme, cfg.dew.rh_likely, cfg.dew.points_extreme, cfg.dew.points_likely) == (92, 85, 50, 30)
+    assert (cfg.dew.spread_extreme, cfg.dew.spread_likely, cfg.dew.spread_dry) == (2.0, 3.0, 4.0)
+    assert (cfg.dew.rh_extreme, cfg.dew.rh_likely, cfg.dew.points_extreme, cfg.dew.points_likely) == (85, 78, 50, 30)
     assert (cfg.wind.bonus, cfg.wind.lee_penalty, cfg.wind.speed_min, cfg.wind.speed_max) == (25, 30, 8, 30)
     assert cfg.webcam_url.startswith("https://www.netmadeira.com/webcams-madeira/")
     assert cfg.as_location().role == "fog_seeker"
@@ -58,18 +58,19 @@ def test_verdict_boundaries():
 
 def test_dew_point_spread_points():
     pts = lambda spread, rh=50: fanal.dew_points(_f(spread=spread, rh=rh), CFG)  # noqa: E731
-    assert pts(0.4) == pts(1.0) == 50  # extrémně vysoká pravděpodobnost
-    assert pts(1.5) == pts(2.0) == 30  # pravděpodobné cáry
-    assert 0 < pts(2.75) < 30  # mezi 2,0 a 3,5 °C lineárně klesá
-    assert pts(2.75) == pytest.approx(15)
-    assert pts(3.5) == pts(6) == 0  # sucho
+    assert pts(0.4) == pts(2.0) == 50  # plný zisk do 2,0 °C
+    assert pts(2.5) == pts(3.0) == 30  # částečný zisk do 3,0 °C
+    assert 0 < pts(3.5) < 30  # mezi 3,0 a 4,0 °C lineárně klesá
+    assert pts(3.5) == pytest.approx(15)
+    assert pts(4.0) == pts(6) == 0  # sucho
 
 
 def test_relative_humidity_is_an_alternative_to_spread():
-    assert fanal.dew_points(_f(spread=4.0, rh=92), CFG) == 50
-    assert fanal.dew_points(_f(spread=4.0, rh=85), CFG) == 30
-    assert fanal.dew_points(_f(spread=4.0, rh=84), CFG) == 0
+    assert fanal.dew_points(_f(spread=5.0, rh=85), CFG) == 50
+    assert fanal.dew_points(_f(spread=5.0, rh=78), CFG) == 30
+    assert fanal.dew_points(_f(spread=5.0, rh=77), CFG) == 0
     assert fanal.dew_points(_f(spread=0.5, rh=70), CFG) == 50  # vyhrává lepší z obou
+    assert fanal.dew_points(_f(spread=3.5, rh=80), CFG) == 30  # RH 78+ drží částečný zisk i při větším rozdílu
     assert fanal.dew_points(_f(spread=None, rh=None), CFG) == 0
 
 
@@ -108,10 +109,10 @@ def test_thick_orographic_fog_is_mystic_and_dry_day_is_clear():
 
 
 def test_visibility_is_only_a_bonus():
-    near = score_fog(_f(spread=1.5, deg=100, vis=300), CFG)
+    near = score_fog(_f(spread=2.5, deg=100, vis=300), CFG)
     assert near == 30 + 25
-    assert score_fog(_f(spread=1.5, deg=100, vis=24000), CFG) == score_fog(_f(spread=1.5, deg=100, vis=None), CFG) == 30
-    assert 30 < score_fog(_f(spread=1.5, deg=100, vis=1000), CFG) < near
+    assert score_fog(_f(spread=2.5, deg=100, vis=24000), CFG) == score_fog(_f(spread=2.5, deg=100, vis=None), CFG) == 30
+    assert 30 < score_fog(_f(spread=2.5, deg=100, vis=1000), CFG) < near
     assert score_fog(_f(spread=0.3, deg=20, speed=12, vis=200), CFG) == 100  # strop
 
 
@@ -150,8 +151,8 @@ def test_features_from_open_meteo_point():
     assert f.spread_c == 2.0 and f.surface_rh_pct == 90 and f.wind_kmh == 12 and f.wind_dir_deg == 30
     assert f.cloud_base_m == pytest.approx(1150 + 125 * 2)  # jen informativní odhad
     assert fanal.rh_at_height(p, 1150) == pytest.approx(90)
-    # T 10, Td 8 → spread 2,0 → +30, severní vítr 12 km/h → +25
-    assert score_fog(f, CFG) == 55
+    # T 10, Td 8 → spread 2,0 → +50, severní vítr 12 km/h → +25
+    assert score_fog(f, CFG) == 75
 
 
 def test_negative_dewpoint_spread_is_clamped():
@@ -160,23 +161,56 @@ def test_negative_dewpoint_spread_is_clamped():
     assert f.spread_c == 0 and f.cloud_base_m == 1150
 
 
-def test_mean_direction_is_circular():
-    assert fanal.mean_direction([350, 10]) % 360 == pytest.approx(0, abs=1e-6) or fanal.mean_direction([350, 10]) == pytest.approx(360)
-    assert fanal.mean_direction([40, 50]) == pytest.approx(45)
-    assert fanal.mean_direction([]) is None
-    assert fanal.mean_direction([0, 180]) is None
-
-
-def test_best_window_is_longest_run_above_partial():
-    base = datetime(2026, 10, 13, tzinfo=TZ)
-    pts = [
-        HourlyPoint(time_utc=(base + timedelta(hours=h)).astimezone(UTC), **(MIST if 10 <= h < 14 else DRY_DAY))
-        for h in range(24)
+def _real_points(day: date, rows: dict[int, tuple]) -> list[HourlyPoint]:
+    """Skutečné hodnoty Open-Meteo pro Fanal (T, Td, RH, směr, rychlost, nárazy) ve slotech 9/13/17 h."""
+    base = datetime(day.year, day.month, day.day, tzinfo=TZ)
+    return [
+        HourlyPoint(time_utc=(base + timedelta(hours=h)).astimezone(UTC), temperature_c=t, dew_point_c=td,
+                    relative_humidity_pct=rh, wind_direction_deg=deg, wind_speed_kmh=v, wind_gusts_kmh=g,
+                    visibility_m=vis[0] if vis else 24000, precipitation_mm=0.0)
+        for h, (t, td, rh, deg, v, g, *vis) in rows.items()
     ]
-    assert fanal.best_window(pts, DAY, CFG) == (10, 14)
-    assert fanal.best_window(pts, DAY, CFG, from_hour=12) == (12, 14)  # proběhlé hodiny se nepočítají
-    storm = _hours(DAY, **{**MIST, "wind_gusts_kmh": 150, "precipitation_mm": 5})
-    assert fanal.best_window(storm, DAY, CFG) is None
+
+
+REAL_17 = {9: (14.0, 12.2, 89, 50, 9.4, 39.2), 13: (17.1, 14.2, 83, 40, 11.8, 50.0), 17: (15.7, 13.6, 87, 39, 14.3, 58.3)}
+REAL_18 = {9: (12.6, 11.2, 91, 24, 13.4, 65.2), 13: (14.6, 13.3, 92, 27, 13.7, 67.0, 360), 17: (13.0, 11.0, 88, 29, 16.1, 72.4)}
+
+
+def test_calibration_17_10_morning_slot_is_mystic_and_so_is_the_day():
+    section = webexport.fanal_section(CFG, _fanal_bundle(_real_points(date(2026, 10, 17), REAL_17)),
+                                      datetime(2026, 10, 17, 6, 0, tzinfo=TZ))
+    scores = {s["hour"]: s["score"] for s in section["slots"]}
+    assert scores[9] >= 70 and section["slots"][0]["verdict"] == "MYSTIC"  # T − Td 1,8 °C + pasát 50° / 9 km/h
+    assert section["verdict"] == "MYSTIC" and section["score"] == section["peak_score"] == max(scores.values())
+    assert section["best_window"] == "Dopoledne 09:00–12:00" and section["best_window_hours"] == [9, 12]
+
+
+def test_calibration_18_10_peaks_at_noon_but_gusts_hold_it_at_partial():
+    section = webexport.fanal_section(CFG, _fanal_bundle(_real_points(date(2026, 10, 18), REAL_18)),
+                                      datetime(2026, 10, 18, 6, 0, tzinfo=TZ))
+    # 13 h: T − Td 1,3 °C (+50) + pasát 27° / 14 km/h (+25) + dohlednost 360 m (+25) = 100, nárazy 67 km/h → ×0,6
+    assert section["best_window"] == "Odpoledne 13:00–16:00" and section["peak_hour"] == 13
+    assert section["verdict"] == "PARTIAL" and section["score"] == 60
+
+
+def test_daily_score_is_peak_slot_not_average():
+    pts = (_real_points(DAY, {9: (14.0, 13.8, 98, 20, 10, 15), 13: (20.0, 5.0, 40, 270, 10, 15), 17: (20.0, 5.0, 40, 270, 10, 15)}))
+    section = webexport.fanal_section(CFG, _fanal_bundle(pts), datetime(2026, 10, 13, 6, 0, tzinfo=TZ))
+    scores = [s["score"] for s in section["slots"]]
+    assert scores[1:] == [0, 0] and scores[0] >= 70
+    assert section["score"] == section["peak_score"] == scores[0]  # průměr by byl pod 40
+    assert section["verdict"] == "MYSTIC" and section["best_window"].startswith("Dopoledne 09:00")
+    # hodnoty karty jsou z nejlepšího slotu
+    assert section["humidity"] == 98 and section["wind_dir_deg"] == 20
+
+
+def test_peak_tie_prefers_earlier_slot_and_clear_day_has_no_window():
+    tie = webexport.fanal_section(CFG, _fanal_bundle(_hours(DAY, **MIST)), datetime(2026, 10, 13, 6, 0, tzinfo=TZ))
+    assert tie["best_window"] == "Dopoledne 09:00–12:00"
+    clear = webexport.fanal_section(CFG, _fanal_bundle(_hours(DAY, **DRY_DAY)), datetime(2026, 10, 13, 6, 0, tzinfo=TZ))
+    assert clear["verdict"] == "CLEAR" and clear["best_window"] is None and clear["best_window_hours"] is None
+    evening = webexport.fanal_section(CFG, _fanal_bundle(_hours(DAY, **MIST)), datetime(2026, 10, 13, 15, 0, tzinfo=TZ))
+    assert evening["best_window"] == "Večer 17:00–20:00"
 
 
 def test_section_for_misty_day_has_required_keys():
@@ -186,7 +220,7 @@ def test_section_for_misty_day_has_required_keys():
     assert section["verdict"] == "MYSTIC" and section["score"] >= 70
     assert {"verdict", "score", "humidity", "cloud_coverage_local", "wind_gusts", "rain", "summary",
             "best_window", "webcam_url", "dew_point_spread", "wind_speed", "wind_dir_deg"} <= section.keys()
-    assert section["best_window"].startswith("Dopoledne 08:00–")
+    assert section["best_window"] == "Dopoledne 09:00–12:00"
     assert [s["hour"] for s in section["slots"]] == [9, 13, 17]
     assert "mlha" in section["summary"].lower()
     assert section["humidity"] == 98 and section["wind_gusts"] == 15 and section["rain"] == 0.3
