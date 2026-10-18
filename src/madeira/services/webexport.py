@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -26,14 +26,27 @@ ARIEIRO_ELEVATION_M = 1818
 
 NETMADEIRA_SNAPSHOT = (
     "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/"
-    "pico-do-arieiro/24h/{:%Y_%m_%d}_{}.jpg"
+    "pico-do-arieiro/{day:%Y-%m-%d}/{slot}.jpg"
 )
 MORNING_SNAPSHOT_SLOT = "08_00"  # ranní slot statických snímků timelapsu (UTC)
+SNAPSHOT_RETENTION_DAYS = 7  # NetMadeira drží snímky jen týden zpět
 
 
 def morning_webcam_url(day) -> str:
     """URL ranního snímku timelapsu NetMadeira z Pico do Arieiro pro daný den (nic se nestahuje)."""
-    return NETMADEIRA_SNAPSHOT.format(day, MORNING_SNAPSHOT_SLOT)
+    return NETMADEIRA_SNAPSHOT.format(day=day, slot=MORNING_SNAPSHOT_SLOT)
+
+
+def with_snapshot_links(history: list[dict], today) -> list[dict]:
+    """Dny historie, pro které NetMadeira ještě snímek drží, dostanou `webcam_url`."""
+    oldest = today - timedelta(days=SNAPSHOT_RETENTION_DAYS)
+    out = []
+    for row in history:
+        row = {k: v for k, v in row.items() if k != "webcam_url"}
+        if oldest <= date.fromisoformat(row["date"]) <= today:
+            row["webcam_url"] = morning_webcam_url(date.fromisoformat(row["date"]))
+        out.append(row)
+    return out
 
 
 def _day_entry(analysis: SunriseAnalysis, features, departure_before_min: int) -> dict:
@@ -453,7 +466,7 @@ def build_payload(
         | {"spots": {s["key"]: _spot_summary(s, "sunset") for s in spots["evening"]}},
         "days": entries,
         "spot_days": spot_days(settings, bundle, first, days, now),
-        "history": history or [],
+        "history": with_snapshot_links(history or [], now.astimezone(UTC).date()),
         **({"sunny_escape": escape} if escape else {}),
         **({"fanal": fog} if fog else {}),
     }

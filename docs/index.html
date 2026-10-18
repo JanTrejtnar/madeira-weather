@@ -214,6 +214,8 @@
       morningBtn: "📷 Dnešní ranní pohled (08:00)",
       morningCap: (p) => `Dnes v 08:00 · Model předpovídal: ${p}`,
       morningCapNoPred: "Dnes v 08:00 · Snímek z NetMadeira",
+      snapTitle: "Ranní snímek (08:00)", snapCap: (d, p) => `${d} v 08:00 · Model předpovídal: ${p}`,
+      snapCapNoPred: (d) => `${d} v 08:00 · Snímek z NetMadeira`,
       sunsetHead: { GO: "Západ slunce vypadá slibně.", MAYBE: "Hazard, výsledek je nejistý.", NO_GO: "Dnes to nevypadá na západ, který by stál za cestu." },
       sunsetComp: { visibility: "dohlednost", wind: "vítr", horizon_clarity: "čistý obzor", cloud_canvas: "barvy oblohy", low_cloud_penalty: "mlha na vyhlídce", wind_comfort: "vítr" },
       sunsetSummary: (d, t, kind) => [
@@ -289,6 +291,8 @@
       morningBtn: "📷 This morning's view (08:00)",
       morningCap: (p) => `Today at 08:00 · Model predicted: ${p}`,
       morningCapNoPred: "Today at 08:00 · Snapshot from NetMadeira",
+      snapTitle: "Morning snapshot (08:00)", snapCap: (d, p) => `${d} at 08:00 · Model predicted: ${p}`,
+      snapCapNoPred: (d) => `${d} at 08:00 · Snapshot from NetMadeira`,
       sunsetHead: { GO: "The sunset looks promising.", MAYBE: "A gamble, the outcome is uncertain.", NO_GO: "Not a sunset worth the trip today." },
       sunsetComp: { visibility: "visibility", wind: "wind", horizon_clarity: "clear horizon", cloud_canvas: "sky colours", low_cloud_penalty: "fog at the viewpoint", wind_comfort: "wind" },
       sunsetSummary: (d, t, kind) => [
@@ -461,21 +465,30 @@
     probe.src = url;
   }
 
-  function openMorning(open) {
-    const m = $("morning-modal");
-    if (open) {
-      const L = t(), h = (data.history || []).find((r) => r.date === data.morning_webcam_date);
-      $("morning-img").src = data.morning_webcam_url;
-      $("morning-caption").textContent = h && h.score_pct != null
-        ? L.morningCap(`${L.verdict[h.verdict] || h.verdict} ${h.score_pct} %`) : L.morningCapNoPred;
-    }
+  let brokenSnaps = new Set();
+  function openSnapshot(url, caption) {
+    const m = $("morning-modal"), open = !!url;
+    if (open) { $("morning-img").src = url; $("morning-caption").textContent = caption; }
     m.classList.toggle("hidden", !open);
     m.classList.toggle("flex", open);
   }
-  $("morning-btn").addEventListener("click", () => openMorning(true));
-  $("morning-modal").addEventListener("click", () => openMorning(false));
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") openMorning(false); });
-  $("morning-img").addEventListener("error", () => { openMorning(false); morningLoaded = ""; renderMorning(); });
+  function predText(h) {
+    const L = t();
+    return h && h.score_pct != null ? `${L.verdict[h.verdict] || h.verdict} ${h.score_pct} %` : "";
+  }
+  function openMorning() {
+    const L = t(), p = predText((data.history || []).find((r) => r.date === data.morning_webcam_date));
+    openSnapshot(data.morning_webcam_url, p ? L.morningCap(p) : L.morningCapNoPred);
+  }
+  $("morning-btn").addEventListener("click", openMorning);
+  $("morning-modal").addEventListener("click", () => openSnapshot(null));
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") openSnapshot(null); });
+  $("morning-img").addEventListener("error", () => {
+    const url = $("morning-img").getAttribute("src");
+    openSnapshot(null);
+    if (url === (data && data.morning_webcam_url)) { morningLoaded = ""; renderMorning(); }
+    else { brokenSnaps.add(url); renderHistory(); }
+  });
 
   // výhled na další dny; bez `spot_days` (starší data.json) jen Arieiro + zítřek ostatních
   function daysOf(key) {
@@ -675,7 +688,19 @@
         pred.append(el("span", `font-semibold ${style(h.verdict).text}`, `${L.verdict[h.verdict] || h.verdict} `), el("span", "text-slate-300", `${h.score_pct} %`));
         if (h.source === "backfill") pred.append(el("span", "text-slate-500", " *"));
       }
-      tr.append(el("td", "py-2 pr-3 whitespace-nowrap text-slate-300", `${L.short[parse(h.date).getDay()]} ${fmtDate(h.date)}`), pred,
+      const dateCell = el("td", "py-2 pr-3 whitespace-nowrap text-slate-300", `${L.short[parse(h.date).getDay()]} ${fmtDate(h.date)}`);
+      if (h.webcam_url && !brokenSnaps.has(h.webcam_url)) {
+        const b = el("button", "ml-2 rounded-md px-1.5 py-0.5 hover:bg-white/10", "📷");
+        b.type = "button";
+        b.title = L.snapTitle;
+        b.setAttribute("aria-label", L.snapTitle);
+        b.addEventListener("click", () => {
+          const p = predText(h);
+          openSnapshot(h.webcam_url, p ? L.snapCap(`${L.short[parse(h.date).getDay()]} ${fmtDate(h.date)}`, p) : L.snapCapNoPred(`${L.short[parse(h.date).getDay()]} ${fmtDate(h.date)}`));
+        });
+        dateCell.append(b);
+      }
+      tr.append(dateCell, pred,
         el("td", "py-2 pr-3 text-slate-300", h.inversion_pct == null ? "–" : `${h.inversion_pct} %`),
         h.outcome ? el("td", "py-2", L.outcome[h.outcome] || h.outcome) : el("td", "py-2 italic text-slate-500", L.unknown));
       return tr;

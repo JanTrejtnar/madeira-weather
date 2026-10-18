@@ -33,8 +33,17 @@ def test_payload_has_morning_webcam_url():
     assert payload["morning_webcam_date"] == day.isoformat()
     assert payload["morning_webcam_url"] == (
         "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/"
-        f"pico-do-arieiro/24h/{day:%Y_%m_%d}_08_00.jpg"
+        f"pico-do-arieiro/{day:%Y-%m-%d}/08_00.jpg"
     )
+
+
+def test_history_snapshot_links_limited_to_seven_days():
+    today = datetime(2026, 10, 18).date()
+    rows = [{"date": "2026-10-11"}, {"date": "2026-10-10"}, {"date": "2026-10-18"}]
+    out = webexport.with_snapshot_links(rows, today)
+    assert out[0]["webcam_url"].endswith("/pico-do-arieiro/2026-10-11/08_00.jpg")
+    assert "webcam_url" not in out[1]
+    assert out[2]["webcam_url"].endswith("/2026-10-18/08_00.jpg")
 
 
 def test_rain_levels():
