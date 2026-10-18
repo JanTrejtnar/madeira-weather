@@ -316,6 +316,7 @@ def export_web(
     # Historie z lokální DB; bez ní (např. GitHub Actions) zůstane z předchozího exportu.
     rows = store.history_rows(forecast.today_local(), limit=history)
     payload["history"] = webexport.history_entries(rows, 1818) if rows else webexport.read_history(out)
+    payload["history"] = webexport.with_snapshot_links(payload["history"], datetime.now(UTC).date())
     webexport.write_payload(payload, out)
     t = payload["tomorrow"]
     console.print(f"Zapsáno {out}: {t['date']} {t['verdict']} {t['score_pct']} %")
