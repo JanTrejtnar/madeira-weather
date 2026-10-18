@@ -205,11 +205,12 @@
       timeSunrise: "Východ slunce", timeSunset: "Západ slunce",
       horizon: "Nízké mraky na obzoru", canvas: "Mraky pro barvy",
       webcam: (name) => `Živá webkamera · ${name}`,
-      morningBtn: "📷 Dnešní ranní pohled (08:00)",
-      morningCap: (p) => `Dnes v 08:00 · Model předpovídal: ${p}`,
-      morningCapNoPred: "Dnes v 08:00 · Snímek z NetMadeira",
-      snapTitle: "Ranní snímek (08:00)", snapCap: (d, p) => `${d} v 08:00 · Model předpovídal: ${p}`,
-      snapCapNoPred: (d) => `${d} v 08:00 · Snímek z NetMadeira`,
+      morningBtn: (tm) => `📷 Dnešní ranní pohled (${tm})`,
+      sunsetBtn: (tm) => `📷 Dnešní večerní pohled (${tm})`,
+      morningCap: (tm, p) => `Dnes v ${tm} · Model předpovídal: ${p}`,
+      morningCapNoPred: (tm) => `Dnes v ${tm} · Snímek z NetMadeira`,
+      snapTitle: "Snímek z webkamery", snapCap: (d, tm, p) => `${d} v ${tm} · Model předpovídal: ${p}`,
+      snapCapNoPred: (d, tm) => `${d} v ${tm} · Snímek z NetMadeira`,
       sunsetHead: { GO: "Západ slunce vypadá slibně.", MAYBE: "Hazard, výsledek je nejistý.", NO_GO: "Dnes to nevypadá na západ, který by stál za cestu." },
       sunsetComp: { visibility: "dohlednost", wind: "vítr", horizon_clarity: "čistý obzor", cloud_canvas: "barvy oblohy", low_cloud_penalty: "mlha na vyhlídce", wind_comfort: "vítr" },
       sunsetSummary: (d, t, kind) => [
@@ -295,11 +296,12 @@
       timeSunrise: "Sunrise", timeSunset: "Sunset",
       horizon: "Low clouds on horizon", canvas: "Clouds for colour",
       webcam: (name) => `Live webcam · ${name}`,
-      morningBtn: "📷 This morning's view (08:00)",
-      morningCap: (p) => `Today at 08:00 · Model predicted: ${p}`,
-      morningCapNoPred: "Today at 08:00 · Snapshot from NetMadeira",
-      snapTitle: "Morning snapshot (08:00)", snapCap: (d, p) => `${d} at 08:00 · Model predicted: ${p}`,
-      snapCapNoPred: (d) => `${d} at 08:00 · Snapshot from NetMadeira`,
+      morningBtn: (tm) => `📷 This morning's view (${tm})`,
+      sunsetBtn: (tm) => `📷 This evening's view (${tm})`,
+      morningCap: (tm, p) => `Today at ${tm} · Model predicted: ${p}`,
+      morningCapNoPred: (tm) => `Today at ${tm} · Snapshot from NetMadeira`,
+      snapTitle: "Webcam snapshot", snapCap: (d, tm, p) => `${d} at ${tm} · Model predicted: ${p}`,
+      snapCapNoPred: (d, tm) => `${d} at ${tm} · Snapshot from NetMadeira`,
       sunsetHead: { GO: "The sunset looks promising.", MAYBE: "A gamble, the outcome is uncertain.", NO_GO: "Not a sunset worth the trip today." },
       sunsetComp: { visibility: "visibility", wind: "wind", horizon_clarity: "clear horizon", cloud_canvas: "sky colours", low_cloud_penalty: "fog at the viewpoint", wind_comfort: "wind" },
       sunsetSummary: (d, t, kind) => [
@@ -472,17 +474,20 @@
     if (url) { a.href = url; $("webcam-text").textContent = t().webcam(place); }
   }
 
-  // ranní snímek NetMadeira: tlačítko se ukáže, až se snímek opravdu načte (jinak zůstane skryté)
-  let morningLoaded = "";
+  // dnešní snímek NetMadeira (ráno u východu, večer u západu): tlačítko se ukáže, až se snímek opravdu načte
+  let snapLoaded = "";
+  const snapKind = () => (spotKey === "arieiro" && mode === "sunrise" ? "morning"
+    : spotKey === "arieiro_sunset" && mode === "sunset" ? "sunset" : null);
+  const snapUrl = (kind) => data && data[kind + "_webcam_url"];
   function renderMorning() {
-    const url = data && data.morning_webcam_url, btn = $("morning-btn"), probe = $("morning-probe");
+    const kind = snapKind(), url = kind && snapUrl(kind), btn = $("morning-btn"), probe = $("morning-probe");
     const show = (on) => { btn.classList.toggle("hidden", !on); btn.classList.toggle("inline-flex", on); };
-    if (!url || spotKey !== "arieiro" || mode !== "sunrise") { show(false); return; }
-    $("morning-text").textContent = t().morningBtn;
-    if (morningLoaded === url) { show(true); return; }
+    if (!url) { show(false); return; }
+    $("morning-text").textContent = t()[kind === "sunset" ? "sunsetBtn" : "morningBtn"](data[kind + "_webcam_time"] || "");
+    if (snapLoaded === url) { show(true); return; }
     show(false);
-    probe.onload = () => { morningLoaded = url; show(true); };
-    probe.onerror = () => { morningLoaded = ""; show(false); };
+    probe.onload = () => { snapLoaded = url; show(true); };
+    probe.onerror = () => { snapLoaded = ""; show(false); };
     probe.src = url;
   }
 
@@ -498,8 +503,13 @@
     return h && h.score_pct != null ? `${L.verdict[h.verdict] || h.verdict} ${h.score_pct} %` : "";
   }
   function openMorning() {
-    const L = t(), p = predText((data.history || []).find((r) => r.date === data.morning_webcam_date));
-    openSnapshot(data.morning_webcam_url, p ? L.morningCap(p) : L.morningCapNoPred);
+    const kind = snapKind();
+    if (!kind) return;
+    const L = t(), time = data[kind + "_webcam_time"] || "";
+    const grp = kind === "sunset" ? data.sunset : data.sunrise;
+    const hist = kind === "sunset" ? ((grp.spots || {})[spotKey] || {}).history || [] : data.history || [];
+    const p = predText(hist.find((r) => r.date === data.morning_webcam_date));
+    openSnapshot(snapUrl(kind), p ? L.morningCap(time, p) : L.morningCapNoPred(time));
   }
   $("morning-btn").addEventListener("click", openMorning);
   $("morning-modal").addEventListener("click", () => openSnapshot(null));
@@ -507,7 +517,7 @@
   $("morning-img").addEventListener("error", () => {
     const url = $("morning-img").getAttribute("src");
     openSnapshot(null);
-    if (url === (data && data.morning_webcam_url)) { morningLoaded = ""; renderMorning(); }
+    if (url === snapUrl("morning") || url === snapUrl("sunset")) { snapLoaded = ""; renderMorning(); }
     else { brokenSnaps.add(url); renderHistory(); }
   });
 
@@ -790,7 +800,7 @@
         cam.setAttribute("aria-label", L.snapTitle);
         cam.addEventListener("click", () => {
           const p = predText(h);
-          openSnapshot(h.webcam_url, p ? L.snapCap(day, p) : L.snapCapNoPred(day));
+          openSnapshot(h.webcam_url, p ? L.snapCap(day, h.webcam_time || "", p) : L.snapCapNoPred(day, h.webcam_time || ""));
         });
         head.append(cam);
       }

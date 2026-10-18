@@ -212,7 +212,7 @@ def test_each_spot_has_its_own_history(tmp_path):
     )
     for section in ("sunrise", "sunset"):
         for key, spot in payload[section]["spots"].items():
-            got = [{k: v for k, v in row.items() if k != "webcam_url"} for row in spot["history"]]
+            got = [{k: v for k, v in row.items() if k not in ("webcam_url", "webcam_time")} for row in spot["history"]]
             assert got == hist[key]  # snímky NetMadeira (webcam_url) přibývají jen u Arieira
     assert payload["sunrise"]["history"] == payload["sunrise"]["spots"]["arieiro"]["history"]
     assert "webcam_url" not in payload["sunrise"]["spots"]["pico_ruivo"]["history"][0]
@@ -248,3 +248,11 @@ def test_mountain_sunset_spots_use_summit_location_data():
     assert (arieiro["location"]["lat"], arieiro["location"]["lon"]) == (
         sunrise["arieiro"]["location"]["lat"], sunrise["arieiro"]["location"]["lon"])
     assert payload["spot_days"]["arieiro_sunset"][0]["weather"].keys() == {"funchal", "arieiro"}
+
+
+def test_sunset_snapshot_links():
+    from datetime import date
+    assert webexport.sunset_snapshot_slot(date(2026, 10, 17)) == "19_30"
+    assert webexport.sunset_webcam_url(date(2026, 10, 17)).endswith("/pico-do-arieiro/2026-10-17/19_30.jpg")
+    rows = webexport.with_snapshot_links([{"date": "2026-10-17"}], date(2026, 10, 18), evening=True)
+    assert rows[0]["webcam_time"] == "19:30" and rows[0]["webcam_url"].endswith("/19_30.jpg")

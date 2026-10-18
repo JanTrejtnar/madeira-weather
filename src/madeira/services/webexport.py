@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from types import SimpleNamespace
@@ -38,8 +39,31 @@ NETMADEIRA_SNAPSHOT = (
     "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/"
     "pico-do-arieiro/{day:%Y-%m-%d}/{slot}.jpg"
 )
-MORNING_SNAPSHOT_SLOT = "08_00"  # ranní slot statických snímků timelapsu (UTC)
+MORNING_SNAPSHOT_SLOT = "08_00"  # ranní slot timelapsu (půlhodinové sloty v místním čase Madeiry)
 SNAPSHOT_RETENTION_DAYS = 7  # NetMadeira drží snímky jen týden zpět
+ARIEIRO_LAT, ARIEIRO_LON = 32.7358, -16.9291
+
+
+def sunset_local(day: date, lat: float = ARIEIRO_LAT, lon: float = ARIEIRO_LON) -> datetime:
+    """Přibližný západ slunce (±2 min, NOAA) v místním čase Madeiry; pro výběr slotu stačí."""
+    n = day.timetuple().tm_yday
+    g = 2 * math.pi / 365 * (n - 1)
+    eqtime = 229.18 * (0.000075 + 0.001868 * math.cos(g) - 0.032077 * math.sin(g)
+                       - 0.014615 * math.cos(2 * g) - 0.040849 * math.sin(2 * g))
+    decl = (0.006918 - 0.399912 * math.cos(g) + 0.070257 * math.sin(g) - 0.006758 * math.cos(2 * g)
+            + 0.000907 * math.sin(2 * g) - 0.002697 * math.cos(3 * g) + 0.00148 * math.sin(3 * g))
+    lat_r = math.radians(lat)
+    cos_ha = math.cos(math.radians(90.833)) / (math.cos(lat_r) * math.cos(decl)) - math.tan(lat_r) * math.tan(decl)
+    ha = math.degrees(math.acos(max(-1.0, min(1.0, cos_ha))))
+    minutes_utc = 720 - 4 * (lon - ha) - eqtime
+    return (datetime(day.year, day.month, day.day, tzinfo=UTC) + timedelta(minutes=minutes_utc)).astimezone(TZ)
+
+
+def sunset_snapshot_slot(day: date) -> str:
+    """Nejbližší půlhodinový slot k západu slunce, např. `19_30`."""
+    t = sunset_local(day)
+    half = round((t.hour * 60 + t.minute) / 30) * 30
+    return f"{half // 60:02d}_{half % 60:02d}"
 
 
 def morning_webcam_url(day) -> str:
@@ -47,14 +71,25 @@ def morning_webcam_url(day) -> str:
     return NETMADEIRA_SNAPSHOT.format(day=day, slot=MORNING_SNAPSHOT_SLOT)
 
 
-def with_snapshot_links(history: list[dict], today) -> list[dict]:
-    """Dny historie, pro které NetMadeira ještě snímek drží, dostanou `webcam_url`."""
+def sunset_webcam_url(day) -> str:
+    """URL večerního snímku (slot nejblíž západu slunce) z Pico do Arieiro pro daný den."""
+    return NETMADEIRA_SNAPSHOT.format(day=day, slot=sunset_snapshot_slot(day))
+
+
+def _slot_time(url_slot: str) -> str:
+    return url_slot.replace("_", ":")
+
+
+def with_snapshot_links(history: list[dict], today, evening: bool = False) -> list[dict]:
+    """Dny historie, pro které NetMadeira ještě snímek drží, dostanou `webcam_url` a `webcam_time`."""
     oldest = today - timedelta(days=SNAPSHOT_RETENTION_DAYS)
     out = []
     for row in history:
-        row = {k: v for k, v in row.items() if k != "webcam_url"}
-        if oldest <= date.fromisoformat(row["date"]) <= today:
-            row["webcam_url"] = morning_webcam_url(date.fromisoformat(row["date"]))
+        row = {k: v for k, v in row.items() if k not in ("webcam_url", "webcam_time")}
+        day = date.fromisoformat(row["date"])
+        if oldest <= day <= today:
+            row["webcam_url"] = sunset_webcam_url(day) if evening else morning_webcam_url(day)
+            row["webcam_time"] = _slot_time(sunset_snapshot_slot(day) if evening else MORNING_SNAPSHOT_SLOT)
         out.append(row)
     return out
 
@@ -470,6 +505,8 @@ def build_payload(
 
     def hist(key: str) -> list[dict]:
         rows = (spot_history or {}).get(key, [])
+        if key == "arieiro_sunset":
+            return with_snapshot_links(rows, today_utc, evening=True)
         return with_snapshot_links(rows, today_utc) if key == "arieiro" else rows  # snímky jen z Arieira
 
     escape = sunny_escape_section(settings.sunny_escape, escape_bundle, now) if escape_bundle else None
@@ -480,6 +517,9 @@ def build_payload(
         "location": {"name": "Pico do Arieiro", "elevation_m": ARIEIRO_ELEVATION_M},
         "morning_webcam_url": morning_webcam_url(now.astimezone(UTC).date()),
         "morning_webcam_date": now.astimezone(UTC).date().isoformat(),
+        "morning_webcam_time": _slot_time(MORNING_SNAPSHOT_SLOT),
+        "sunset_webcam_url": sunset_webcam_url(now.astimezone(UTC).date()),
+        "sunset_webcam_time": _slot_time(sunset_snapshot_slot(now.astimezone(UTC).date())),
         "tomorrow": entries[0],
         "tomorrow_spots": spots,
         # kořen = výchozí spot (zpětná kompatibilita), `spots` = všechna místa podle klíče
