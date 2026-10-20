@@ -2,7 +2,10 @@ name: Update forecast
 
 on:
   schedule:
-    - cron: "30 19 * * *" # 19:30 UTC = 19:30 (zima) / 20:30 (léto) na Madeiře
+    # cron běží v UTC; Madeira je WET (UTC+0) v zimě a WEST (UTC+1) v létě
+    - cron: "30 7 * * *"  # ráno: 08:30 WEST – ranní snímek 08:00, denní režim
+    - cron: "30 14 * * *" # odpoledne: 15:30 WEST – Fanal po 15:00, zpřesnění večerního západu
+    - cron: "15 20 * * *" # večer: 21:15 WEST – po západu, dnešek do historie, předpověď na zítřek
   workflow_dispatch:
 
 permissions:

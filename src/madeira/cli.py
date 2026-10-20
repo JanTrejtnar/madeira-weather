@@ -5,7 +5,7 @@ import json
 import logging
 import os
 import sys
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import typer
@@ -314,9 +314,10 @@ def export_web(
     spot_history = webexport.collect_spot_history(settings, store, forecast.today_local(), previous=out)
     payload = webexport.build_payload(settings, days, store=store, spot_history=spot_history)
     # Historie z lokální DB; bez ní (např. GitHub Actions) zůstane z předchozího exportu.
-    rows = store.history_rows(forecast.today_local(), limit=history)
+    today = forecast.today_local()
+    rows = store.history_rows(today - timedelta(days=1), limit=history)  # historie končí včerejškem
     payload["history"] = webexport.history_entries(rows, 1818) if rows else webexport.read_history(out)
-    payload["history"] = webexport.with_snapshot_links(payload["history"], datetime.now(UTC).date())
+    payload["history"] = webexport.with_snapshot_links(payload["history"], today)
     webexport.write_payload(payload, out)
     t = payload["tomorrow"]
     console.print(f"Zapsáno {out}: {t['date']} {t['verdict']} {t['score_pct']} %")

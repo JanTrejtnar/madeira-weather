@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import math
-from datetime import UTC, date, datetime, timedelta
+from datetime import UTC, date, datetime, time, timedelta
 from pathlib import Path
 from types import SimpleNamespace
 from zoneinfo import ZoneInfo
@@ -45,8 +45,11 @@ SNAPSHOT_RETENTION_DAYS = 7  # NetMadeira drží snímky jen týden zpět
 ARIEIRO_LAT, ARIEIRO_LON = 32.7358, -16.9291
 
 
-def sunset_local(day: date, lat: float = ARIEIRO_LAT, lon: float = ARIEIRO_LON) -> datetime:
-    """Přibližný západ slunce (±2 min, NOAA) v místním čase Madeiry; pro výběr slotu stačí."""
+MORNING_READY = time(8, 30)  # od tohoto místního času už je ranní snímek (08:00 + 08:30) k dispozici
+SNAPSHOT_AFTER_SUNSET_MIN = 30  # večerní slot po západu (barvy oblohy) je hotový zhruba o půl hodiny později
+
+
+def _sun_event_local(day: date, event: str, lat: float, lon: float) -> datetime:
     n = day.timetuple().tm_yday
     g = 2 * math.pi / 365 * (n - 1)
     eqtime = 229.18 * (0.000075 + 0.001868 * math.cos(g) - 0.032077 * math.sin(g)
@@ -56,8 +59,50 @@ def sunset_local(day: date, lat: float = ARIEIRO_LAT, lon: float = ARIEIRO_LON) 
     lat_r = math.radians(lat)
     cos_ha = math.cos(math.radians(90.833)) / (math.cos(lat_r) * math.cos(decl)) - math.tan(lat_r) * math.tan(decl)
     ha = math.degrees(math.acos(max(-1.0, min(1.0, cos_ha))))
-    minutes_utc = 720 - 4 * (lon - ha) - eqtime
+    minutes_utc = 720 - 4 * (lon + ha if event == "sunrise" else lon - ha) - eqtime
     return (datetime(day.year, day.month, day.day, tzinfo=UTC) + timedelta(minutes=minutes_utc)).astimezone(TZ)
+
+
+def sunset_local(day: date, lat: float = ARIEIRO_LAT, lon: float = ARIEIRO_LON) -> datetime:
+    """Přibližný západ slunce (±2 min, NOAA) v místním čase Madeiry; pro výběr slotu stačí."""
+    return _sun_event_local(day, "sunset", lat, lon)
+
+
+def sunrise_local(day: date, lat: float = ARIEIRO_LAT, lon: float = ARIEIRO_LON) -> datetime:
+    """Přibližný východ slunce (±2 min, NOAA) v místním čase Madeiry."""
+    return _sun_event_local(day, "sunrise", lat, lon)
+
+
+def next_event_day(local: datetime, event: str) -> date:
+    """Den nejbližšího východu/západu: dnes, dokud událost v místním čase Madeiry nenastala, jinak zítra."""
+    today = local.date()
+    t = sunrise_local(today) if event == "sunrise" else sunset_local(today)
+    return today if local < t else today + timedelta(days=1)
+
+
+def relative_label(day: date, today: date) -> str | None:
+    """`today` / `tomorrow` / `yesterday` podle místního data Madeiry, jinak None."""
+    return {0: "today", 1: "tomorrow", -1: "yesterday"}.get((day - today).days)
+
+
+def morning_snapshot_day(local: datetime) -> tuple[date, str]:
+    """Den ranního snímku: dnes od 08:30 místního času, před tím včerejší ráno."""
+    today = local.date()
+    return (today, "today") if local.time() >= MORNING_READY else (today - timedelta(days=1), "yesterday")
+
+
+def sunset_snapshot_day(local: datetime) -> tuple[date, str]:
+    """Den večerního snímku: dnes, jakmile je hotový slot po západu, jinak včerejší večer."""
+    today = local.date()
+    ready = sunset_local(today) + timedelta(minutes=SNAPSHOT_AFTER_SUNSET_MIN)
+    return (today, "today") if local >= ready else (today - timedelta(days=1), "yesterday")
+
+
+def stamp_target(entry: dict, now: datetime) -> dict:
+    """Doplní `target_date` (ISO) a `relative` (today/tomorrow) podle místního dne Madeiry."""
+    entry["target_date"] = entry["date"]
+    entry["relative"] = relative_label(date.fromisoformat(entry["date"]), now.astimezone(TZ).date())
+    return entry
 
 
 def _slot(minutes: int) -> str:
@@ -257,6 +302,8 @@ def _spot_summary(spot: dict, kind: str, history: list[dict] | None = None) -> d
         },
         "webcam_url": spot["webcam_url"],
         "date": spot["date"],
+        "target_date": spot["date"],
+        "relative": spot.get("relative"),
         "time": spot[kind],
         "departure": spot["departure_funchal"],
         "verdict": spot["verdict"],
@@ -303,6 +350,10 @@ EVENING_SPOTS = ("ponta_do_pargo", "cristo_rei", "arieiro_sunset", "pico_ruivo_s
 
 def spot_entry(settings: Settings, bundle: ForecastBundle, key: str, day, now: datetime) -> dict:
     """Předpověď jednoho spotu na jeden den (ranní nebo večerní tvar podle spotu)."""
+    return stamp_target(_spot_entry(settings, bundle, key, day, now.astimezone(UTC)), now)
+
+
+def _spot_entry(settings: Settings, bundle: ForecastBundle, key: str, day, now: datetime) -> dict:
     departure = settings.spots[key].departure_from_funchal_min
     if key in EVENING_SPOTS:
         spot = settings.spots[key]
@@ -317,23 +368,36 @@ def spot_entry(settings: Settings, bundle: ForecastBundle, key: str, day, now: d
     return _day_entry(score_sunrise(features, settings, tuning), features, departure)
 
 
-def tomorrow_spots(settings: Settings, bundle: ForecastBundle, day, now: datetime) -> dict:
-    """Zítřejší ranní (Arieiro, Pico Ruivo, Bica da Cana, Ponta do Rosto) a večerní vyhlídky."""
-    def one(key):
-        return _spot_meta(settings, bundle, key) | spot_entry(settings, bundle, key, day, now)
+def tomorrow_spots(
+    settings: Settings, bundle: ForecastBundle, day, now: datetime, evening_day=None
+) -> dict:
+    """Nejbližší ranní (Arieiro, Pico Ruivo, Bica da Cana, Ponta do Rosto) a večerní vyhlídky.
 
-    return {"morning": [one(k) for k in MORNING_SPOTS], "evening": [one(k) for k in EVENING_SPOTS]}
+    `day` je nejbližší východ, `evening_day` nejbližší západ (výchozí stejný den)."""
+    def one(key, d):
+        return _spot_meta(settings, bundle, key) | spot_entry(settings, bundle, key, d, now)
+
+    evening_day = evening_day or day
+    return {
+        "morning": [one(k, day) for k in MORNING_SPOTS],
+        "evening": [one(k, evening_day) for k in EVENING_SPOTS],
+    }
 
 
-def spot_days(settings: Settings, bundle: ForecastBundle, first, days: int, now: datetime) -> dict:
-    """Výhled na `days` dní pro každý spot + počasí během dne (Funchal a samotný spot)."""
+def spot_days(
+    settings: Settings, bundle: ForecastBundle, first, days: int, now: datetime, first_evening=None
+) -> dict:
+    """Výhled na `days` dní pro každý spot + počasí během dne (Funchal a samotný spot).
+
+    Ranní spoty začínají `first` (nejbližší východ), večerní `first_evening` (nejbližší západ)."""
     out: dict[str, list[dict]] = {}
     for key in (*MORNING_SPOTS, *EVENING_SPOTS):
         loc = settings.spots[key].location or key
         available = {d.date for d in bundle.forecasts[loc].daily}
+        start = (first_evening or first) if key in EVENING_SPOTS else first
         rows = []
         for offset in range(days):
-            day = first + timedelta(days=offset)
+            day = start + timedelta(days=offset)
             if day not in available:
                 break
             entry = spot_entry(settings, bundle, key, day, now)
@@ -529,7 +593,7 @@ def fanal_section(cfg: FanalConfig, bundle: ForecastBundle, now: datetime) -> di
     local = now.astimezone(TZ)
     today = _fanal_day(cfg, fc.hourly, local.date(), local.hour)
     tomorrow = _fanal_day(cfg, fc.hourly, local.date() + timedelta(days=1))
-    days = {k: v for k, v in (("today", today), ("tomorrow", tomorrow)) if v}
+    days = {k: stamp_target(v, local) for k, v in (("today", today), ("tomorrow", tomorrow)) if v}
     if not days:
         return None
     default = "today" if today else "tomorrow"  # dnešek bez zbývajících slotů se nedoporučuje
@@ -563,15 +627,21 @@ def build_payload(
     fanal_bundle: ForecastBundle | None = None,
     spot_history: dict[str, list[dict]] | None = None,
 ) -> dict:
-    """Spočítá zítřek a výhled na `days` dní (první den = zítřek, místní čas Madeiry)."""
+    """Spočítá nejbližší východ/západ a výhled na `days` dní (vše podle místního času Madeiry).
+
+    Východ: dnes, dokud nenastal, jinak zítra; totéž západ. Každá predikce nese `target_date`."""
     live = bundle is None
     bundle = bundle or forecast.load_bundle()
-    now = now or datetime.now(UTC)
+    now = now or datetime.now(TZ)
+    local = now.astimezone(TZ)
+    now = now.astimezone(UTC)  # analyzátory počítají `days_ahead` z UTC data
+    today = local.date()
     if escape_bundle is None and live:  # s předaným bundlem (testy) se nic nestahuje
         escape_bundle = fetch_escape_bundle(settings.sunny_escape)
     if fanal_bundle is None and live:
         fanal_bundle = fetch_fanal_bundle(settings.fanal)
-    first = now.astimezone(TZ).date() + timedelta(days=1)
+    first = next_event_day(local, "sunrise")
+    first_evening = next_event_day(local, "sunset")
     available = {d.date for d in bundle.forecasts["arieiro"].daily}
     entries = []
     for offset in range(days):
@@ -587,33 +657,40 @@ def build_payload(
             )
         entry = _day_entry(analysis, features, settings.bot.departure_before_min)
         entry["weather"] = day_weather(bundle, day)
-        entries.append(entry)
+        entries.append(stamp_target(entry, local))
     if not entries:
         raise RuntimeError("Model nevrátil data pro zítřek.")
-    spots = tomorrow_spots(settings, bundle, first, now)
-    today_utc = now.astimezone(UTC).date()
+    spots = tomorrow_spots(settings, bundle, first, now, first_evening)
+    morning_day, morning_rel = morning_snapshot_day(local)
+    sunset_day, sunset_rel = sunset_snapshot_day(local)
 
     def hist(key: str) -> list[dict]:
         rows = (spot_history or {}).get(key, [])
         if key == "arieiro_sunset":
-            return with_snapshot_links(rows, today_utc, evening=True)
-        return with_snapshot_links(rows, today_utc) if key == "arieiro" else rows  # snímky jen z Arieira
+            return with_snapshot_links(rows, today, evening=True)
+        return with_snapshot_links(rows, today) if key == "arieiro" else rows  # snímky jen z Arieira
 
     escape = sunny_escape_section(settings.sunny_escape, escape_bundle, now) if escape_bundle else None
     fog = fanal_section(settings.fanal, fanal_bundle, now) if fanal_bundle else None
     return {
         "generated_at": now.isoformat(timespec="seconds"),
+        "generated_local": local.isoformat(timespec="seconds"),
+        "timezone": str(TZ),
+        "today": today.isoformat(),
         "model": bundle.model,
         "location": {"name": "Pico do Arieiro", "elevation_m": ARIEIRO_ELEVATION_M},
-        "morning_webcam_url": morning_webcam_url(now.astimezone(UTC).date()),
-        "morning_webcam_date": now.astimezone(UTC).date().isoformat(),
+        "morning_webcam_url": morning_webcam_url(morning_day),
+        "morning_webcam_date": morning_day.isoformat(),
+        "morning_webcam_day": morning_rel,
         "morning_webcam_time": _slot_time(MORNING_SNAPSHOT_SLOT),
-        "morning_webcam_urls": morning_webcam_urls(now.astimezone(UTC).date()),
+        "morning_webcam_urls": morning_webcam_urls(morning_day),
         "morning_webcam_times": [_slot_time(x) for x in MORNING_SNAPSHOT_SLOTS],
-        "sunset_webcam_url": sunset_webcam_url(now.astimezone(UTC).date()),
-        "sunset_webcam_time": _slot_time(sunset_snapshot_slot(now.astimezone(UTC).date())),
-        "sunset_webcam_urls": sunset_webcam_urls(now.astimezone(UTC).date()),
-        "sunset_webcam_times": [_slot_time(x) for x in sunset_snapshot_slots(now.astimezone(UTC).date())],
+        "sunset_webcam_url": sunset_webcam_url(sunset_day),
+        "sunset_webcam_date": sunset_day.isoformat(),
+        "sunset_webcam_day": sunset_rel,
+        "sunset_webcam_time": _slot_time(sunset_snapshot_slot(sunset_day)),
+        "sunset_webcam_urls": sunset_webcam_urls(sunset_day),
+        "sunset_webcam_times": [_slot_time(x) for x in sunset_snapshot_slots(sunset_day)],
         "tomorrow": entries[0],
         "tomorrow_spots": spots,
         # kořen = výchozí spot (zpětná kompatibilita), `spots` = všechna místa podle klíče
@@ -622,8 +699,8 @@ def build_payload(
         "sunset": _spot_summary(spots["evening"][0], "sunset", hist(spots["evening"][0]["key"]))
         | {"spots": {s["key"]: _spot_summary(s, "sunset", hist(s["key"])) for s in spots["evening"]}},
         "days": entries,
-        "spot_days": spot_days(settings, bundle, first, days, now),
-        "history": with_snapshot_links(history or [], now.astimezone(UTC).date()),
+        "spot_days": spot_days(settings, bundle, first, days, now, first_evening),
+        "history": with_snapshot_links(history or [], today),
         **({"sunny_escape": escape} if escape else {}),
         **({"fanal": fog} if fog else {}),
     }
@@ -748,6 +825,11 @@ def history_entries(rows: list[dict], elevation_m: float | None = None) -> list[
     return out
 
 
+def history_window(today: date, days: int = HISTORY_SPOT_DAYS) -> list[str]:
+    """ISO data historie od včerejška dozadu (dnešek do historie nepatří, dokud neskončí)."""
+    return [(today - timedelta(days=i)).isoformat() for i in range(1, days + 1)]
+
+
 def collect_spot_history(
     settings: Settings,
     store: Store,
@@ -755,25 +837,42 @@ def collect_spot_history(
     previous: Path | None = None,
     days: int = HISTORY_SPOT_DAYS,
 ) -> dict[str, list[dict]]:
-    """Posledních `days` dní historie pro každý spot. Chybějící dny se doplní z archivovaných
-    předpovědí (backfill); při výpadku API zůstane historie z předchozího exportu."""
+    """Posledních `days` dní historie pro každý spot, vždy od včerejška (`today` − 1) dozadu.
+
+    Chybějící dny se doplní z archivovaných předpovědí (backfill), případně z aktuální předpovědi;
+    při výpadku API zůstanou dny z předchozího exportu."""
     keys = (*MORNING_SPOTS, *EVENING_SPOTS)
     by_location = {loc.key: loc.elevation_m for loc in load_locations()}
     elevations = {k: by_location.get(settings.spots[k].location or k) for k in keys}
+    window = history_window(today, days)
+    yesterday = today - timedelta(days=1)
 
     def rows_of(key: str) -> list[dict]:
-        return store.history_rows(today, limit=days, location=key)
+        return [
+            r for r in store.history_rows(yesterday, limit=days, location=key)
+            if r["target_date"] in window
+        ]
 
-    missing = [k for k in keys if len(rows_of(k)) < days]
+    def incomplete() -> list[str]:
+        return [k for k in keys if {r["target_date"] for r in rows_of(k)} != set(window)]
+
+    missing = incomplete()
     if missing:
         try:
-            forecast.fetch_history(settings, store, missing, days=days)
+            forecast.fetch_history(settings, store, missing, days=days, end=yesterday)
         except RuntimeError:
             pass  # bez archivu se použije, co je v DB / v předchozím exportu
+    missing = [k for k in incomplete() if window[0] not in {r["target_date"] for r in rows_of(k)}]
+    if missing:  # archiv včerejšek ještě nemá: modelové hodnoty z aktuální předpovědi
+        forecast.backfill_from_live(settings, store, missing, yesterday)
     old = read_spot_history(previous) if previous else {}
-    return {
-        k: history_entries(rows_of(k), elevations.get(k)) or old.get(k, []) for k in keys
-    }
+    out = {}
+    for k in keys:
+        fresh = history_entries(rows_of(k), elevations.get(k))
+        have = {e["date"] for e in fresh}
+        kept = [e for e in old.get(k, []) if e["date"] in window and e["date"] not in have]
+        out[k] = sorted(fresh + kept, key=lambda e: e["date"], reverse=True)
+    return out
 
 
 def read_spot_history(path: Path) -> dict[str, list[dict]]:

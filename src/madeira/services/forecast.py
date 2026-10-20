@@ -155,6 +155,26 @@ def backfill_prediction(
     return predict_spot(day, location, settings, store, bundle, midnight)
 
 
+def backfill_from_live(settings: Settings, store: Store, locations: list[str], day: date) -> int:
+    """Doplní historii pro `day`, který archiv ještě nemá: modelové hodnoty z aktuální předpovědi
+    (`past_days`) se uloží jako zpětná predikce. Vrací počet uložených lokalit."""
+    try:
+        bundle = OpenMeteoFetcher(cache_dir=CACHE_DIR).fetch(load_locations(), days=1, past_days=3)
+    except RuntimeError:
+        return 0
+    bundle = bundle.model_copy(update={"model": HISTORICAL_MODEL})
+    midnight = datetime.combine(day, time(), tzinfo=UTC)
+    saved = 0
+    for key in locations:
+        store.delete_backfilled(day, key)
+        try:
+            predict_spot(day, key, settings, store, bundle, midnight)
+        except ValueError:  # den není v odpovědi modelu
+            continue
+        saved += 1
+    return saved
+
+
 def record_outcome(
     day: date,
     outcome: str,

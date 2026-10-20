@@ -1,5 +1,6 @@
 import json
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime, timedelta
+from zoneinfo import ZoneInfo
 
 from madeira.domain.config import Settings, load_locations
 from madeira.fetchers.open_meteo import parse_response
@@ -30,7 +31,7 @@ def test_payload_shape(tmp_path):
 def test_payload_has_morning_webcam_url():
     payload = webexport.build_payload(Settings(), days=3, bundle=_bundle(), now=NOW)
     day = NOW.astimezone(UTC).date()
-    assert payload["morning_webcam_date"] == day.isoformat()
+    assert payload["morning_webcam_date"] == day.isoformat()  # NOW = 13:00 místního času → dnešní ráno
     assert payload["morning_webcam_url"] == (
         "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/"
         f"pico-do-arieiro/{day:%Y-%m-%d}/08_00.jpg"
@@ -106,7 +107,8 @@ def test_payload_has_tomorrow_spots():
     assert spots["morning"][1]["elevation_m"] == 1862
     assert spots["morning"][2]["elevation_m"] == 1560
     pargo = spots["evening"][0]
-    assert pargo["date"] == payload["tomorrow"]["date"]
+    assert pargo["date"] == "2026-10-12" and pargo["relative"] == "today"  # NOW = 13:00, západ ještě nenastal
+    assert spots["morning"][0]["date"] == payload["tomorrow"]["date"]
     assert pargo["departure_funchal"] < pargo["sunset"]
     assert pargo["verdict"] in {"GO", "MAYBE", "NO_GO"}
     for spot in spots["morning"] + spots["evening"]:  # mapa potřebuje souřadnice
@@ -141,7 +143,8 @@ def test_spot_days_cover_every_spot():
         "arieiro_sunset", "pico_ruivo_sunset",
     }
     for key, rows in sd.items():
-        assert rows and rows[0]["date"] == payload["tomorrow"]["date"]
+        expected = "2026-10-12" if key in webexport.EVENING_SPOTS else payload["tomorrow"]["date"]
+        assert rows and rows[0]["date"] == expected
         assert "weather" in rows[0]
 
 
@@ -168,7 +171,7 @@ def test_sunrise_and_sunset_sections_list_every_spot():
     json.dumps(payload)
 
 
-def _seeded_store(tmp_path, keys):
+def _seeded_store(tmp_path, keys, days=1):
     """DB se zpětnými predikcemi (model historical_forecast) z fixture pro dané spoty."""
     from datetime import timedelta
 
@@ -181,7 +184,7 @@ def _seeded_store(tmp_path, keys):
 
     store = Store(tmp_path / "t.db")
     end = NOW.date() + timedelta(days=1)
-    forecast.fetch_history(Settings(), store, list(keys), days=1, end=end, fetcher=FakeFetcher())
+    forecast.fetch_history(Settings(), store, list(keys), days=days, end=end, fetcher=FakeFetcher())
     return store, end
 
 
@@ -211,7 +214,9 @@ def test_history_entry_maps_outcome_to_actual_verdict():
 
 def test_each_spot_has_its_own_history(tmp_path):
     store, end = _seeded_store(tmp_path, forecast_keys := webexport.MORNING_SPOTS + webexport.EVENING_SPOTS)
-    hist = webexport.collect_spot_history(Settings(), store, end, previous=tmp_path / "missing.json")
+    hist = webexport.collect_spot_history(
+        Settings(), store, end + timedelta(days=1), previous=tmp_path / "missing.json"
+    )
     assert set(hist) == set(forecast_keys) and all(hist[k] for k in forecast_keys)
     payload = webexport.build_payload(
         Settings(), days=3, bundle=_bundle(), now=NOW, spot_history=hist
@@ -238,7 +243,10 @@ def test_collect_spot_history_falls_back_to_previous_export(tmp_path, monkeypatc
         "sunrise": {"spots": {"arieiro": {"history": [{"date": "2026-10-12"}]}}},
         "sunset": {"spots": {}},
     }), encoding="utf-8")
-    hist = webexport.collect_spot_history(Settings(), Store(tmp_path / "e.db"), NOW.date(), previous)
+    monkeypatch.setattr(forecast, "backfill_from_live", lambda *a, **k: 0)
+    hist = webexport.collect_spot_history(
+        Settings(), Store(tmp_path / "e.db"), date(2026, 10, 13), previous
+    )
     assert hist["arieiro"] == [{"date": "2026-10-12"}] and hist["cristo_rei"] == []
 
 
@@ -264,3 +272,147 @@ def test_sunset_snapshot_links():
     assert rows[0]["webcam_time"] == "19:30" and rows[0]["webcam_url"].endswith("/19_30.jpg")
     assert rows[0]["webcam_times"] == ["19:30", "20:00"]
     assert rows[0]["webcam_urls"][1].endswith("/2026-10-17/20_00.jpg")
+
+
+MADEIRA = ZoneInfo("Atlantic/Madeira")
+DAY = date(2026, 10, 12)  # fixture pokrývá 12.–18. 10.
+
+
+def _at(hour, minute):
+    return datetime(2026, 10, 12, hour, minute, tzinfo=MADEIRA)
+
+
+def _payload_at(hour, minute):
+    return webexport.build_payload(Settings(), days=3, bundle=_bundle(), now=_at(hour, minute))
+
+
+def test_sun_event_times_are_madeira_local():
+    assert webexport.sunrise_local(DAY).strftime("%H:%M") in {"08:06", "08:07", "08:08", "08:09", "08:10"}
+    assert webexport.sunset_local(DAY).hour == 19
+    assert webexport.sunrise_local(DAY).tzinfo is not None
+
+
+def test_next_event_day_switches_after_the_event():
+    assert webexport.next_event_day(_at(6, 0), "sunrise") == DAY
+    assert webexport.next_event_day(_at(8, 30), "sunrise") == DAY + timedelta(days=1)
+    assert webexport.next_event_day(_at(15, 30), "sunset") == DAY
+    assert webexport.next_event_day(_at(21, 15), "sunset") == DAY + timedelta(days=1)
+
+
+def test_morning_run_0830_targets_tomorrow_sunrise_and_todays_sunset_and_photo():
+    p = _payload_at(8, 30)
+    assert p["today"] == "2026-10-12" and p["timezone"] == "Atlantic/Madeira"
+    assert p["tomorrow"]["target_date"] == "2026-10-13" and p["tomorrow"]["relative"] == "tomorrow"
+    assert p["sunrise"]["target_date"] == "2026-10-13" and p["sunrise"]["relative"] == "tomorrow"
+    assert p["sunset"]["target_date"] == "2026-10-12" and p["sunset"]["relative"] == "today"
+    assert p["morning_webcam_date"] == "2026-10-12" and p["morning_webcam_day"] == "today"
+    assert p["morning_webcam_url"].endswith("/pico-do-arieiro/2026-10-12/08_00.jpg")
+    assert p["sunset_webcam_date"] == "2026-10-11" and p["sunset_webcam_day"] == "yesterday"
+
+
+def test_photo_before_0830_is_yesterdays_morning():
+    p = _payload_at(8, 29)
+    assert p["morning_webcam_date"] == "2026-10-11" and p["morning_webcam_day"] == "yesterday"
+    assert p["morning_webcam_url"].endswith("/2026-10-11/08_00.jpg")
+
+
+def test_before_sunrise_targets_todays_sunrise():
+    p = _payload_at(6, 30)
+    assert p["tomorrow"]["target_date"] == "2026-10-12" and p["tomorrow"]["relative"] == "today"
+    assert p["days"][0]["relative"] == "today" and p["days"][1]["relative"] == "tomorrow"
+    assert p["days"][2]["relative"] is None
+    assert p["morning_webcam_day"] == "yesterday"
+
+
+def test_afternoon_run_1530_keeps_todays_sunset_and_tomorrows_sunrise():
+    p = _payload_at(15, 30)
+    assert p["sunrise"]["target_date"] == "2026-10-13"
+    assert p["sunset"]["target_date"] == "2026-10-12" and p["sunset"]["relative"] == "today"
+    assert p["morning_webcam_day"] == "today"
+
+
+def test_evening_run_2115_closes_today_and_targets_tomorrow():
+    p = _payload_at(21, 15)
+    assert p["sunrise"]["target_date"] == "2026-10-13" and p["sunrise"]["relative"] == "tomorrow"
+    assert p["sunset"]["target_date"] == "2026-10-13" and p["sunset"]["relative"] == "tomorrow"
+    assert p["sunset_webcam_date"] == "2026-10-12" and p["sunset_webcam_day"] == "today"
+    for rows in p["spot_days"].values():
+        assert rows[0]["target_date"] == rows[0]["date"] == "2026-10-13"
+    assert p["generated_local"].endswith("+01:00")
+    assert datetime.fromisoformat(p["generated_at"]).utcoffset() == timedelta(0)
+
+
+def test_relative_label_uses_madeira_date_not_utc():
+    # 00:30 místního času 13. 10. je ještě 12. 10. v UTC → „dnes“ musí být 13. 10.
+    late = datetime(2026, 10, 13, 0, 30, tzinfo=MADEIRA)
+    assert late.astimezone(UTC).date() == date(2026, 10, 12)
+    e = webexport.stamp_target({"date": "2026-10-13"}, late.astimezone(UTC))
+    assert e["relative"] == "today" and e["target_date"] == "2026-10-13"
+
+
+def _seed_week(tmp_path, today, days=7):
+    from madeira.services import forecast
+    from madeira.storage.db import Store
+
+    class FakeFetcher:
+        def fetch_historical(self, locations, start, end):
+            return _bundle().model_copy(update={"model": "historical_forecast"})
+
+    store = Store(tmp_path / "w.db")
+    keys = list(webexport.MORNING_SPOTS + webexport.EVENING_SPOTS)
+    forecast.fetch_history(
+        Settings(), store, keys, days=days, end=today - timedelta(days=1), fetcher=FakeFetcher()
+    )
+    return store
+
+
+def test_history_starts_with_yesterday_for_every_spot(tmp_path):
+    today = date(2026, 10, 19)  # včera = 18. 10., okno 12.–18. 10.
+    store = _seed_week(tmp_path, today)
+    hist = webexport.collect_spot_history(Settings(), store, today, previous=tmp_path / "none.json")
+    window = webexport.history_window(today)
+    assert window[0] == "2026-10-18" and window[-1] == "2026-10-12" and len(window) == 7
+    for key, rows in hist.items():
+        assert [r["date"] for r in rows] == window, key
+
+
+def test_history_excludes_today(tmp_path):
+    today = date(2026, 10, 19)
+    store = _seed_week(tmp_path, today)  # včerejšek 18. 10. je v DB
+    hist = webexport.collect_spot_history(Settings(), store, date(2026, 10, 18), previous=tmp_path / "none.json")
+    assert all(r["date"] <= "2026-10-17" for rows in hist.values() for r in rows)
+
+
+def test_missing_yesterday_is_backfilled_from_live_model(tmp_path, monkeypatch):
+    from madeira.services import forecast
+
+    today = date(2026, 10, 19)
+    store = _seed_week(tmp_path, today)
+    store.delete_backfilled(date(2026, 10, 18), "arieiro")
+    calls = []
+
+    def down(*a, **k):
+        raise RuntimeError("API")
+
+    monkeypatch.setattr(forecast, "fetch_history", down)
+    monkeypatch.setattr(forecast, "backfill_from_live", lambda s, st, keys, day: calls.append((keys, day)) or 0)
+    webexport.collect_spot_history(Settings(), store, today, previous=tmp_path / "none.json")
+    assert calls == [(["arieiro"], date(2026, 10, 18))]
+
+
+def test_previous_export_keeps_yesterday_when_archive_is_down(tmp_path, monkeypatch):
+    from madeira.services import forecast
+    from madeira.storage.db import Store
+
+    def down(*a, **k):
+        raise RuntimeError("API")
+
+    monkeypatch.setattr(forecast, "fetch_history", down)
+    monkeypatch.setattr(forecast, "backfill_from_live", lambda *a, **k: 0)
+    previous = tmp_path / "data.json"
+    previous.write_text(json.dumps({
+        "sunrise": {"spots": {"arieiro": {"history": [{"date": "2026-10-18"}, {"date": "2026-10-01"}]}}},
+        "sunset": {"spots": {}},
+    }), encoding="utf-8")
+    hist = webexport.collect_spot_history(Settings(), Store(tmp_path / "e.db"), date(2026, 10, 19), previous)
+    assert hist["arieiro"] == [{"date": "2026-10-18"}]  # starší než týden se zahodí

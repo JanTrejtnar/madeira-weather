@@ -165,7 +165,7 @@
     if (!data) { $("state").textContent = L.loading; return; }
     if (data.generated_at) {
       const g = new Date(data.generated_at), stale = (Date.now() - g.getTime()) / 36e5 > 24;
-      $("updated").textContent = `${L.updated}: ${g.toLocaleString(locale(), { dateStyle: "medium", timeStyle: "short" })}` + (stale ? ` – ${L.stale}` : "");
+      $("updated").textContent = `${L.updated}: ${g.toLocaleString(locale(), { dateStyle: "medium", timeStyle: "short", timeZone: "Atlantic/Madeira" })}` + (stale ? ` – ${L.stale}` : "");
       $("updated").className = stale ? "text-amber-400" : "";
     }
     if (!cur) {

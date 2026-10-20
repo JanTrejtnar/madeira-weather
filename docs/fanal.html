@@ -249,7 +249,8 @@
   }
 
   const open = new Set();  // rozbalené dny přežijí překreslení (např. přepnutí jazyka)
-  const dateLabel = (iso) => new Date(iso + "T12:00:00").toLocaleDateString(locale(), { weekday: "short", day: "numeric", month: "numeric" });
+  // formátování v UTC, aby časová zóna prohlížeče nikdy neposunula den
+  const dateLabel = (iso) => new Date(iso + "T12:00:00Z").toLocaleDateString(locale(), { weekday: "short", day: "numeric", month: "numeric", timeZone: "UTC" });
   const BADGE = { MYSTIC: "bg-emerald-400/20 text-emerald-200", PARTIAL: "bg-zinc-300/15 text-zinc-200", CLEAR: "bg-amber-300/15 text-amber-200" };
 
   function openLightbox(e, snap) {
@@ -355,7 +356,7 @@
     if (!data) { $("state").textContent = L.loading; return; }
     if (data.generated_at) {
       const g = new Date(data.generated_at), stale = (Date.now() - g.getTime()) / 36e5 > 24;
-      $("updated").textContent = `${L.updated}: ${g.toLocaleString(locale(), { dateStyle: "medium", timeStyle: "short" })}` + (stale ? ` – ${L.stale}` : "");
+      $("updated").textContent = `${L.updated}: ${g.toLocaleString(locale(), { dateStyle: "medium", timeStyle: "short", timeZone: "Atlantic/Madeira" })}` + (stale ? ` – ${L.stale}` : "");
       $("updated").className = stale ? "text-amber-400" : "";
     }
     if (!cur) {
