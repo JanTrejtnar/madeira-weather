@@ -45,9 +45,17 @@ class MountainCloudConfig(BaseModel):
     """Horské vyhlídky (východ i západ): mlha hnaná větrem a mraky ve výšce vrcholu / nad ním."""
 
     aloft_rh_fog: float = 80  # RH v 800 hPa od tohoto začíná penalizace mlhy
-    aloft_rh_fog_windy: float = 68  # totéž při silných nárazech (vítr žene vlhkost na masiv)
+    aloft_rh_fog_windy: float = 70  # totéž při silných nárazech (vítr žene vlhkost na masiv)
     windy_gust_kmh: float = 45  # nárazy od tohoto = použije se nižší práh
-    aloft_rh_span: float = 10  # o kolik % RH nad prahem je mlha jistá
+    aloft_rh_span: float = 8  # o kolik % RH nad prahem je vlhkostní rampa plná
+    wind_fog_cover_from: float = 15  # mlha z větru: rampa podle nízké/střední oblačnosti (%) ...
+    wind_fog_cover_full: float = 35  # ... od 0 po plnou sílu
+    spill_from_m: float = 1400  # západ z vrcholu: horní hranice mraků pod tímto = plná rezerva
+    spill_full_m: float = 1500  # od tohoto po hřeben hrozí přelévání mraků (strop skóre)
+    spill_cap: float = 39  # strop skóre při hrozícím přelévání (NO-GO)
+    inside_cap: float = 25  # strop skóre, když je horní hranice mraků nad vrcholem
+    spill_rh_dry: float = 35  # RH v 800 hPa pod tímto = suchý vzduch nad vrstvou, přelévání nehrozí
+    spill_rh_moist: float = 55  # nad tímto je riziko přelévání plné
     cover_min_pct: float = 25  # nízká/střední oblačnost nad tímto
     wind_fog_max: float = 0.85  # strop mlhy z větru (brána ~0.28, ne nula)
     high_deck_gate: float = 0.35  # koeficient skóre, když je základna mraků nad vrcholem

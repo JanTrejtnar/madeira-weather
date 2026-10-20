@@ -22,10 +22,19 @@ sunrise:
 # základna ~2250 m nad vrcholem, RH 800 hPa 77 %, nárazy 54 km/h, na vrcholu hustá mlha).
 mountain_clouds:
   aloft_rh_fog: 80          # RH v 800 hPa od tohoto začíná penalizace mlhy
-  aloft_rh_fog_windy: 68    # totéž při nárazech >= windy_gust_kmh (orografická kondenzace)
+  aloft_rh_fog_windy: 70    # totéž při nárazech >= windy_gust_kmh (orografická kondenzace)
   windy_gust_kmh: 45
-  aloft_rh_span: 10         # o kolik % nad prahem je mlha jistá (brána naplno)
-  cover_min_pct: 25         # nízká/střední oblačnost nad tímto (podmínka mlhy i mraků nad vrcholem)
+  aloft_rh_span: 8          # o kolik % RH nad prahem je vlhkostní rampa plná
+  wind_fog_cover_from: 15   # mlha z větru je lineární rampa i v oblačnosti: 0 při 15 % ...
+  wind_fog_cover_full: 35   # ... plná při 35 % nízké/střední oblačnosti (žádný ostrý práh)
+  cover_min_pct: 25         # brána "mraky nad vrcholem": pokrytí nad tímto
+  # Západ z vrcholu: bezpečná zóna horní hranice mraků (rezerva pod hřebenem 1818 m)
+  spill_from_m: 1400        # pod tímto plná rezerva (GO + inverzní bonus)
+  spill_full_m: 1500        # od tohoto po hřeben hrozí přelévání přes hřeben → strop skóre
+  spill_cap: 39             # strop při přelévání (NO-GO)
+  inside_cap: 25            # horní hranice mraků nad vrcholem = vrchol v mraku
+  spill_rh_dry: 35          # RH 800 hPa pod tímto = sucho nad vrstvou, inverze drží (bez stropu)
+  spill_rh_moist: 55        # nad tímto je riziko přelévání plné
   wind_fog_max: 0.85        # strop mlhy z větru → brána ≈ 1 − 0.85·0.85 ≈ 0.28 (NO-GO, ne nula)
   high_deck_gate: 0.35      # koeficient skóre, když základna mraků od hladiny moře (125·(T−Td) na pobřeží) > výška vrcholu;
                             # jen při vlhku i nad vrcholem a nikdy při inverzi (mraky pod vrcholem)

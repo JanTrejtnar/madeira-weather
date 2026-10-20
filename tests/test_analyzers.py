@@ -6,13 +6,14 @@ from pathlib import Path
 from madeira.analyzers.features import SunriseFeatures, interp
 from madeira.analyzers.inversion import analyze_inversion, estimate_deck_top
 from madeira.analyzers.microclimate import compare_microclimates
-from madeira.analyzers.mountain import high_deck_gate, wind_driven_fog
+from madeira.analyzers.mountain import high_deck_gate, spillover_cap, wind_driven_fog
 from madeira.analyzers.scoring_utils import pw
 from madeira.analyzers.sunrise import analyze_sunrise, score_sunrise
 from madeira.analyzers.sunset import SunsetFeatures, analyze_sunset, score_sunset
 from madeira.domain.config import MountainCloudConfig, Settings, load_locations
 from madeira.domain.models import HourlyPoint
 from madeira.fetchers.open_meteo import parse_response
+import itertools
 
 FIXTURE = Path(__file__).parent / "fixtures" / "forecast_sample.json"
 NOW = datetime(2026, 10, 12, 12, 0, tzinfo=UTC)
@@ -446,7 +447,7 @@ def test_wind_lowers_summit_humidity_threshold():
     assert windy.gates["fog"] < 0.6  # při nárazech >= 45 km/h práh 68 %
     cfg = MountainCloudConfig()
     assert wind_driven_fog(79.0, 10.0, 40.0, cfg) == 0.0
-    assert wind_driven_fog(79.0, 50.0, 40.0, cfg) == cfg.wind_fog_max
+    assert wind_driven_fog(79.0, 50.0, 40.0, cfg) == cfg.wind_fog_max  # RH 79 >= 70+8, pokrytí plné
     assert wind_driven_fog(79.0, 50.0, 10.0, cfg) == 0.0  # vlhko, ale skoro bez mraků
 
 
@@ -484,3 +485,38 @@ def test_high_deck_gate_in_sunrise_is_not_stacked_on_fog_gate():
     assert a.gates["fog"] > a.gates["high_deck"]  # platí přísnější brána, nesčítají se
     assert 20 <= a.score_pct <= 40
     assert "high_deck" not in score_sunrise(replace(calm, coast_dd_c=5.0), s).gates
+
+
+def test_wind_fog_is_a_smooth_ramp_in_cloud_cover_and_humidity():
+    cfg = MountainCloudConfig()
+    covers = [wind_driven_fog(77.0, 55.0, c, cfg) for c in range(10, 41)]
+    assert covers[0] == 0.0 and covers[-1] > 0.6
+    assert all(b >= a for a, b in itertools.pairwise(covers))
+    assert max(b - a for a, b in itertools.pairwise(covers)) < 0.05  # žádný skok na 25 %
+    assert wind_driven_fog(65.0, 55.0, 60.0, cfg) == 0.0  # sucho = bez mlhy
+    assert wind_driven_fog(75.0, 30.0, 60.0, cfg) == 0.0  # bez silných nárazů práh 80 %
+
+
+def test_spillover_cap_by_cloud_top():
+    cfg = MountainCloudConfig()
+    assert spillover_cap(1385.0, 1818, 60.0, cfg) is None  # rezerva 400 m
+    assert spillover_cap(1665.0, 1818, 59.0, cfg) == cfg.spill_cap  # těsně pod hřebenem
+    assert spillover_cap(1950.0, 1818, 59.0, cfg) == cfg.inside_cap  # vrchol v mraku
+    assert spillover_cap(1665.0, 1818, 20.0, cfg) is None  # sucho v 800 hPa: inverze drží
+    assert 39 < spillover_cap(1450.0, 1818, 60.0, cfg) < 100  # plynulý přechod
+
+
+def test_mountain_sunset_cloud_top_near_ridge_is_capped():
+    s = Settings()
+    f = SunsetFeatures(
+        target_date=date(2026, 10, 18),
+        sunset_utc=datetime(2026, 10, 18, 18, 40, tzinfo=UTC),
+        days_ahead=1, horizon_low_cloud=0.0, canvas_cloud=30.0, local_low_cloud=40.0,
+        precip_mm=0.0, gust_kmh=20.0, wind_kmh=15.0, wind_dir_deg=40.0, visibility_m=20000.0,
+        dewpoint_depression_c=4.0, temp_c=12.0, summit_clear=1.0, west_mid_cloud=0.0,
+        rh_aloft=59.0, summit_rh=60.0, deck_top_m=1665.0, summit_elevation_m=1818.0,
+    )
+    a = score_sunset(f, s)
+    assert a.verdict == "NO_GO" and a.score_pct <= 40 and "spillover" in a.gates
+    low = score_sunset(replace(f, deck_top_m=1100.0, rh_aloft=30.0), s)
+    assert low.verdict == "GO" and "spillover" not in low.gates

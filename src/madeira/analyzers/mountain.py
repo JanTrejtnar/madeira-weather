@@ -34,12 +34,37 @@ def wind_driven_fog(
 ) -> float:
     """0..1: mlha na vrcholu z vlhkosti v 800 hPa s prahem závislým na nárazech větru.
 
-    Platí jen při významné oblačnosti (vlhký vzduch bez mraků mlhu nedělá); shora omezeno na
-    `wind_fog_max`, aby brána skóre stáhla k NO-GO, ne k nule."""
-    if rh_aloft is None or cover_pct is None or cover_pct <= cfg.cover_min_pct:
+    Vše je lineární rampa (žádný ostrý skok): vlhkost nad prahem × podíl oblačnosti. Vlhký vzduch
+    bez mraků mlhu nedělá, proto se násobí rampou pokrytí. Shora omezeno na `wind_fog_max`, aby
+    brána skóre stáhla k NO-GO, ne k nule."""
+    if rh_aloft is None or cover_pct is None:
         return 0.0
     lo = aloft_fog_threshold(gust_kmh, cfg)
-    return cfg.wind_fog_max * pw(rh_aloft, [(lo, 0.0), (lo + cfg.aloft_rh_span, 1.0)])
+    humidity = pw(rh_aloft, [(lo, 0.0), (lo + cfg.aloft_rh_span, 1.0)])
+    cover = pw(cover_pct, [(cfg.wind_fog_cover_from, 0.0), (cfg.wind_fog_cover_full, 1.0)])
+    return cfg.wind_fog_max * humidity * cover
+
+
+def spillover_cap(
+    deck_top_m: float | None,
+    summit_m: float,
+    rh_aloft: float | None,
+    cfg: MountainCloudConfig,
+) -> float | None:
+    """Strop skóre (0..100) pro západ, když horní hranice mraků leží příliš blízko hřebenu.
+
+    Pod `spill_from_m` je rezerva dost; od `spill_full_m` do hřebenu hrozí přelévání mraků přes
+    hřeben (strop `spill_cap`), nad hřebenem je vrchol uvnitř mraků (`inside_cap`). Přelévání se
+    bere vážně jen při vlhku nad vrcholem – nad suchým vzduchem (800 hPa) inverze drží."""
+    if deck_top_m is None:
+        return None
+    risk = pw(deck_top_m, [(cfg.spill_from_m, 0.0), (cfg.spill_full_m, 1.0)])
+    if rh_aloft is not None:
+        risk *= pw(rh_aloft, [(cfg.spill_rh_dry, 0.0), (cfg.spill_rh_moist, 1.0)])
+    if risk <= 0:
+        return None
+    floor = cfg.inside_cap if deck_top_m >= summit_m else cfg.spill_cap
+    return 100.0 - risk * (100.0 - floor)
 
 
 def high_deck_gate(
