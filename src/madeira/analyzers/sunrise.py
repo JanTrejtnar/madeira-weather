@@ -10,8 +10,9 @@ from madeira.analyzers.inversion import (
     summit_clear_factor,
     summit_rh,
 )
+from madeira.analyzers.mountain import cloud_cover, high_deck_gate, wind_driven_fog
 from madeira.analyzers.scoring_utils import pw
-from madeira.domain.config import FogConfig, Settings, SpotTuning
+from madeira.domain.config import FogConfig, MountainCloudConfig, Settings, SpotTuning
 from madeira.domain.models import ForecastBundle, ScoreComponent, SunriseAnalysis
 
 CLEAR_SKY = [(0, 1.0), (10, 1.0), (60, 0.2), (100, 0.0)]
@@ -39,17 +40,27 @@ def surface_trust(f: SunriseFeatures, cfg: FogConfig) -> float:
     return pw(aloft, [(cfg.aloft_dry_rh, 0.0), (cfg.aloft_moist_rh, 1.0)])
 
 
-def fog_upper(f: SunriseFeatures, cfg: FogConfig) -> float | None:
-    """Pravděpodobnost mlhy na vrcholu čistě z vlhkosti ve výšce vrcholu (profil atmosféry)."""
+def fog_upper(
+    f: SunriseFeatures, cfg: FogConfig, mc: MountainCloudConfig | None = None
+) -> float | None:
+    """Pravděpodobnost mlhy na vrcholu čistě z vlhkosti ve výšce vrcholu (profil atmosféry).
+
+    S `mc` se přidává mlha hnaná větrem: RH v 800 hPa s prahem klesajícím při silných nárazech."""
     rh = summit_rh(f)
     if rh is None:
         return None
-    return pw(rh, [(cfg.summit_rh_clear, 0.0), (cfg.summit_rh_fog, 1.0)])
+    p = pw(rh, [(cfg.summit_rh_clear, 0.0), (cfg.summit_rh_fog, 1.0)])
+    if mc is not None:
+        cover = cloud_cover(f.low_cloud_summit, f.mid_cloud)
+        p = max(p, wind_driven_fog(rh_aloft(f), f.gust_kmh, cover, mc))
+    return p
 
 
-def fog_likelihood(f: SunriseFeatures, cfg: FogConfig) -> float | None:
+def fog_likelihood(
+    f: SunriseFeatures, cfg: FogConfig, mc: MountainCloudConfig | None = None
+) -> float | None:
     """Pravděpodobnost, že je vrchol přímo v mraku/mlze (ne mraky pod ním)."""
-    upper = fog_upper(f, cfg)
+    upper = fog_upper(f, cfg, mc)
     surface = None
     if f.dewpoint_depression_c is not None:
         surface = surface_trust(f, cfg) * pw(f.dewpoint_depression_c, FOG_DEP)
@@ -89,7 +100,8 @@ def score_sunrise(
     east_block = None
     if f.east_low_cloud is not None and f.east_mid_cloud is not None:
         east_block = max(f.east_low_cloud * (1 - clear), 0.6 * f.east_mid_cloud)
-    fog = fog_likelihood(f, fog_cfg)
+    mcfg = settings.mountain_clouds
+    fog = fog_likelihood(f, fog_cfg, mcfg)
     trust = surface_trust(f, fog_cfg)
 
     comps: list[tuple[str, float, str]] = []
@@ -131,7 +143,7 @@ def score_sunrise(
     if f.dewpoint_depression_c is not None:
         vparts.append(pw(f.dewpoint_depression_c, DEWPOINT_DEP))
         vtxt.append(f"rozdíl T − rosný bod {f.dewpoint_depression_c:.1f} °C")
-    upper = fog_upper(f, fog_cfg)
+    upper = fog_upper(f, fog_cfg, mcfg)
     if vparts and upper is not None:
         value = trust * (sum(vparts) / len(vparts)) + (1 - trust) * (1 - upper)
         if trust < 0.5:
@@ -187,7 +199,18 @@ def score_sunrise(
         "fog": round(1 - fog_cfg.gate_strength * (fog or 0.0), 2),
         "gale": round(pw(f.gust_kmh, GALE) if f.gust_kmh is not None else 1.0, 2),
     }
-    score = raw * gates["precip"] * gates["fog"] * gates["gale"]
+
+    # základna mraků nad vrcholem + zakrytá obloha: vrchol je pod mraky, ne nad mořem mraků
+    # (potvrzená inverze – vrchol jasně nad horní hranicí mraků – se nepenalizuje)
+    above = inv.summit_above_deck_m
+    confirmed = above is not None and above >= deck_margin(f, tuning.cloud_top_max_m)
+    cover = cloud_cover(f.low_cloud_summit, f.mid_cloud)
+    deck_gate = high_deck_gate(f.summit_m, f.coast_dd_c, cover, 0.0 if confirmed else trust, mcfg)
+    if deck_gate < 1:
+        gates["high_deck"] = round(deck_gate, 2)
+        warnings.append("Základna mraků je nad vrcholem – vrchol je pod mraky, ne nad nimi.")
+    # brány mlhy a mraků nad vrcholem popisují stejný jev → platí přísnější, netrestá se dvakrát
+    score = raw * gates["precip"] * min(gates["fog"], deck_gate) * gates["gale"]
 
     if gates["precip"] < 1:
         warnings.append(f"Srážky kolem východu: {f.precip_mm:.1f} mm (gate ×{gates['precip']}).")
@@ -235,7 +258,7 @@ def _summary_cs(score, verdict, inv_text, components, gates) -> str:
     parts = [f"{head} Skóre {score:.0f} %."]
     if gates["precip"] < 1:
         parts.append("Největší problém jsou srážky.")
-    elif gates["fog"] < 0.6:
+    elif gates["fog"] < 0.6 or gates.get("high_deck", 1.0) < 0.6:
         parts.append("Největší problém je mlha/mrak na vrcholu.")
     elif weakest.value < 0.6:
         parts.append(f"Nejslabší stránka: {_NAMES_CS[weakest.name]} ({weakest.explanation}).")

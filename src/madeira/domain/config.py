@@ -41,6 +41,18 @@ class FogConfig(BaseModel):
     gate_strength: float = 0.85  # o kolik brána sráží skóre při jistotě mlhy
 
 
+class MountainCloudConfig(BaseModel):
+    """Horské vyhlídky (východ i západ): mlha hnaná větrem a mraky ve výšce vrcholu / nad ním."""
+
+    aloft_rh_fog: float = 80  # RH v 800 hPa od tohoto začíná penalizace mlhy
+    aloft_rh_fog_windy: float = 68  # totéž při silných nárazech (vítr žene vlhkost na masiv)
+    windy_gust_kmh: float = 45  # nárazy od tohoto = použije se nižší práh
+    aloft_rh_span: float = 10  # o kolik % RH nad prahem je mlha jistá
+    cover_min_pct: float = 25  # nízká/střední oblačnost nad tímto
+    wind_fog_max: float = 0.85  # strop mlhy z větru (brána ~0.28, ne nula)
+    high_deck_gate: float = 0.35  # koeficient skóre, když je základna mraků nad vrcholem
+
+
 class SunriseConfig(BaseModel):
     weights: SunriseWeights = Field(default_factory=SunriseWeights)
     verdict: VerdictThresholds = Field(default_factory=VerdictThresholds)
@@ -325,6 +337,7 @@ class Settings(BaseModel):
     spots: dict[str, SpotConfig] = Field(default_factory=_default_spots)
     bica_da_cana: BicaConfig = Field(default_factory=BicaConfig)
     sunset: SunsetConfig = Field(default_factory=SunsetConfig)
+    mountain_clouds: MountainCloudConfig = Field(default_factory=MountainCloudConfig)
     coastal_sunrise: CoastalSunriseConfig = Field(default_factory=CoastalSunriseConfig)
     sunny_escape: EscapeConfig = Field(default_factory=EscapeConfig)
     fanal: FanalConfig = Field(default_factory=FanalConfig)

@@ -79,6 +79,7 @@ class SunriseFeatures:
     z: dict[int, float | None]
     summit_m: float = SUMMIT_M  # výška místa (Arieiro 1818, Bica da Cana 1560)
     aloft_hpa: int = 800  # hladina, jejíž RH říká, zda je nad vrcholem sucho
+    coast_dd_c: float | None = None  # T − rosný bod na pobřeží (Funchal) pro základnu mraků od moře
 
 
 def extract_sunrise_features(
@@ -122,6 +123,12 @@ def extract_sunrise_features(
         east_low = _avg(window_values(epts, lambda p: p.cloud_cover_low_pct, start, end))
         east_mid = _avg(window_values(epts, lambda p: p.cloud_cover_mid_pct, start, end))
 
+    coast_dd = None
+    if "funchal" in bundle.forecasts:
+        fp = bundle.forecasts["funchal"].hourly
+        ct = _avg(window_values(fp, lambda p: p.temperature_c, start, end))
+        cd = _avg(window_values(fp, lambda p: p.dew_point_c, start, end))
+        coast_dd = None if ct is None or cd is None else ct - cd
     lowland = []
     for key in lowland_keys:
         if key in bundle.forecasts:
@@ -165,4 +172,5 @@ def extract_sunrise_features(
         z={lv: lvl(lv, "geopotential_height_m") for lv in levels},
         summit_m=summit.location.elevation_m,
         aloft_hpa=aloft_hpa,
+        coast_dd_c=coast_dd,
     )

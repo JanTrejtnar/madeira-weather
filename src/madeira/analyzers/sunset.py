@@ -8,6 +8,7 @@ from types import SimpleNamespace
 
 from madeira.analyzers.features import _avg, _max, window_values
 from madeira.analyzers.inversion import estimate_deck_top, summit_clear_factor, summit_rh
+from madeira.analyzers.mountain import cloud_cover, high_deck_gate, wind_driven_fog
 from madeira.analyzers.scoring_utils import pw
 from madeira.analyzers.sunrise import DEWPOINT_DEP, NEUTRAL, _confidence
 from madeira.domain.config import Settings
@@ -47,6 +48,8 @@ class SunsetFeatures:
     rh_aloft: float | None = None  # jen vrcholy: RH v 800 hPa
     summit_rh: float | None = None  # jen vrcholy: RH ve výšce vrcholu
     deck_top_m: float | None = None  # jen vrcholy: horní hranice vlhké vrstvy
+    summit_elevation_m: float | None = None  # jen vrcholy: výška vyhlídky
+    coast_dd_c: float | None = None  # jen vrcholy: T − rosný bod na pobřeží (základna mraků od moře)
 
 
 def extract_sunset_features(
@@ -82,7 +85,7 @@ def extract_sunset_features(
     precip = [p.precipitation_mm or 0.0 for p in pts if start <= p.time_utc <= end]
     temp = avg(lambda p: p.temperature_c)
     dew = avg(lambda p: p.dew_point_c)
-    clear = rh800 = peak_rh = deck_top = None
+    clear = rh800 = peak_rh = deck_top = coast_dd = None
     if mountain:  # profil atmosféry v okně západu: je vrchol nad vrstvou mraků?
         def lvl(level: int, attr: str) -> float | None:
             return avg(lambda p: getattr(p.levels[level], attr) if level in p.levels else None)
@@ -97,6 +100,11 @@ def extract_sunset_features(
         rh800 = profile.rh.get(800)
         peak_rh = summit_rh(profile)
         deck_top = estimate_deck_top(profile)
+        if "funchal" in bundle.forecasts:
+            fp = bundle.forecasts["funchal"].hourly
+            ct = _avg(window_values(fp, lambda p: p.temperature_c, start, end))
+            cd = _avg(window_values(fp, lambda p: p.dew_point_c, start, end))
+            coast_dd = None if ct is None or cd is None else ct - cd
     return SunsetFeatures(
         target_date=target_date,
         sunset_utc=sunset,
@@ -116,6 +124,8 @@ def extract_sunset_features(
         rh_aloft=rh800,
         summit_rh=peak_rh,
         deck_top_m=deck_top,
+        summit_elevation_m=spot.location.elevation_m if mountain else None,
+        coast_dd_c=coast_dd,
     )
 
 
@@ -137,9 +147,9 @@ def _above_deck(f: SunsetFeatures) -> SunsetFeatures:
     )
 
 
-def _mountain_fog(f: SunsetFeatures, cfg) -> float:
+def _mountain_fog(f: SunsetFeatures, cfg, mc, cover) -> float:
     """0..1: pravděpodobnost, že je vrchol přímo v mraku (RH v 800 hPa nebo ve výšce vrcholu)."""
-    parts = []
+    parts = [wind_driven_fog(f.rh_aloft, f.gust_kmh, cover, mc)]
     if f.rh_aloft is not None:
         parts.append(pw(f.rh_aloft, [(cfg.fog_rh_clear, 0.0), (cfg.fog_rh_fog, 1.0)]))
     if f.summit_rh is not None:
@@ -160,7 +170,9 @@ def _inversion_bonus(f: SunsetFeatures, cfg) -> float:
 def score_sunset(f: SunsetFeatures, settings: Settings) -> SunsetAnalysis:
     cfg = settings.sunset
     bonus = _inversion_bonus(f, cfg.mountain)  # z původních (netlumených) hodnot mraků
-    fog = _mountain_fog(f, cfg.mountain) if f.summit_clear is not None else None
+    mc = settings.mountain_clouds
+    cover = cloud_cover(f.local_low_cloud, f.west_mid_cloud)
+    fog = _mountain_fog(f, cfg.mountain, mc, cover) if f.summit_clear is not None else None
     f = _above_deck(f)
     curves = cfg.piecewise
     warnings: list[str] = []
@@ -247,7 +259,21 @@ def score_sunset(f: SunsetFeatures, settings: Settings) -> SunsetAnalysis:
     if fog is not None:  # mlha přímo na vrcholu
         gates["fog"] = round(1 - cfg.mountain.fog_gate_strength * fog, 2)
     score = raw * gates["precip"] * gates["horizon"] * gates["visibility"] * gates["overcast"]
-    score *= gates.get("fog", 1.0)
+    deck_gate = 1.0
+    if f.summit_clear is not None and f.summit_elevation_m is not None:
+        # základna mraků nad vrcholem + zakrytá obloha: vrchol je pod mraky, ne nad mořem mraků
+        trust = pw(
+            f.rh_aloft if f.rh_aloft is not None else 100.0,
+            [(settings.sunrise.fog.aloft_dry_rh, 0.0), (settings.sunrise.fog.aloft_moist_rh, 1.0)],
+        )
+        if f.deck_top_m is not None and f.summit_elevation_m - f.deck_top_m >= 100:
+            trust = 0.0  # potvrzená inverze: vrchol je nad horní hranicí mraků
+        deck_gate = high_deck_gate(f.summit_elevation_m, f.coast_dd_c, cover, trust, mc)
+        if deck_gate < 1:
+            gates["high_deck"] = round(deck_gate, 2)
+            warnings.append("Základna mraků je nad vrcholem – vrchol je pod mraky, ne nad nimi.")
+    # brány mlhy a mraků nad vrcholem popisují stejný jev → platí přísnější, netrestá se dvakrát
+    score *= min(gates.get("fog", 1.0), deck_gate)
 
     if gates["precip"] < 1:
         warnings.append(f"Srážky kolem západu: {f.precip_mm:.1f} mm (NO-GO).")
@@ -290,7 +316,7 @@ def _summary_cs(score, verdict, components, gates) -> str:
     weakest = min(components, key=lambda c: c.value)
     if gates["precip"] < 1:
         parts.append("Největší problém jsou srážky.")
-    elif gates.get("fog", 1.0) < 0.6:
+    elif gates.get("fog", 1.0) < 0.6 or gates.get("high_deck", 1.0) < 0.6:
         parts.append("Největší problém je mlha/mrak na vrcholu.")
     elif gates["overcast"] < 0.6:
         parts.append("Největší problém je úplné zatažení.")

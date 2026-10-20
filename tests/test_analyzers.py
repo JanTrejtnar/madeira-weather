@@ -1,14 +1,16 @@
 import json
+from dataclasses import replace
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
 from madeira.analyzers.features import SunriseFeatures, interp
 from madeira.analyzers.inversion import analyze_inversion, estimate_deck_top
 from madeira.analyzers.microclimate import compare_microclimates
+from madeira.analyzers.mountain import high_deck_gate, wind_driven_fog
 from madeira.analyzers.scoring_utils import pw
 from madeira.analyzers.sunrise import analyze_sunrise, score_sunrise
 from madeira.analyzers.sunset import SunsetFeatures, analyze_sunset, score_sunset
-from madeira.domain.config import Settings, load_locations
+from madeira.domain.config import MountainCloudConfig, Settings, load_locations
 from madeira.domain.models import HourlyPoint
 from madeira.fetchers.open_meteo import parse_response
 
@@ -384,3 +386,101 @@ def test_sunset_precip_window_ends_15_min_after_sunset():
         p.precipitation_mm = 5.0 if timedelta(minutes=46) <= p.time_utc - sunset <= timedelta(minutes=120) else 0.0
     f = extract_sunset_features(bundle, target, NOW, Settings())
     assert f.precip_mm == 0.0
+
+
+# --- horské spoty: mraky nad vrcholem a mlha hnaná větrem (18. 10. 2026) --------------
+
+
+def features_oct18(**over):
+    """18. 10. 2026 Arieiro: základna mraků ~2250 m (nad vrcholem), RH u vrcholu 74 %, v 800 hPa
+    77 %, nárazy 54 km/h; na vrcholu hustá mlha, model přitom hlásil GO 75 %."""
+    base = {
+        "target_date": date(2026, 10, 18),
+        "sunrise_utc": datetime(2026, 10, 18, 8, 12, tzinfo=UTC),
+        "low_cloud_summit": 35.0,
+        "mid_cloud": 17.0,
+        "high_cloud": 0.0,
+        "east_low_cloud": 5.0,
+        "east_mid_cloud": 5.0,
+        "lowland_low_cloud": 20.0,
+        "precip_prob": 10.0,
+        "gust_kmh": 54.0,
+        "wind_kmh": 30.0,
+        "visibility_km": 20.0,
+        "dewpoint_depression_c": 3.5,
+        "t": {925: 16.0, 850: 12.0, 800: 9.0, 700: 3.0},
+        "rh": {925: 80.0, 850: 71.0, 800: 77.0, 700: 60.0},
+    }
+    base.update(over)
+    return features(**base)
+
+
+def test_oct18_summit_under_cloud_is_no_go():
+    s = Settings()
+    a = score_sunrise(features_oct18(), s)
+    assert a.verdict == "NO_GO" and a.score_pct < 50, a
+    assert 20 <= a.score_pct <= 35 and a.gates["fog"] < 0.5, a  # NO-GO, ale ne nula
+    # bez nových pravidel to byl falešný GO (~75 %)
+    old = Settings()
+    old.mountain_clouds.aloft_rh_fog_windy = 99
+    assert score_sunrise(features_oct18(), old).score_pct >= 70
+
+
+def test_clean_inversion_days_stay_go():
+    # 14.–16. 10.: vlhko jen pod vrcholem (mraky do ~1200 m), nahoře sucho
+    for over in (
+        {"low_cloud_summit": 82.0, "rh": {925: 99.0, 850: 98.0, 800: 27.0, 700: 9.0}},
+        {"low_cloud_summit": 49.0, "gust_kmh": 11.0, "rh": {925: 97.0, 850: 90.0, 800: 24.0, 700: 8.0}},
+        {"low_cloud_summit": 0.0, "mid_cloud": 0.0, "gust_kmh": 14.0, "rh": {925: 60.0, 850: 50.0, 800: 39.0, 700: 9.0}},
+    ):
+        a = score_sunrise(features(**over), Settings())
+        assert a.verdict == "GO" and a.score_pct >= 80, (over, a.score_pct)
+        assert "high_deck" not in a.gates
+
+
+def test_wind_lowers_summit_humidity_threshold():
+    over = {"dewpoint_depression_c": 3.0, "rh": {925: 80.0, 850: 60.0, 800: 77.0, 700: 40.0}}
+    calm = score_sunrise(features_oct18(gust_kmh=30.0, **over), Settings())
+    windy = score_sunrise(features_oct18(gust_kmh=48.0, **over), Settings())
+    assert calm.gates["fog"] > 0.9  # RH 77 % < 80 % → bez penalizace mlhy
+    assert windy.gates["fog"] < 0.6  # při nárazech >= 45 km/h práh 68 %
+    cfg = MountainCloudConfig()
+    assert wind_driven_fog(79.0, 10.0, 40.0, cfg) == 0.0
+    assert wind_driven_fog(79.0, 50.0, 40.0, cfg) == cfg.wind_fog_max
+    assert wind_driven_fog(79.0, 50.0, 10.0, cfg) == 0.0  # vlhko, ale skoro bez mraků
+
+
+def test_high_deck_gate_uses_cloud_base_from_sea_level():
+    cfg = MountainCloudConfig()
+    # T − Td na pobřeží 16 °C → základna ~2000 m nad mořem, tedy nad vrcholem 1818 m
+    assert high_deck_gate(1818, 16.0, 35.0, 1.0, cfg) == cfg.high_deck_gate
+    assert high_deck_gate(1818, 16.0, 20.0, 1.0, cfg) == 1.0  # skoro čisté nebe
+    assert high_deck_gate(1818, 6.0, 80.0, 1.0, cfg) == 1.0  # mraky v ~750 m = vrchol je nad nimi
+    assert high_deck_gate(1818, None, 60.0, 1.0, cfg) == 1.0  # bez dat z pobřeží
+    assert high_deck_gate(1818, 16.0, 60.0, 0.0, cfg) == 1.0  # sucho nad vrcholem
+
+
+def test_mountain_sunset_also_penalizes_summit_under_cloud():
+    s = Settings()
+    f = SunsetFeatures(
+        target_date=date(2026, 10, 18),
+        sunset_utc=datetime(2026, 10, 18, 18, 40, tzinfo=UTC),
+        days_ahead=1, horizon_low_cloud=10.0, canvas_cloud=30.0, local_low_cloud=35.0,
+        precip_mm=0.0, gust_kmh=54.0, wind_kmh=30.0, wind_dir_deg=40.0, visibility_m=20000.0,
+        dewpoint_depression_c=3.5, temp_c=12.0, summit_clear=1.0, west_mid_cloud=17.0,
+        rh_aloft=77.0, summit_rh=74.0, deck_top_m=None, summit_elevation_m=1818.0,
+    )
+    a = score_sunset(f, s)
+    assert a.verdict == "NO_GO" and a.gates["fog"] < 0.5
+    dry = replace(f, rh_aloft=30.0, summit_rh=40.0, deck_top_m=1100.0)  # inverze: bez penalizace
+    assert score_sunset(dry, s).verdict == "GO"
+
+
+def test_high_deck_gate_in_sunrise_is_not_stacked_on_fog_gate():
+    s = Settings()
+    calm = features_oct18(gust_kmh=20.0, coast_dd_c=16.0, rh={925: 80.0, 850: 68.0, 800: 72.0, 700: 60.0})
+    a = score_sunrise(calm, s)
+    assert a.gates["high_deck"] == s.mountain_clouds.high_deck_gate
+    assert a.gates["fog"] > a.gates["high_deck"]  # platí přísnější brána, nesčítají se
+    assert 20 <= a.score_pct <= 40
+    assert "high_deck" not in score_sunrise(replace(calm, coast_dd_c=5.0), s).gates
