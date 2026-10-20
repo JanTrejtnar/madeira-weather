@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Webkamery Madeira</title>
+  <meta name="description" content="Webkamery Madeiry na jednom místě: hory, mlžný les, západy slunce a pobřeží s predikcí modelu / Madeira webcams at a glance.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://jantrejtnar.github.io/madeira-weather/webcams.html">
+  <meta property="og:title" content="Webkamery Madeira · rychlý přehled">
+  <meta property="og:description" content="Aktuální snímky z kamer po celém ostrově, s verdiktem předpovědi u sledovaných spotů.">
+  <meta property="og:image" content="https://jantrejtnar.github.io/madeira-weather/og-preview.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#020617">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MadeiraSky">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: radial-gradient(120% 55% at 50% 0%, rgba(56,189,248,.14), transparent 60%),
+                       radial-gradient(90% 40% at 80% 100%, rgba(16,185,129,.08), transparent 70%),
+                       linear-gradient(180deg, #020617 0%, #0b1220 100%) fixed; }
+    .seg-on { background: rgba(56,189,248,.2); color: #bae6fd; }
+    .seg-off { color: #94a3b8; }
+    .seg-off:hover { background: rgba(255,255,255,.1); }
+    .spin { animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .spin { animation-duration: 2.4s; } }
+  </style>
+</head>
+<body class="min-h-screen text-slate-100 antialiased">
+  <main class="mx-auto max-w-6xl px-4 py-8 sm:py-12" style="padding-top:max(2rem,env(safe-area-inset-top));padding-bottom:max(2rem,env(safe-area-inset-bottom))">
+    <nav class="mb-6 flex items-start justify-between gap-4">
+      <div class="flex flex-wrap gap-x-2 gap-y-1 text-sm" aria-label="Navigace">
+        <a href="./index.html" id="nav-forecast" class="text-slate-400 transition hover:text-sky-200"></a>
+        <span class="text-slate-600" aria-hidden="true">·</span>
+        <a href="./fanal.html" class="text-slate-400 transition hover:text-sky-200">Fanal</a>
+        <span class="text-slate-600" aria-hidden="true">·</span>
+        <a href="./webcams.html" id="nav-webcams" class="font-medium text-sky-200" aria-current="page"></a>
+      </div>
+      <div id="lang" class="flex shrink-0 overflow-hidden rounded-xl border border-white/15 text-sm" role="group" aria-label="Language">
+        <button type="button" data-lang="cs" class="inline-flex items-center gap-1.5 px-3 py-1.5" aria-label="Čeština"><img src="flag-cz.svg" alt="" width="20" height="14" class="h-3.5 w-5 rounded-[2px]">CZ</button>
+        <button type="button" data-lang="en" class="inline-flex items-center gap-1.5 px-3 py-1.5" aria-label="English"><img src="flag-gb.svg" alt="" width="20" height="14" class="h-3.5 w-5 rounded-[2px]">EN</button>
+      </div>
+    </nav>
+
+    <header class="mb-6 flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="text-sm uppercase tracking-widest text-sky-300/80">Madeira · NetMadeira</p>
+        <h1 id="title" class="text-2xl font-semibold sm:text-3xl"></h1>
+        <p id="note" class="mt-1 text-sm text-slate-400"></p>
+      </div>
+      <button id="refresh" type="button" class="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium transition hover:bg-white/10">
+        <svg class="h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 10a6 6 0 1 1-1.8-4.3M16 3v4h-4"/></svg>
+        <span id="refresh-text"></span>
+      </button>
+    </header>
+
+    <div id="filters" class="mb-6 flex flex-wrap gap-2" role="group"></div>
+
+    <div id="state" class="rounded-2xl bg-white/5 p-6 text-slate-300" role="status"></div>
+    <section id="grid" class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"></section>
+
+    <div id="lightbox" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/85 p-4" role="dialog" aria-modal="true" aria-labelledby="lb-caption">
+      <figure class="relative max-h-full w-full max-w-4xl">
+        <div class="relative">
+          <img id="lb-img" alt="" class="max-h-[75vh] w-full rounded-xl bg-zinc-900 object-contain">
+          <p id="lb-missing" class="hidden rounded-xl bg-zinc-900 p-10 text-center text-slate-400"></p>
+        </div>
+        <figcaption id="lb-caption" class="mt-3 text-center text-sm text-slate-300"></figcaption>
+        <div class="mt-3 flex justify-center">
+          <a id="lb-live" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2.5 rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-medium transition hover:bg-white/10">
+            <span class="relative flex h-2.5 w-2.5" aria-hidden="true">
+              <span class="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75 motion-safe:animate-ping"></span>
+              <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500"></span>
+            </span>
+            <span class="text-xs font-bold tracking-wider text-red-400">LIVE</span>
+            <span id="lb-live-text"></span>
+          </a>
+        </div>
+        <button id="lb-close" type="button" class="absolute -top-3 right-0 rounded-full bg-slate-800 px-3 py-1 text-slate-200 ring-1 ring-white/20 hover:bg-slate-700" aria-label="Close">✕</button>
+      </figure>
+    </div>
+
+    <footer class="mt-10 text-xs text-slate-500">
+      <p id="updated"></p>
+      <p id="disclaimer" class="mt-1"></p>
+    </footer>
+  </main>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const SLOT_MIN = 30, LAG_MIN = 10;  // NetMadeira: půlhodinové snímky, nový se objeví se zpožděním
+  const CATS = ["all", "mountain", "forest", "sunset", "coast"];
+  const T = {
+    cs: {
+      navForecast: "Předpověď", navWebcams: "Webkamery", title: "Webkamery Madeira",
+      note: "Poslední snímek z každé kamery · klepnutím zvětšíte",
+      refresh: "Obnovit snímky", loading: "Načítám kamery…", error: "Seznam kamer se nepodařilo načíst.",
+      cats: { all: "Vše", mountain: "🏔️ Hory & Inverze", forest: "🌲 Mlžný les & Vnitrozemí", sunset: "🌅 Západ slunce", coast: "🌊 Sever & Pobřeží" },
+      unavailable: "Kamera dočasně nedostupná", loadingImg: "Načítám snímek",
+      live: "Živý stream na NetMadeira", snap: (tm) => `Snímek z ${tm}`,
+      kind: { sunrise: "východ", sunset: "západ", fog: "mlha" }, rel: { today: "dnes", tomorrow: "zítra" },
+      updated: (t) => `Seznam kamer aktualizován: ${t}`,
+      disclaimer: "Snímky: NetMadeira (půlhodinové sloty, místní čas Madeiry). Skóre: model Open-Meteo, orientační.",
+    },
+    en: {
+      navForecast: "Forecast", navWebcams: "Webcams", title: "Madeira Webcams",
+      note: "Latest snapshot from each camera · tap to enlarge",
+      refresh: "Refresh images", loading: "Loading cameras…", error: "Could not load the camera list.",
+      cats: { all: "All", mountain: "🏔️ Peaks & Inversion", forest: "🌲 Misty Forest & Inland", sunset: "🌅 Sunset", coast: "🌊 North & Coast" },
+      unavailable: "Camera temporarily unavailable", loadingImg: "Loading image",
+      live: "Live stream on NetMadeira", snap: (tm) => `Snapshot from ${tm}`,
+      kind: { sunrise: "sunrise", sunset: "sunset", fog: "fog" }, rel: { today: "today", tomorrow: "tomorrow" },
+      updated: (t) => `Camera list updated: ${t}`,
+      disclaimer: "Snapshots: NetMadeira (half-hour slots, Madeira local time). Scores: Open-Meteo model, indicative.",
+    },
+  };
+  const BADGE = {
+    GO: "bg-emerald-400/20 text-emerald-200 ring-emerald-300/40", MYSTIC: "bg-emerald-400/20 text-emerald-200 ring-emerald-300/40",
+    MAYBE: "bg-amber-400/20 text-amber-200 ring-amber-300/40", PARTIAL: "bg-amber-400/20 text-amber-200 ring-amber-300/40",
+    NO_GO: "bg-rose-400/20 text-rose-200 ring-rose-300/40", CLEAR: "bg-slate-400/20 text-slate-200 ring-slate-300/40",
+  };
+  let lang = "";
+  try { lang = localStorage.getItem("lang") || ""; } catch (e) {}
+  if (!T[lang]) lang = (navigator.language || "").toLowerCase().startsWith("cs") ? "cs" : "en";
+  let data = null, filter = "all", bust = "", failed = false, lbCam = null;
+  const t = () => T[lang];
+
+  // Poslední dostupný půlhodinový slot v čase Madeiry (data.json se obnovuje jen 3× denně).
+  function latestSlots(now = new Date()) {
+    const base = new Date(now.getTime() - LAG_MIN * 60000);
+    const slot = (d) => {
+      const p = Object.fromEntries(new Intl.DateTimeFormat("en-GB", { timeZone: "Atlantic/Madeira", year: "numeric", month: "2-digit",
+        day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(d).map((x) => [x.type, x.value]));
+      const min = String(Math.floor(p.minute / SLOT_MIN) * SLOT_MIN).padStart(2, "0");
+      return { day: `${p.year}-${p.month}-${p.day}`, slot: `${p.hour}_${min}`, time: `${p.hour}:${min}` };
+    };
+    return [slot(base), slot(new Date(base.getTime() - SLOT_MIN * 60000))];
+  }
+  const URL_RE = /\/(\d{4}-\d{2}-\d{2})\/(\d{2}_\d{2})\.jpg$/;
+  function urls(cam) {
+    const [a, b] = latestSlots();
+    const swap = (u, s) => u.replace(URL_RE, `/${s.day}/${s.slot}.jpg`);
+    const q = bust ? `?t=${bust}` : "";
+    if (!URL_RE.test(cam.snapshot_url)) return { main: cam.snapshot_url + q, fallback: cam.fallback_url && cam.fallback_url + q, time: cam.snapshot_time };
+    return { main: swap(cam.snapshot_url, a) + q, fallback: swap(cam.snapshot_url, b) + q, time: a.time };
+  }
+
+  const el = (tag, cls = "", text) => {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  };
+  const alt = (m) => `${m.toLocaleString("cs-CZ").replace(/ /g, " ")} m`;
+
+  function badge(cam) {
+    const f = cam.forecast;
+    if (!f || f.verdict == null) return null;
+    const L = t(), label = f.verdict === "NO_GO" ? "NO GO" : f.verdict;
+    const b = el("span", `rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ${BADGE[f.verdict] || BADGE.CLEAR}`);
+    b.textContent = f.score == null ? label : `${f.score} % ${label}`;
+    b.title = [L.kind[f.kind], L.rel[f.relative]].filter(Boolean).join(" · ");
+    return b;
+  }
+
+  function card(cam) {
+    const L = t(), u = urls(cam);
+    const btn = el("button", "group block w-full overflow-hidden rounded-2xl border border-white/10 bg-white/5 text-left shadow-lg transition hover:border-sky-300/40 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-300");
+    btn.type = "button";
+    btn.dataset.cat = cam.category;
+    btn.setAttribute("aria-label", `${cam.name}, ${alt(cam.altitude_m)}`);
+
+    const frame = el("div", "relative aspect-video bg-slate-900");
+    const spinner = el("div", "absolute inset-0 flex flex-col items-center justify-center gap-2 text-xs text-slate-500");
+    spinner.setAttribute("role", "status");
+    spinner.append(el("span", "spin h-6 w-6 rounded-full border-2 border-slate-600 border-t-sky-300"), el("span", "", L.loadingImg));
+    const missing = el("div", "absolute inset-0 hidden flex-col items-center justify-center gap-1 px-4 text-center text-sm text-slate-400");
+    missing.append(el("span", "text-2xl", "📷"), el("span", "", L.unavailable));
+    const img = el("img", "absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-300");
+    img.alt = cam.name; img.loading = "lazy"; img.decoding = "async"; img.referrerPolicy = "no-referrer";
+    let triedFallback = false;
+    img.onload = () => { spinner.classList.add("hidden"); missing.classList.replace("flex", "hidden"); img.classList.replace("opacity-0", "opacity-100"); };
+    img.onerror = () => {
+      if (!triedFallback && u.fallback) { triedFallback = true; img.src = u.fallback; return; }
+      spinner.classList.add("hidden"); img.classList.add("hidden"); missing.classList.replace("hidden", "flex");
+    };
+    img.src = u.main;
+    frame.append(spinner, missing, img);
+
+    const head = el("div", "flex items-center justify-between gap-2 px-4 py-3");
+    const name = el("div", "min-w-0");
+    name.append(el("p", "truncate font-medium", `${cam.name} · ${alt(cam.altitude_m)}`), el("p", "text-xs text-slate-500", L.snap(u.time)));
+    head.append(name);
+    const b = badge(cam);
+    if (b) head.append(b);
+    btn.append(frame, head);
+    btn.addEventListener("click", () => openLightbox(cam, img.classList.contains("hidden") ? null : img.currentSrc || img.src));
+    return btn;
+  }
+
+  function renderFilters() {
+    const L = t(), box = $("filters");
+    box.replaceChildren(...CATS.map((c) => {
+      const b = el("button", `rounded-xl border border-white/15 px-3.5 py-1.5 text-sm transition ${filter === c ? "seg-on" : "seg-off"}`, L.cats[c]);
+      b.type = "button"; b.setAttribute("aria-pressed", String(filter === c));
+      b.addEventListener("click", () => { filter = c; applyFilter(); });
+      return b;
+    }));
+  }
+  // Filtr jen přepíná viditelnost karet, obrázky se nenačítají znovu.
+  function applyFilter() {
+    renderFilters();
+    document.querySelectorAll("#grid > button").forEach((c) => c.classList.toggle("hidden", filter !== "all" && c.dataset.cat !== filter));
+  }
+
+  function renderGrid() {
+    $("grid").replaceChildren(...data.webcams.map(card));
+    applyFilter();
+  }
+
+  function renderText() {
+    const L = t();
+    document.documentElement.lang = lang;
+    document.title = L.title;
+    $("nav-forecast").textContent = L.navForecast;
+    $("nav-webcams").textContent = L.navWebcams;
+    $("title").textContent = L.title;
+    $("note").textContent = L.note;
+    $("refresh-text").textContent = L.refresh;
+    $("lb-live-text").textContent = L.live;
+    $("lb-missing").textContent = L.unavailable;
+    $("disclaimer").textContent = L.disclaimer;
+    $("updated").textContent = data && data.generated_local ? L.updated(data.generated_local.replace("T", " ").slice(0, 16)) : "";
+    const s = $("state");
+    s.classList.toggle("hidden", !!data);
+    if (!data) s.textContent = failed ? L.error : L.loading;
+    document.querySelectorAll("#lang button").forEach((b) => b.className = `inline-flex items-center gap-1.5 px-3 py-1.5 ${b.dataset.lang === lang ? "seg-on" : "seg-off"}`);
+    renderFilters();
+  }
+
+  function openLightbox(cam, src) {
+    const L = t(), u = urls(cam), img = $("lb-img");
+    lbCam = cam;
+    $("lb-caption").textContent = `${cam.name} · ${alt(cam.altitude_m)} · ${L.snap(u.time)}`;
+    $("lb-live").href = cam.live_url;
+    let triedFallback = false;
+    img.classList.remove("hidden"); $("lb-missing").classList.add("hidden");
+    img.onerror = () => {
+      if (!triedFallback && u.fallback) { triedFallback = true; img.src = u.fallback; return; }
+      img.classList.add("hidden"); $("lb-missing").classList.remove("hidden");
+    };
+    img.alt = cam.name; img.src = src || u.main;
+    const lb = $("lightbox");
+    lb.classList.remove("hidden"); lb.classList.add("flex");
+    $("lb-close").focus();
+  }
+  function closeLightbox() {
+    const lb = $("lightbox");
+    lb.classList.add("hidden"); lb.classList.remove("flex");
+    $("lb-img").removeAttribute("src");
+    lbCam = null;
+  }
+  $("lightbox").addEventListener("click", (e) => { if (e.target.id === "lightbox" || e.target.closest("#lb-close")) closeLightbox(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && lbCam) closeLightbox(); });
+
+  $("refresh").addEventListener("click", () => {
+    if (!data) return;
+    bust = String(Date.now());  // cache-busting: prohlížeč i CDN si vyžádají snímek znovu
+    renderGrid();
+  });
+  document.querySelectorAll("#lang button").forEach((b) => b.addEventListener("click", () => {
+    lang = b.dataset.lang;
+    try { localStorage.setItem("lang", lang); } catch (e) {}
+    renderText();
+    if (data) renderGrid();
+  }));
+
+  renderText();
+  fetch("data.json", { cache: "no-cache" })
+    .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then((d) => {
+      if (!Array.isArray(d.webcams) || !d.webcams.length) throw new Error("no webcams");
+      data = d; renderText(); renderGrid();
+    })
+    .catch(() => { failed = true; renderText(); });
+})();
+</script>
+</body>
+</html>

@@ -20,7 +20,14 @@ from madeira.analyzers.inversion import summit_rh
 from madeira.analyzers.sunny_escape import rank_locations, recommendation_cs
 from madeira.analyzers.sunrise import extract_spot_features, score_sunrise
 from madeira.analyzers.sunset import extract_sunset_features, score_sunset
-from madeira.domain.config import EscapeConfig, FanalConfig, Settings, load_locations
+from madeira.domain.config import (
+    EscapeConfig,
+    FanalConfig,
+    Settings,
+    Webcam,
+    load_locations,
+    load_webcams,
+)
 from madeira.domain.models import (
     OUTCOME_TO_VERDICT,
     ForecastBundle,
@@ -136,6 +143,62 @@ def sunset_webcam_urls(day) -> list[str]:
 
 def sunset_webcam_url(day) -> str:
     return sunset_webcam_urls(day)[0]
+
+
+WEBCAM_SLOT_MIN = 30  # NetMadeira ukládá snímky po půlhodinách
+WEBCAM_SLOT_LAG_MIN = 10  # čerstvý slot se na serveru objeví s mírným zpožděním
+
+
+def latest_webcam_slots(local: datetime) -> list[datetime]:
+    """Poslední dostupný půlhodinový slot (místní čas) a ten předchozí jako záloha."""
+    t = local - timedelta(minutes=WEBCAM_SLOT_LAG_MIN)
+    t = t.replace(minute=t.minute - t.minute % WEBCAM_SLOT_MIN, second=0, microsecond=0)
+    return [t, t - timedelta(minutes=WEBCAM_SLOT_MIN)]
+
+
+def _webcam_forecast(cam: Webcam, spots: dict, fog: dict | None) -> dict | None:
+    """Verdikt a skóre z modelu pro kameru napárovanou na spot (None, když spot v exportu chybí)."""
+    if cam.spot_id == "fanal":
+        src, kind = fog, "fog"
+    else:
+        src = next((s for s in spots["morning"] if s["key"] == cam.spot_id), None)
+        kind = "sunrise"
+        if src is None:
+            src = next((s for s in spots["evening"] if s["key"] == cam.spot_id), None)
+            kind = "sunset"
+    if not src:
+        return None
+    return {
+        "kind": kind,
+        "verdict": src["verdict"],
+        "score": src["score"] if kind == "fog" else src["score_pct"],
+        "relative": src.get("relative"),
+        "target_date": src.get("target_date"),
+    }
+
+
+def webcams_section(cams: list[Webcam], local: datetime, spots: dict, fog: dict | None = None) -> list[dict]:
+    """Seznam kamer s URL posledního snímku (+ záložním předchozím slotem) a verdiktem modelu."""
+    latest, previous = latest_webcam_slots(local)
+
+    def url(cam: Webcam, t: datetime) -> str:
+        return cam.snapshot_url.format(day=t.date().isoformat(), slot=_slot(t.hour * 60 + t.minute))
+
+    return [
+        {
+            "id": cam.id,
+            "name": cam.name,
+            "altitude_m": cam.altitude_m,
+            "category": cam.category,
+            "snapshot_url": url(cam, latest),
+            "fallback_url": url(cam, previous),
+            "snapshot_time": latest.strftime("%H:%M"),
+            "live_url": cam.live_url,
+            "spot_id": cam.spot_id,
+            "forecast": _webcam_forecast(cam, spots, fog) if cam.spot_id else None,
+        }
+        for cam in cams
+    ]
 
 
 def _slot_time(url_slot: str) -> str:
@@ -703,6 +766,7 @@ def build_payload(
         "history": with_snapshot_links(history or [], today),
         **({"sunny_escape": escape} if escape else {}),
         **({"fanal": fog} if fog else {}),
+        "webcams": webcams_section(load_webcams(), local, spots, fog),
     }
 
 

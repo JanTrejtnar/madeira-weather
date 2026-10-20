@@ -105,7 +105,6 @@ def _default_spots() -> dict[str, SpotConfig]:
             name="Farol da Ponta do Pargo",
             type="coastal_sunset",
             departure_from_funchal_min=65,
-            webcam_url="https://www.netmadeira.com/webcams-madeira/ponta-do-pargo",
         ),
         "pico_ruivo": SpotConfig(
             name="Pico Ruivo", type="mountain_inversion", departure_from_funchal_min=120
@@ -363,6 +362,24 @@ def load_settings() -> Settings:
     if not path.exists():
         return Settings()
     return Settings.model_validate(yaml.safe_load(path.read_text(encoding="utf-8")) or {})
+
+
+class Webcam(BaseModel):
+    """Webkamera NetMadeira; `spot_id` ji páruje s předpovědí (klíč spotu nebo `fanal`)."""
+
+    id: str
+    name: str
+    altitude_m: int
+    category: Literal["mountain", "forest", "sunset", "coast"]
+    snapshot_url: str  # šablona s {day} a {slot}
+    live_url: str
+    spot_id: str | None = None
+
+
+def load_webcams() -> list[Webcam]:
+    path = config_dir() / "webcams.yaml"
+    data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    return [Webcam.model_validate(item) for item in data["webcams"]]
 
 
 def load_locations() -> list[Location]:

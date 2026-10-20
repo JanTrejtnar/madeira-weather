@@ -129,7 +129,7 @@ def test_payload_has_sunrise_and_sunset_roots():
     assert payload["sunrise"]["score"] == payload["tomorrow"]["score_pct"]
     assert payload["sunrise"]["cloud_sea"]["probability_pct"] == payload["tomorrow"]["inversion_pct"]
     assert payload["sunrise"]["webcam_url"].endswith("/pico-do-arieiro")
-    assert payload["sunset"]["webcam_url"].endswith("/ponta-do-pargo")
+    assert payload["sunset"]["webcam_url"] is None  # NetMadeira Ponta do Pargo vrací "Invalid webcam"
     assert payload["tomorrow_spots"]["morning"][2]["webcam_url"] is None  # Bica: bez kamery
     assert payload["sunset"]["cloud_sea"] is None  # pobřežní západ: moře mraků se neskóruje
     json.dumps(payload)
@@ -416,3 +416,53 @@ def test_previous_export_keeps_yesterday_when_archive_is_down(tmp_path, monkeypa
     }), encoding="utf-8")
     hist = webexport.collect_spot_history(Settings(), Store(tmp_path / "e.db"), date(2026, 10, 19), previous)
     assert hist["arieiro"] == [{"date": "2026-10-18"}]  # starší než týden se zahodí
+
+
+def test_webcams_section_valid():
+    payload = webexport.build_payload(Settings(), days=3, bundle=_bundle(), now=NOW)
+    cams = payload["webcams"]
+    assert len(cams) >= 12
+    assert len({c["id"] for c in cams}) == len(cams)
+    assert {c["category"] for c in cams} == {"mountain", "forest", "sunset", "coast"}
+    for c in cams:
+        assert c["snapshot_url"].startswith("https://www.netmadeira.com/") and c["snapshot_url"].endswith(".jpg")
+        assert c["fallback_url"] != c["snapshot_url"]
+        assert c["live_url"].startswith("https://www.netmadeira.com/webcams-madeira/")
+        assert "{" not in c["snapshot_url"]
+        assert isinstance(c["altitude_m"], int)
+    json.dumps(payload)
+
+
+def test_webcam_snapshot_is_latest_half_hour_slot():
+    local = datetime(2026, 10, 12, 13, 5, tzinfo=ZoneInfo("Atlantic/Madeira"))
+    assert [t.strftime("%H:%M") for t in webexport.latest_webcam_slots(local)] == ["12:30", "12:00"]
+    cam = webexport.webcams_section(webexport.load_webcams(), local, {"morning": [], "evening": []})[0]
+    assert cam["snapshot_url"].endswith("/2026-10-12/12_30.jpg")
+    assert cam["fallback_url"].endswith("/2026-10-12/12_00.jpg")
+    assert cam["snapshot_time"] == "12:30"
+
+
+def test_webcam_slot_crosses_midnight():
+    local = datetime(2026, 10, 12, 0, 5, tzinfo=ZoneInfo("Atlantic/Madeira"))
+    latest, previous = webexport.latest_webcam_slots(local)
+    assert (latest.date().isoformat(), latest.strftime("%H_%M")) == ("2026-10-11", "23_30")
+    assert previous.strftime("%H:%M") == "23:00"
+
+
+def test_webcams_pair_with_model_forecast():
+    payload = webexport.build_payload(Settings(), days=3, bundle=_bundle(), now=NOW)
+    arieiro = next(c for c in payload["webcams"] if c["id"] == "pico-do-arieiro")
+    spot = payload["tomorrow_spots"]["morning"][0]
+    assert arieiro["forecast"]["kind"] == "sunrise"
+    assert arieiro["forecast"]["verdict"] == spot["verdict"]
+    assert arieiro["forecast"]["score"] == spot["score_pct"]
+    assert next(c for c in payload["webcams"] if c["id"] == "porto-moniz")["forecast"] is None
+
+
+def test_webcam_fanal_pairing():
+    cam = webexport.Webcam(id="r", name="R", altitude_m=1, category="forest", spot_id="fanal",
+                           snapshot_url="x", live_url="y")
+    fog = {"verdict": "MYSTIC", "score": 75, "relative": "tomorrow", "target_date": "2026-10-21"}
+    assert webexport._webcam_forecast(cam, {"morning": [], "evening": []}, fog) == {
+        "kind": "fog", "verdict": "MYSTIC", "score": 75, "relative": "tomorrow", "target_date": "2026-10-21"}
+    assert webexport._webcam_forecast(cam, {"morning": [], "evening": []}, None) is None
