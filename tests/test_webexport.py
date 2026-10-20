@@ -460,9 +460,64 @@ def test_webcams_pair_with_model_forecast():
 
 
 def test_webcam_fanal_pairing():
-    cam = webexport.Webcam(id="r", name="R", altitude_m=1, category="forest", spot_id="fanal",
+    cam = webexport.Webcam(id="r", name="R", altitude_m=1, category="forest", spot_id="fanal", lat=32.7, lon=-17.1,
                            snapshot_url="x", live_url="y")
     fog = {"verdict": "MYSTIC", "score": 75, "relative": "tomorrow", "target_date": "2026-10-21"}
     assert webexport._webcam_forecast(cam, {"morning": [], "evening": []}, fog) == {
         "kind": "fog", "verdict": "MYSTIC", "score": 75, "relative": "tomorrow", "target_date": "2026-10-21"}
     assert webexport._webcam_forecast(cam, {"morning": [], "evening": []}, None) is None
+
+
+def _raw_wx(**kw):
+    return {"temperature_2m": 17.6, "relative_humidity_2m": 71, "apparent_temperature": 16.2, "precipitation": 0.0,
+            "weather_code": 2, "wind_speed_10m": 13.6, "wind_gusts_10m": 22.0, **kw}
+
+
+def test_current_weather_structure():
+    w = webexport.current_weather(_raw_wx())
+    assert w["temp"] == 18 and w["wind_kmh"] == 14 and w["gusts_kmh"] is None  # nárazy < 35 km/h se skryjí
+    assert w["condition"] == "⛅ Polojasno" and w["condition_key"] == "partly"
+    assert webexport.current_weather(_raw_wx(wind_gusts_10m=48.4, weather_code=63))["gusts_kmh"] == 48
+    assert webexport.current_weather(_raw_wx(weather_code=63))["condition"] == "🌧️ Déšť"
+    assert webexport.current_weather({}) is None
+
+
+def test_webcams_have_current_weather():
+    cams = webexport.load_webcams()
+    assert all(-90 < c.lat < 90 and -180 < c.lon < 180 for c in cams)
+    wx = [webexport.current_weather(_raw_wx()) for _ in cams]
+    payload = webexport.build_payload(Settings(), days=3, bundle=_bundle(), now=NOW, webcam_weather=wx)
+    for c in payload["webcams"]:
+        w = c["current_weather"]
+        assert set(w) >= {"temp", "wind_kmh", "gusts_kmh", "condition"}
+        assert isinstance(w["temp"], int) and isinstance(w["wind_kmh"], int)
+        assert w["gusts_kmh"] is None or w["gusts_kmh"] >= 35
+    with_model = {c["id"] for c in payload["webcams"] if c["forecast"]}
+    assert with_model <= {"pico-do-arieiro", "rabacal", "canical"}
+    json.dumps(payload)
+
+
+def test_webcam_weather_failure_is_graceful(monkeypatch):
+    def boom(points):
+        raise RuntimeError("down")
+    monkeypatch.setattr(webexport, "fetch_current", boom)
+    cams = webexport.load_webcams()
+    assert webexport.fetch_webcam_weather(cams) == [None] * len(cams)
+
+
+def test_fetch_current_batches_one_request():
+    import httpx
+
+    from madeira.fetchers.open_meteo import fetch_current
+
+    calls = []
+
+    def handler(request):
+        calls.append(request)
+        n = len(request.url.params["latitude"].split(","))
+        return httpx.Response(200, json=[{"current": _raw_wx()} for _ in range(n)])
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    out = fetch_current([(32.7, -16.9, 1800), (32.6, -16.9, 20), (32.8, -17.1, 10)], client=client)
+    assert len(calls) == 1 and len(out) == 3
+    assert "weather_code" in calls[0].url.params["current"]

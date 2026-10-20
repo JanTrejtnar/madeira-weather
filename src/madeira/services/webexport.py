@@ -34,7 +34,7 @@ from madeira.domain.models import (
     SunriseAnalysis,
     SunsetAnalysis,
 )
-from madeira.fetchers.open_meteo import OpenMeteoFetcher
+from madeira.fetchers.open_meteo import OpenMeteoFetcher, fetch_current
 from madeira.services import forecast
 from madeira.storage.db import Store
 
@@ -177,9 +177,60 @@ def _webcam_forecast(cam: Webcam, spots: dict, fog: dict | None) -> dict | None:
     }
 
 
-def webcams_section(cams: list[Webcam], local: datetime, spots: dict, fog: dict | None = None) -> list[dict]:
-    """Seznam kamer s URL posledního snímku (+ záložním předchozím slotem) a verdiktem modelu."""
+# WMO weather_code → (klíč pro překlad na frontendu, emoji, český popis)
+_WMO = [
+    ({0}, "clear", "☀️", "Jasno"),
+    ({1}, "mostly_clear", "🌤️", "Skoro jasno"),
+    ({2}, "partly", "⛅", "Polojasno"),
+    ({3}, "overcast", "☁️", "Zataženo"),
+    ({45, 48}, "fog", "🌫️", "Mlha"),
+    ({51, 53, 55, 56, 57}, "drizzle", "🌦️", "Mrholení"),
+    ({61, 63, 65, 66, 67}, "rain", "🌧️", "Déšť"),
+    ({71, 73, 75, 77, 85, 86}, "snow", "❄️", "Sněžení"),
+    ({80, 81, 82}, "showers", "🌧️", "Přeháňky"),
+    ({95, 96, 99}, "thunder", "⛈️", "Bouřka"),
+]
+GUST_MIN_KMH = 35  # slabší nárazy se v proužku nezobrazují
+
+
+def current_weather(raw: dict | None) -> dict | None:
+    """Zhuštěné aktuální počasí z Open-Meteo `current` (None, když data chybí)."""
+    if not raw or raw.get("temperature_2m") is None or raw.get("weather_code") is None:
+        return None
+    code = int(raw["weather_code"])
+    key, emoji, label = next(((k, e, c) for codes, k, e, c in _WMO if code in codes), ("overcast", "☁️", "Zataženo"))
+    gusts = raw.get("wind_gusts_10m")
+    return {
+        "temp": round(raw["temperature_2m"]),
+        "feels_like": _round(raw.get("apparent_temperature")),
+        "wind_kmh": round(raw.get("wind_speed_10m") or 0),
+        "gusts_kmh": round(gusts) if gusts is not None and gusts >= GUST_MIN_KMH else None,
+        "humidity_pct": _round(raw.get("relative_humidity_2m")),
+        "precip_mm": raw.get("precipitation"),
+        "weather_code": code,
+        "condition_key": key,
+        "icon": emoji,
+        "condition": f"{emoji} {label}",
+    }
+
+
+def fetch_webcam_weather(cams: list[Webcam]) -> list[dict | None]:
+    """Počasí všech kamer jedním dotazem; při selhání API se proužek jen vynechá."""
+    try:
+        raws = fetch_current([(c.lat, c.lon, c.altitude_m) for c in cams])
+    except Exception as exc:  # noqa: BLE001 - počasí je jen doplněk, export nesmí spadnout
+        print(f"Počasí kamer nedostupné: {exc}")
+        return [None] * len(cams)
+    return [current_weather(r) for r in raws]
+
+
+def webcams_section(
+    cams: list[Webcam], local: datetime, spots: dict, fog: dict | None = None,
+    weather: list[dict | None] | None = None,
+) -> list[dict]:
+    """Seznam kamer s URL posledního snímku (+ záložním předchozím slotem), verdiktem modelu a počasím."""
     latest, previous = latest_webcam_slots(local)
+    weather = weather or [None] * len(cams)
 
     def url(cam: Webcam, t: datetime) -> str:
         return cam.snapshot_url.format(day=t.date().isoformat(), slot=_slot(t.hour * 60 + t.minute))
@@ -195,9 +246,12 @@ def webcams_section(cams: list[Webcam], local: datetime, spots: dict, fog: dict 
             "snapshot_time": latest.strftime("%H:%M"),
             "live_url": cam.live_url,
             "spot_id": cam.spot_id,
+            "lat": cam.lat,
+            "lon": cam.lon,
             "forecast": _webcam_forecast(cam, spots, fog) if cam.spot_id else None,
+            "current_weather": wx,
         }
-        for cam in cams
+        for cam, wx in zip(cams, weather, strict=True)
     ]
 
 
@@ -689,6 +743,7 @@ def build_payload(
     escape_bundle: ForecastBundle | None = None,
     fanal_bundle: ForecastBundle | None = None,
     spot_history: dict[str, list[dict]] | None = None,
+    webcam_weather: list[dict | None] | None = None,
 ) -> dict:
     """Spočítá nejbližší východ/západ a výhled na `days` dní (vše podle místního času Madeiry).
 
@@ -735,6 +790,9 @@ def build_payload(
 
     escape = sunny_escape_section(settings.sunny_escape, escape_bundle, now) if escape_bundle else None
     fog = fanal_section(settings.fanal, fanal_bundle, now) if fanal_bundle else None
+    cams = load_webcams()
+    if webcam_weather is None and live:
+        webcam_weather = fetch_webcam_weather(cams)
     return {
         "generated_at": now.isoformat(timespec="seconds"),
         "generated_local": local.isoformat(timespec="seconds"),
@@ -766,7 +824,7 @@ def build_payload(
         "history": with_snapshot_links(history or [], today),
         **({"sunny_escape": escape} if escape else {}),
         **({"fanal": fog} if fog else {}),
-        "webcams": webcams_section(load_webcams(), local, spots, fog),
+        "webcams": webcams_section(cams, local, spots, fog, webcam_weather),
     }
 
 

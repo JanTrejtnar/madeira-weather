@@ -1,58 +1,58 @@
 # Webkamery NetMadeira pro docs/webcams.html. Všechny slugy ověřeny proti timelapse snímkům (HTTP 200).
 # snapshot_url: {day} = YYYY-MM-DD, {slot} = HH_MM (půlhodinové sloty, místní čas Madeiry).
 # category: mountain | forest | sunset | coast. spot_id: klíč spotu předpovědi (arieiro, ponta_do_rosto, ...) nebo fanal.
-# Nadmořské výšky jsou přibližné. Kamery Encumeada, Bica da Cana, Paul da Serra, São Vicente, Paul do Mar,
+# lat/lon + altitude_m (celé m) = poloha kamery pro micro-weather z Open-Meteo; zkalibrováno proti DEM (Open-Meteo elevation API) a známým místům. Kamery Encumeada, Bica da Cana, Paul da Serra, São Vicente, Paul do Mar,
 # Calheta a Funchal-Marina NetMadeira nenabízí; nahrazeny nejbližšími existujícími.
 webcams:
   # Hory & inverze
-  - {id: pico-do-arieiro,    name: Pico do Arieiro,    altitude_m: 1818, category: mountain, spot_id: arieiro,
+  - {id: pico-do-arieiro,    name: Pico do Arieiro,    altitude_m: 1818, lat: 32.7358, lon: -16.9285, category: mountain, spot_id: arieiro,
      snapshot_url: "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/{day}/{slot}.jpg",
      live_url: "https://www.netmadeira.com/webcams-madeira/pico-do-arieiro"}
-  - {id: achada-do-teixeira, name: Achada do Teixeira, altitude_m: 1590, category: mountain,
+  - {id: achada-do-teixeira, name: Achada do Teixeira, altitude_m: 1590, lat: 32.764, lon: -16.92, category: mountain,
      snapshot_url: "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/achada-do-teixeira/{day}/{slot}.jpg",
      live_url: "https://www.netmadeira.com/webcams-madeira/achada-do-teixeira"}
-  - {id: eira-do-serrado,    name: Eira do Serrado,    altitude_m: 1094, category: mountain,
+  - {id: eira-do-serrado,    name: Eira do Serrado,    altitude_m: 1095, lat: 32.7125, lon: -16.9606, category: mountain,
      snapshot_url: "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/eira-do-serrado/{day}/{slot}.jpg",
      live_url: "https://www.netmadeira.com/webcams-madeira/eira-do-serrado"}
   # Mlžný les & vnitrozemí
-  - {id: rabacal,            name: Rabaçal,            altitude_m: 1050, category: forest, spot_id: fanal,
+  - {id: rabacal,            name: Rabaçal,            altitude_m: 1100, lat: 32.755, lon: -17.1317, category: forest, spot_id: fanal,
      snapshot_url: "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/rabacal-madeira/{day}/{slot}.jpg",
      live_url: "https://www.netmadeira.com/webcams-madeira/rabacal-madeira"}
-  - {id: santo-da-serra,     name: Santo da Serra,     altitude_m: 660,  category: forest,
+  - {id: santo-da-serra,     name: Santo da Serra,     altitude_m: 670, lat: 32.7258, lon: -16.8153,  category: forest,
      snapshot_url: "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/santo-da-serra-golf/{day}/{slot}.jpg",
      live_url: "https://www.netmadeira.com/webcams-madeira/santo-da-serra-golf"}
-  - {id: monte,              name: Monte,              altitude_m: 560,  category: forest,
+  - {id: monte,              name: Monte,              altitude_m: 580, lat: 32.676, lon: -16.9025,  category: forest,
      snapshot_url: "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/monte/{day}/{slot}.jpg",
      live_url: "https://www.netmadeira.com/webcams-madeira/monte"}
   # Západ slunce (jih a jihozápad)
-  - {id: ponta-do-sol,       name: Ponta do Sol,       altitude_m: 30,   category: sunset,
+  - {id: ponta-do-sol,       name: Ponta do Sol,       altitude_m: 20, lat: 32.6783, lon: -17.1034,   category: sunset,
      snapshot_url: "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/ponta-do-sol/{day}/{slot}.jpg",
      live_url: "https://www.netmadeira.com/webcams-madeira/ponta-do-sol"}
-  - {id: ribeira-brava,      name: Ribeira Brava,      altitude_m: 15,   category: sunset,
+  - {id: ribeira-brava,      name: Ribeira Brava,      altitude_m: 20, lat: 32.673, lon: -17.062,   category: sunset,
      snapshot_url: "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/ribeira-brava/{day}/{slot}.jpg",
      live_url: "https://www.netmadeira.com/webcams-madeira/ribeira-brava"}
-  - {id: camara-de-lobos,    name: Câmara de Lobos,    altitude_m: 10,   category: sunset,
+  - {id: camara-de-lobos,    name: Câmara de Lobos,    altitude_m: 10, lat: 32.648, lon: -16.977,   category: sunset,
      snapshot_url: "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/camara-de-lobos-baia/{day}/{slot}.jpg",
      live_url: "https://www.netmadeira.com/webcams-madeira/camara-de-lobos-baia"}
-  - {id: funchal-baia,       name: Funchal – Baía,     altitude_m: 20,   category: sunset,
+  - {id: funchal-baia,       name: Funchal – Baía,     altitude_m: 10, lat: 32.642, lon: -16.914,   category: sunset,
      snapshot_url: "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/funchal-baia-do-funchal/{day}/{slot}.jpg",
      live_url: "https://www.netmadeira.com/webcams-madeira/funchal-baia-do-funchal"}
   # Sever & pobřeží (včetně východu)
-  - {id: porto-moniz,        name: Porto Moniz,        altitude_m: 10,   category: coast,
+  - {id: porto-moniz,        name: Porto Moniz,        altitude_m: 15, lat: 32.866, lon: -17.17,   category: coast,
      snapshot_url: "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/porto-moniz/{day}/{slot}.jpg",
      live_url: "https://www.netmadeira.com/webcams-madeira/porto-moniz"}
-  - {id: seixal,             name: Seixal,             altitude_m: 20,   category: coast,
+  - {id: seixal,             name: Seixal,             altitude_m: 10, lat: 32.8265, lon: -17.104,   category: coast,
      snapshot_url: "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/seixal/{day}/{slot}.jpg",
      live_url: "https://www.netmadeira.com/webcams-madeira/seixal"}
-  - {id: boaventura,         name: Boaventura,         altitude_m: 150,  category: coast,
+  - {id: boaventura,         name: Boaventura,         altitude_m: 280, lat: 32.815, lon: -16.998,  category: coast,
      snapshot_url: "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/boaventura/{day}/{slot}.jpg",
      live_url: "https://www.netmadeira.com/webcams-madeira/boaventura"}
-  - {id: sao-jorge,          name: São Jorge,          altitude_m: 270,  category: coast,
+  - {id: sao-jorge,          name: São Jorge,          altitude_m: 270, lat: 32.833, lon: -16.906,  category: coast,
      snapshot_url: "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/sao-jorge/{day}/{slot}.jpg",
      live_url: "https://www.netmadeira.com/webcams-madeira/sao-jorge"}
-  - {id: machico,            name: Machico,            altitude_m: 10,   category: coast,
+  - {id: machico,            name: Machico,            altitude_m: 10, lat: 32.719, lon: -16.765,   category: coast,
      snapshot_url: "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/machico/{day}/{slot}.jpg",
      live_url: "https://www.netmadeira.com/webcams-madeira/machico"}
-  - {id: canical,            name: Caniçal,            altitude_m: 20,   category: coast, spot_id: ponta_do_rosto,
+  - {id: canical,            name: Caniçal,            altitude_m: 15, lat: 32.7385, lon: -16.734,   category: coast, spot_id: ponta_do_rosto,
      snapshot_url: "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/canical/{day}/{slot}.jpg",
      live_url: "https://www.netmadeira.com/webcams-madeira/canical"}

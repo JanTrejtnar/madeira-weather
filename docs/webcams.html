@@ -74,7 +74,7 @@
           <img id="lb-img" alt="" class="max-h-[75vh] w-full rounded-xl bg-zinc-900 object-contain">
           <p id="lb-missing" class="hidden rounded-xl bg-zinc-900 p-10 text-center text-slate-400"></p>
         </div>
-        <figcaption id="lb-caption" class="mt-3 text-center text-sm text-slate-300"></figcaption>
+        <figcaption id="lb-caption" class="mt-3 whitespace-pre-line text-center text-sm text-slate-300"></figcaption>
         <div class="mt-3 flex justify-center">
           <a id="lb-live" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2.5 rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-medium transition hover:bg-white/10">
             <span class="relative flex h-2.5 w-2.5" aria-hidden="true">
@@ -109,8 +109,11 @@
       unavailable: "Kamera dočasně nedostupná", loadingImg: "Načítám snímek",
       live: "Živý stream na NetMadeira", snap: (tm) => `Snímek z ${tm}`,
       kind: { sunrise: "východ", sunset: "západ", fog: "mlha" }, rel: { today: "dnes", tomorrow: "zítra" },
+      wx: { clear: "Jasno", mostly_clear: "Skoro jasno", partly: "Polojasno", overcast: "Zataženo", fog: "Mlha", drizzle: "Mrholení",
+            rain: "Déšť", snow: "Sněžení", showers: "Přeháňky", thunder: "Bouřka" },
+      feels: "pocitově", humidity: "vlhkost", precip: "srážky",
       updated: (t) => `Seznam kamer aktualizován: ${t}`,
-      disclaimer: "Snímky: NetMadeira (půlhodinové sloty, místní čas Madeiry). Skóre: model Open-Meteo, orientační.",
+      disclaimer: "Snímky: NetMadeira (půlhodinové sloty, místní čas Madeiry). Skóre a počasí: model Open-Meteo, orientační; počasí se obnovuje několikrát denně.",
     },
     en: {
       navForecast: "Forecast", navWebcams: "Webcams", title: "Madeira Webcams",
@@ -120,8 +123,11 @@
       unavailable: "Camera temporarily unavailable", loadingImg: "Loading image",
       live: "Live stream on NetMadeira", snap: (tm) => `Snapshot from ${tm}`,
       kind: { sunrise: "sunrise", sunset: "sunset", fog: "fog" }, rel: { today: "today", tomorrow: "tomorrow" },
+      wx: { clear: "Clear", mostly_clear: "Mostly clear", partly: "Partly cloudy", overcast: "Overcast", fog: "Fog", drizzle: "Drizzle",
+            rain: "Rain", snow: "Snow", showers: "Showers", thunder: "Thunderstorm" },
+      feels: "feels like", humidity: "humidity", precip: "precipitation",
       updated: (t) => `Camera list updated: ${t}`,
-      disclaimer: "Snapshots: NetMadeira (half-hour slots, Madeira local time). Scores: Open-Meteo model, indicative.",
+      disclaimer: "Snapshots: NetMadeira (half-hour slots, Madeira local time). Scores and weather: Open-Meteo model, indicative; weather refreshes a few times a day.",
     },
   };
   const BADGE = {
@@ -173,6 +179,23 @@
     return b;
   }
 
+  // Kompaktní řádek počasí: „☀️ 18 °C · 💨 14 (48) km/h“; null, když data chybí.
+  function wxLine(cam) {
+    const w = cam.current_weather;
+    if (!w) return null;
+    const wind = w.gusts_kmh != null ? `${w.wind_kmh} (${w.gusts_kmh})` : `${w.wind_kmh}`;
+    return `${w.icon} ${w.temp} °C · 💨 ${wind} km/h`;
+  }
+  function wxDetail(cam) {
+    const w = cam.current_weather, L = t();
+    if (!w) return "";
+    const parts = [`${w.icon} ${L.wx[w.condition_key] || ""}`.trim(), wxLine(cam).replace(/^\S+ /, "")];
+    if (w.feels_like != null) parts.push(`${L.feels} ${w.feels_like} °C`);
+    if (w.humidity_pct != null) parts.push(`${L.humidity} ${w.humidity_pct} %`);
+    if (w.precip_mm != null) parts.push(`${L.precip} ${w.precip_mm} mm`);
+    return parts.join(" · ");
+  }
+
   function card(cam) {
     const L = t(), u = urls(cam);
     const btn = el("button", "group block w-full overflow-hidden rounded-2xl border border-white/10 bg-white/5 text-left shadow-lg transition hover:border-sky-300/40 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-300");
@@ -196,6 +219,12 @@
     };
     img.src = u.main;
     frame.append(spinner, missing, img);
+    const line = wxLine(cam);
+    if (line) {
+      const strip = el("div", "pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-3 pb-2 pt-6 text-xs font-medium text-white/95", line);
+      strip.title = wxDetail(cam);
+      frame.append(strip);
+    }
 
     const head = el("div", "flex items-center justify-between gap-2 px-4 py-3");
     const name = el("div", "min-w-0");
@@ -251,7 +280,7 @@
   function openLightbox(cam, src) {
     const L = t(), u = urls(cam), img = $("lb-img");
     lbCam = cam;
-    $("lb-caption").textContent = `${cam.name} · ${alt(cam.altitude_m)} · ${L.snap(u.time)}`;
+    $("lb-caption").textContent = [`${cam.name} · ${alt(cam.altitude_m)} · ${L.snap(u.time)}`, wxDetail(cam)].filter(Boolean).join("\n");
     $("lb-live").href = cam.live_url;
     let triedFallback = false;
     img.classList.remove("hidden"); $("lb-missing").classList.add("hidden");

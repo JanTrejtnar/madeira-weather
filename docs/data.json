@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-20T17:25:20+00:00",
-  "generated_local": "2026-10-20T18:25:20+01:00",
+  "generated_at": "2026-10-20T17:38:18+00:00",
+  "generated_local": "2026-10-20T18:38:18+01:00",
   "timezone": "Atlantic/Madeira",
   "today": "2026-10-20",
   "model": "best_match",
@@ -5772,12 +5772,26 @@
       "snapshot_time": "18:00",
       "live_url": "https://www.netmadeira.com/webcams-madeira/pico-do-arieiro",
       "spot_id": "arieiro",
+      "lat": 32.7358,
+      "lon": -16.9285,
       "forecast": {
         "kind": "sunrise",
         "verdict": "NO_GO",
         "score": 6,
         "relative": "tomorrow",
         "target_date": "2026-10-21"
+      },
+      "current_weather": {
+        "temp": 8,
+        "feels_like": 7,
+        "wind_kmh": 5,
+        "gusts_kmh": null,
+        "humidity_pct": 89,
+        "precip_mm": 0.0,
+        "weather_code": 3,
+        "condition_key": "overcast",
+        "icon": "☁️",
+        "condition": "☁️ Zataženo"
       }
     },
     {
@@ -5790,85 +5804,183 @@
       "snapshot_time": "18:00",
       "live_url": "https://www.netmadeira.com/webcams-madeira/achada-do-teixeira",
       "spot_id": null,
-      "forecast": null
+      "lat": 32.764,
+      "lon": -16.92,
+      "forecast": null,
+      "current_weather": {
+        "temp": 10,
+        "feels_like": 8,
+        "wind_kmh": 5,
+        "gusts_kmh": null,
+        "humidity_pct": 89,
+        "precip_mm": 0.0,
+        "weather_code": 3,
+        "condition_key": "overcast",
+        "icon": "☁️",
+        "condition": "☁️ Zataženo"
+      }
     },
     {
       "id": "eira-do-serrado",
       "name": "Eira do Serrado",
-      "altitude_m": 1094,
+      "altitude_m": 1095,
       "category": "mountain",
       "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/eira-do-serrado/2026-10-20/18_00.jpg",
       "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/eira-do-serrado/2026-10-20/17_30.jpg",
       "snapshot_time": "18:00",
       "live_url": "https://www.netmadeira.com/webcams-madeira/eira-do-serrado",
       "spot_id": null,
-      "forecast": null
+      "lat": 32.7125,
+      "lon": -16.9606,
+      "forecast": null,
+      "current_weather": {
+        "temp": 13,
+        "feels_like": 13,
+        "wind_kmh": 5,
+        "gusts_kmh": null,
+        "humidity_pct": 89,
+        "precip_mm": 0.0,
+        "weather_code": 3,
+        "condition_key": "overcast",
+        "icon": "☁️",
+        "condition": "☁️ Zataženo"
+      }
     },
     {
       "id": "rabacal",
       "name": "Rabaçal",
-      "altitude_m": 1050,
+      "altitude_m": 1100,
       "category": "forest",
       "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/rabacal-madeira/2026-10-20/18_00.jpg",
       "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/rabacal-madeira/2026-10-20/17_30.jpg",
       "snapshot_time": "18:00",
       "live_url": "https://www.netmadeira.com/webcams-madeira/rabacal-madeira",
       "spot_id": "fanal",
+      "lat": 32.755,
+      "lon": -17.1317,
       "forecast": {
         "kind": "fog",
         "verdict": "MYSTIC",
         "score": 75,
         "relative": "tomorrow",
         "target_date": "2026-10-21"
+      },
+      "current_weather": {
+        "temp": 13,
+        "feels_like": 12,
+        "wind_kmh": 8,
+        "gusts_kmh": null,
+        "humidity_pct": 94,
+        "precip_mm": 0.0,
+        "weather_code": 2,
+        "condition_key": "partly",
+        "icon": "⛅",
+        "condition": "⛅ Polojasno"
       }
     },
     {
       "id": "santo-da-serra",
       "name": "Santo da Serra",
-      "altitude_m": 660,
+      "altitude_m": 670,
       "category": "forest",
       "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/santo-da-serra-golf/2026-10-20/18_00.jpg",
       "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/santo-da-serra-golf/2026-10-20/17_30.jpg",
       "snapshot_time": "18:00",
       "live_url": "https://www.netmadeira.com/webcams-madeira/santo-da-serra-golf",
       "spot_id": null,
-      "forecast": null
+      "lat": 32.7258,
+      "lon": -16.8153,
+      "forecast": null,
+      "current_weather": {
+        "temp": 16,
+        "feels_like": 15,
+        "wind_kmh": 10,
+        "gusts_kmh": null,
+        "humidity_pct": 80,
+        "precip_mm": 0.0,
+        "weather_code": 3,
+        "condition_key": "overcast",
+        "icon": "☁️",
+        "condition": "☁️ Zataženo"
+      }
     },
     {
       "id": "monte",
       "name": "Monte",
-      "altitude_m": 560,
+      "altitude_m": 580,
       "category": "forest",
       "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/monte/2026-10-20/18_00.jpg",
       "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/monte/2026-10-20/17_30.jpg",
       "snapshot_time": "18:00",
       "live_url": "https://www.netmadeira.com/webcams-madeira/monte",
       "spot_id": null,
-      "forecast": null
+      "lat": 32.676,
+      "lon": -16.9025,
+      "forecast": null,
+      "current_weather": {
+        "temp": 16,
+        "feels_like": 16,
+        "wind_kmh": 10,
+        "gusts_kmh": null,
+        "humidity_pct": 80,
+        "precip_mm": 0.0,
+        "weather_code": 3,
+        "condition_key": "overcast",
+        "icon": "☁️",
+        "condition": "☁️ Zataženo"
+      }
     },
     {
       "id": "ponta-do-sol",
       "name": "Ponta do Sol",
-      "altitude_m": 30,
+      "altitude_m": 20,
       "category": "sunset",
       "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/ponta-do-sol/2026-10-20/18_00.jpg",
       "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/ponta-do-sol/2026-10-20/17_30.jpg",
       "snapshot_time": "18:00",
       "live_url": "https://www.netmadeira.com/webcams-madeira/ponta-do-sol",
       "spot_id": null,
-      "forecast": null
+      "lat": 32.6783,
+      "lon": -17.1034,
+      "forecast": null,
+      "current_weather": {
+        "temp": 22,
+        "feels_like": 23,
+        "wind_kmh": 4,
+        "gusts_kmh": null,
+        "humidity_pct": 65,
+        "precip_mm": 0.0,
+        "weather_code": 3,
+        "condition_key": "overcast",
+        "icon": "☁️",
+        "condition": "☁️ Zataženo"
+      }
     },
     {
       "id": "ribeira-brava",
       "name": "Ribeira Brava",
-      "altitude_m": 15,
+      "altitude_m": 20,
       "category": "sunset",
       "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/ribeira-brava/2026-10-20/18_00.jpg",
       "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/ribeira-brava/2026-10-20/17_30.jpg",
       "snapshot_time": "18:00",
       "live_url": "https://www.netmadeira.com/webcams-madeira/ribeira-brava",
       "spot_id": null,
-      "forecast": null
+      "lat": 32.673,
+      "lon": -17.062,
+      "forecast": null,
+      "current_weather": {
+        "temp": 22,
+        "feels_like": 23,
+        "wind_kmh": 4,
+        "gusts_kmh": null,
+        "humidity_pct": 65,
+        "precip_mm": 0.0,
+        "weather_code": 3,
+        "condition_key": "overcast",
+        "icon": "☁️",
+        "condition": "☁️ Zataženo"
+      }
     },
     {
       "id": "camara-de-lobos",
@@ -5880,55 +5992,125 @@
       "snapshot_time": "18:00",
       "live_url": "https://www.netmadeira.com/webcams-madeira/camara-de-lobos-baia",
       "spot_id": null,
-      "forecast": null
+      "lat": 32.648,
+      "lon": -16.977,
+      "forecast": null,
+      "current_weather": {
+        "temp": 22,
+        "feels_like": 22,
+        "wind_kmh": 13,
+        "gusts_kmh": null,
+        "humidity_pct": 69,
+        "precip_mm": 0.0,
+        "weather_code": 3,
+        "condition_key": "overcast",
+        "icon": "☁️",
+        "condition": "☁️ Zataženo"
+      }
     },
     {
       "id": "funchal-baia",
       "name": "Funchal – Baía",
-      "altitude_m": 20,
+      "altitude_m": 10,
       "category": "sunset",
       "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/funchal-baia-do-funchal/2026-10-20/18_00.jpg",
       "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/funchal-baia-do-funchal/2026-10-20/17_30.jpg",
       "snapshot_time": "18:00",
       "live_url": "https://www.netmadeira.com/webcams-madeira/funchal-baia-do-funchal",
       "spot_id": null,
-      "forecast": null
+      "lat": 32.642,
+      "lon": -16.914,
+      "forecast": null,
+      "current_weather": {
+        "temp": 22,
+        "feels_like": 22,
+        "wind_kmh": 13,
+        "gusts_kmh": null,
+        "humidity_pct": 69,
+        "precip_mm": 0.0,
+        "weather_code": 3,
+        "condition_key": "overcast",
+        "icon": "☁️",
+        "condition": "☁️ Zataženo"
+      }
     },
     {
       "id": "porto-moniz",
       "name": "Porto Moniz",
-      "altitude_m": 10,
+      "altitude_m": 15,
       "category": "coast",
       "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/porto-moniz/2026-10-20/18_00.jpg",
       "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/porto-moniz/2026-10-20/17_30.jpg",
       "snapshot_time": "18:00",
       "live_url": "https://www.netmadeira.com/webcams-madeira/porto-moniz",
       "spot_id": null,
-      "forecast": null
+      "lat": 32.866,
+      "lon": -17.17,
+      "forecast": null,
+      "current_weather": {
+        "temp": 21,
+        "feels_like": 21,
+        "wind_kmh": 13,
+        "gusts_kmh": null,
+        "humidity_pct": 74,
+        "precip_mm": 0.0,
+        "weather_code": 2,
+        "condition_key": "partly",
+        "icon": "⛅",
+        "condition": "⛅ Polojasno"
+      }
     },
     {
       "id": "seixal",
       "name": "Seixal",
-      "altitude_m": 20,
+      "altitude_m": 10,
       "category": "coast",
       "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/seixal/2026-10-20/18_00.jpg",
       "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/seixal/2026-10-20/17_30.jpg",
       "snapshot_time": "18:00",
       "live_url": "https://www.netmadeira.com/webcams-madeira/seixal",
       "spot_id": null,
-      "forecast": null
+      "lat": 32.8265,
+      "lon": -17.104,
+      "forecast": null,
+      "current_weather": {
+        "temp": 21,
+        "feels_like": 21,
+        "wind_kmh": 13,
+        "gusts_kmh": null,
+        "humidity_pct": 74,
+        "precip_mm": 0.0,
+        "weather_code": 2,
+        "condition_key": "partly",
+        "icon": "⛅",
+        "condition": "⛅ Polojasno"
+      }
     },
     {
       "id": "boaventura",
       "name": "Boaventura",
-      "altitude_m": 150,
+      "altitude_m": 280,
       "category": "coast",
       "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/boaventura/2026-10-20/18_00.jpg",
       "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/boaventura/2026-10-20/17_30.jpg",
       "snapshot_time": "18:00",
       "live_url": "https://www.netmadeira.com/webcams-madeira/boaventura",
       "spot_id": null,
-      "forecast": null
+      "lat": 32.815,
+      "lon": -16.998,
+      "forecast": null,
+      "current_weather": {
+        "temp": 19,
+        "feels_like": 19,
+        "wind_kmh": 10,
+        "gusts_kmh": null,
+        "humidity_pct": 76,
+        "precip_mm": 0.0,
+        "weather_code": 3,
+        "condition_key": "overcast",
+        "icon": "☁️",
+        "condition": "☁️ Zataženo"
+      }
     },
     {
       "id": "sao-jorge",
@@ -5940,7 +6122,21 @@
       "snapshot_time": "18:00",
       "live_url": "https://www.netmadeira.com/webcams-madeira/sao-jorge",
       "spot_id": null,
-      "forecast": null
+      "lat": 32.833,
+      "lon": -16.906,
+      "forecast": null,
+      "current_weather": {
+        "temp": 19,
+        "feels_like": 19,
+        "wind_kmh": 10,
+        "gusts_kmh": null,
+        "humidity_pct": 76,
+        "precip_mm": 0.0,
+        "weather_code": 3,
+        "condition_key": "overcast",
+        "icon": "☁️",
+        "condition": "☁️ Zataženo"
+      }
     },
     {
       "id": "machico",
@@ -5952,24 +6148,52 @@
       "snapshot_time": "18:00",
       "live_url": "https://www.netmadeira.com/webcams-madeira/machico",
       "spot_id": null,
-      "forecast": null
+      "lat": 32.719,
+      "lon": -16.765,
+      "forecast": null,
+      "current_weather": {
+        "temp": 21,
+        "feels_like": 21,
+        "wind_kmh": 13,
+        "gusts_kmh": null,
+        "humidity_pct": 70,
+        "precip_mm": 0.0,
+        "weather_code": 3,
+        "condition_key": "overcast",
+        "icon": "☁️",
+        "condition": "☁️ Zataženo"
+      }
     },
     {
       "id": "canical",
       "name": "Caniçal",
-      "altitude_m": 20,
+      "altitude_m": 15,
       "category": "coast",
       "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/canical/2026-10-20/18_00.jpg",
       "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/canical/2026-10-20/17_30.jpg",
       "snapshot_time": "18:00",
       "live_url": "https://www.netmadeira.com/webcams-madeira/canical",
       "spot_id": "ponta_do_rosto",
+      "lat": 32.7385,
+      "lon": -16.734,
       "forecast": {
         "kind": "sunrise",
         "verdict": "NO_GO",
         "score": 0,
         "relative": "tomorrow",
         "target_date": "2026-10-21"
+      },
+      "current_weather": {
+        "temp": 21,
+        "feels_like": 21,
+        "wind_kmh": 13,
+        "gusts_kmh": null,
+        "humidity_pct": 70,
+        "precip_mm": 0.0,
+        "weather_code": 3,
+        "condition_key": "overcast",
+        "icon": "☁️",
+        "condition": "☁️ Zataženo"
       }
     }
   ]

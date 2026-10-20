@@ -114,6 +114,34 @@ def parse_response(
     return ForecastBundle(model=model, fetched_at_utc=fetched_at, forecasts=forecasts)
 
 
+CURRENT_VARS = [
+    "temperature_2m",
+    "relative_humidity_2m",
+    "apparent_temperature",
+    "precipitation",
+    "weather_code",
+    "wind_speed_10m",
+    "wind_gusts_10m",
+]
+
+
+def fetch_current(points: list[tuple[float, float, int]], client: httpx.Client | None = None) -> list[dict]:
+    """Aktuální počasí pro více bodů (lat, lon, výška m) jedním dotazem; pořadí odpovídá `points`."""
+    params = {
+        "latitude": ",".join(str(p[0]) for p in points),
+        "longitude": ",".join(str(p[1]) for p in points),
+        "elevation": ",".join(str(p[2]) for p in points),
+        "current": ",".join(CURRENT_VARS),
+        "timezone": "UTC",
+        "wind_speed_unit": "kmh",
+    }
+    payload = OpenMeteoFetcher(client=client)._get(params)
+    results = payload if isinstance(payload, list) else [payload]
+    if len(results) != len(points):
+        raise ValueError(f"Čekal jsem {len(points)} bodů, přišlo {len(results)}")
+    return [r["current"] for r in results]
+
+
 class OpenMeteoFetcher:
     def __init__(
         self,

@@ -373,6 +373,8 @@ class Webcam(BaseModel):
     category: Literal["mountain", "forest", "sunset", "coast"]
     snapshot_url: str  # šablona s {day} a {slot}
     live_url: str
+    lat: float
+    lon: float
     spot_id: str | None = None
 
 
