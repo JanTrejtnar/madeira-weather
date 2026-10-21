@@ -68,8 +68,8 @@
     .vp .vd { font-weight: 700; letter-spacing: .02em; }
     .vp.v-go    { background: rgba(6,95,70,.9);   border-color: #fcd34d; color: #ecfdf5; }
     .vp.v-maybe { background: rgba(154,81,6,.9);  border-color: #fb923c; color: #ffedd5; }
-    .vp.v-nogo  { background: rgba(51,65,85,.88); border-color: #94a3b8; color: #cbd5e1; }
-    .v-go-t { color: #6ee7b7; } .v-maybe-t { color: #fdba74; } .v-nogo-t { color: #cbd5e1; }
+    .vp.v-nogo  { background: rgba(153,27,27,.9); border-color: #f87171; color: #fee2e2; }
+    .v-go-t { color: #6ee7b7; } .v-maybe-t { color: #fdba74; } .v-nogo-t { color: #fca5a5; }
     #map.compact .vp { padding: 2px 6px 2px 4px; font-size: 11px; gap: 2px; }
     #map.compact .vp .vd { display: none; }
     .vp.dim { opacity: .55; }
@@ -707,7 +707,10 @@
     LL = window.L;
     map = LL.map("map", { scrollWheelZoom: false, zoomSnap: 0.5, zoomDelta: 0.5 }).setView([32.75, -16.98], 10);
     const pts = allSpots().filter((s) => s.lat != null && s.lon != null).map((s) => [s.lat, s.lon]);
-    if (pts.length > 1) map.fitBounds(pts, { padding: [46, 40], maxZoom: 11 });  // všechny pills se vejdou i na mobilu
+    if (pts.length > 1) {
+      map.fitBounds(pts, { padding: [46, 40], animate: false });
+      map.setZoom(map.getZoom() + 0.5, { animate: false });  // o jedno stisknutí "+" blíž než celý ostrov
+    }
     LL.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
