@@ -36,6 +36,12 @@
     .mist { animation: drift 14s ease-in-out infinite alternate; }
     @keyframes drift { from { transform: translateX(-3%); opacity: .55; } to { transform: translateX(3%); opacity: .9; } }
     @media (prefers-reduced-motion: reduce) { .mist { animation: none; } }
+    /* mobil: navigace jako spodní tab bar přilepený ke spodku obrazovky */
+    @media (max-width: 639px) {
+      #mainnav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1300; margin: 0; border-radius: 0; border-width: 1px 0 0;
+                 padding: 6px 6px calc(6px + env(safe-area-inset-bottom)); background: rgba(10,10,10,.94); }
+      body { padding-bottom: calc(66px + env(safe-area-inset-bottom)); }
+    }
   </style>
 </head>
 <body class="min-h-screen text-slate-100 antialiased">
@@ -120,7 +126,7 @@
       </section>
     </section>
 
-    <div id="lightbox" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/85 p-4" role="dialog" aria-modal="true" aria-labelledby="lb-caption">
+    <div id="lightbox" class="fixed inset-0 z-[1400] hidden items-center justify-center bg-black/85 p-4" role="dialog" aria-modal="true" aria-labelledby="lb-caption">
       <figure class="relative max-h-full w-full max-w-3xl">
         <img id="lb-img" alt="" class="max-h-[80vh] w-full rounded-xl bg-zinc-900 object-contain">
         <p id="lb-missing" class="hidden rounded-xl bg-zinc-900 p-8 text-center text-slate-400"></p>
