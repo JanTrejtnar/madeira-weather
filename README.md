@@ -46,6 +46,7 @@ Statická stránka `docs/index.html` čte `docs/data.json` (Tailwind přes CDN, 
 1. Aktualizace dat (zítřek + 3denní výhled):
 
        .venv\Scripts\madeira export-web            # zapíše docs/data.json
+       .venvScriptsmadeira export-map            # zapíše docs/map_data.json (mapa, 48 h po hodinách)
        git add docs/data.json && git commit -m "Update forecast" && git push
 
    Volby: `--days N` (1–7), `--history N` (počet hodnocených dní historie z `data/madeira.db`), `--out cesta.json`.

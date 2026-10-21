@@ -384,6 +384,24 @@ def load_webcams() -> list[Webcam]:
     return [Webcam.model_validate(item) for item in data["webcams"]]
 
 
+class MapSpot(BaseModel):
+    """Bod mapy Sunny Escape (docs/map.html); `webcam` je id nejbližší kamery z webcams.yaml."""
+
+    id: str
+    name: str
+    lat: float
+    lon: float
+    altitude_m: int
+    region: Literal["peaks", "north", "south", "west", "east"]
+    webcam: str | None = None
+
+
+def load_map_spots() -> list[MapSpot]:
+    path = config_dir() / "map_spots.yaml"
+    data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    return [MapSpot.model_validate(item) for item in data["spots"]]
+
+
 def load_locations() -> list[Location]:
     path = config_dir() / "locations.yaml"
     data = yaml.safe_load(path.read_text(encoding="utf-8"))

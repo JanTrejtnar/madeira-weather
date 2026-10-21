@@ -15,7 +15,7 @@ from rich.table import Table
 from madeira.domain.config import load_env, load_settings
 from madeira.domain.models import OUTCOME_LABELS
 from madeira.presenters.cli import render_comparison, render_sunrise, render_week
-from madeira.services import evaluation, forecast, story_image, webexport
+from madeira.services import evaluation, forecast, mapdata, story_image, webexport
 from madeira.storage.db import Store
 
 app = typer.Typer(help="Madeira Microclimate & Sunrise Predictor", no_args_is_help=True)
@@ -329,6 +329,16 @@ def export_web(
     for part, label in (("morning", "východ"), ("evening", "západ")):
         for s in spots[part]:
             console.print(f"  {label} {s['name']}: {s['verdict']} {s['score_pct']} %")
+
+
+@app.command("export-map")
+def export_map(
+    out: Path = typer.Option(Path("docs/map_data.json"), "--out", "-o", help="Cílový JSON"),
+) -> None:
+    """Hodinová předpověď (48 h) pro body mapy docs/map.html."""
+    payload = mapdata.build_map_data()
+    mapdata.write_map_data(payload, out)
+    console.print(f"Zapsáno {out}: {len(payload['spots'])} bodů × {len(payload['timestamps'])} hodin")
 
 
 @app.command()

@@ -142,6 +142,44 @@ def fetch_current(points: list[tuple[float, float, int]], client: httpx.Client |
     return [r["current"] for r in results]
 
 
+MAP_HOURLY_VARS = [
+    "temperature_2m",
+    "apparent_temperature",
+    "relative_humidity_2m",
+    "precipitation",
+    "precipitation_probability",
+    "weather_code",
+    "wind_speed_10m",
+    "wind_direction_10m",
+    "wind_gusts_10m",
+    "cloud_cover",
+    "cloud_cover_low",
+]
+
+
+def fetch_hourly(
+    points: list[tuple[float, float, int]],
+    days: int = 3,
+    timezone: str = "Atlantic/Madeira",
+    client: httpx.Client | None = None,
+) -> list[dict]:
+    """Hodinová předpověď pro více bodů (lat, lon, výška m) jedním dotazem; časy v `timezone`."""
+    params = {
+        "latitude": ",".join(str(p[0]) for p in points),
+        "longitude": ",".join(str(p[1]) for p in points),
+        "elevation": ",".join(str(p[2]) for p in points),
+        "hourly": ",".join(MAP_HOURLY_VARS),
+        "timezone": timezone,
+        "forecast_days": days,
+        "wind_speed_unit": "kmh",
+    }
+    payload = OpenMeteoFetcher(client=client)._get(params)
+    results = payload if isinstance(payload, list) else [payload]
+    if len(results) != len(points):
+        raise ValueError(f"Čekal jsem {len(points)} bodů, přišlo {len(results)}")
+    return [r["hourly"] for r in results]
+
+
 class OpenMeteoFetcher:
     def __init__(
         self,

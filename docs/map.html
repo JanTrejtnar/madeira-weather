@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Madeira Sunny Escape Mapa</title>
+  <meta name="description" content="Interaktivní mapa Madeiry s hodinovou předpovědí na 48 hodin: kde svítí slunce a kde prší / Interactive 48-hour weather map of Madeira.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://jantrejtnar.github.io/madeira-weather/map.html">
+  <meta property="og:title" content="Madeira Sunny Escape Mapa · Kde svítí slunce?">
+  <meta property="og:description" content="Animovaná hodinová předpověď pro celý ostrov: hory, sever, jih, západ i východ.">
+  <meta property="og:image" content="https://jantrejtnar.github.io/madeira-weather/og-preview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MadeiraSky">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html, body { height: 100%; }
+    body { background: #0f172a; overscroll-behavior: none; }
+    .seg-on { background: rgba(251,191,36,.2); color: #fde68a; }
+    .seg-off { color: #94a3b8; }
+    .seg-off:hover { background: rgba(255,255,255,.1); }
+
+    #map { background: #212f38; }  /* barva moře po filtru: švy mezi dlaždicemi při zlomkovém zoomu nejsou vidět */
+    /* CARTO dark_all dnes vyžaduje API klíč (vrací dlaždici „API KEY REQUIRED“), proto OSM + tmavý filtr jako na index.html */
+    #map .leaflet-tile-pane { filter: invert(1) hue-rotate(185deg) brightness(.78) contrast(.95) saturate(.55); }
+    .leaflet-container { font: inherit; }
+    .leaflet-control-attribution { background: rgba(15,23,42,.7) !important; color: #94a3b8 !important; font-size: 10px; }
+    .leaflet-control-attribution a { color: #cbd5e1 !important; }
+    .leaflet-bar a { background: rgba(15,23,42,.85); color: #e2e8f0; border-color: rgba(255,255,255,.12); }
+    .leaflet-bar a:hover { background: #1e293b; color: #fff; }
+
+    /* Weather pill: ukotvení na střed bodu, vnitřek se jen přepisuje (žádný re-render markerů) */
+    .wp-icon { width: 0; height: 0; }
+    .wp { position: absolute; left: 0; top: 0; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 3px;
+          padding: 4px 8px 4px 6px; border-radius: 999px; border: 1px solid; font: 600 12px/1 system-ui, sans-serif;
+          white-space: nowrap; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.5); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+          transition: background-color .35s, border-color .35s, color .35s, box-shadow .2s; }
+    .wp::before { content: ""; position: absolute; inset: -7px; }  /* větší plocha pro dotyk */
+    .wp .ic { font-size: 14px; line-height: 1; }
+    .wp .ar { width: 11px; height: 11px; transition: transform .35s; flex: none; }
+    .wp.c-sunny        { background: rgba(120,83,9,.88);  border-color: #fbbf24; color: #fef3c7; }
+    .wp.c-cloudy       { background: rgba(55,65,81,.9);   border-color: #9ca3af; color: #e5e7eb; }
+    .wp.c-rain         { background: rgba(30,64,175,.9);  border-color: #60a5fa; color: #dbeafe; }
+    .wp.c-fog          { background: rgba(71,85,105,.88); border-color: #cbd5e1; color: #f1f5f9; border-style: dashed; }
+    .wp.c-above_clouds { background: linear-gradient(135deg, rgba(133,77,14,.92), rgba(14,116,144,.92)); border-color: #67e8f9; color: #ecfeff; }
+    .wp.sel { box-shadow: 0 0 0 3px rgba(255,255,255,.9), 0 4px 14px rgba(0,0,0,.6); }
+    .wp.off { display: none; }
+    .compact .wp { padding: 3px 6px 3px 4px; font-size: 11px; gap: 2px; }
+    .compact .wp .ar { display: none; }
+    .compact .wp .ic { font-size: 12px; }
+
+    /* Posuvník */
+    input[type=range].tl { -webkit-appearance: none; appearance: none; width: 100%; height: 28px; background: transparent; touch-action: none; cursor: pointer; }
+    input[type=range].tl::-webkit-slider-runnable-track { height: 6px; border-radius: 3px;
+      background: linear-gradient(90deg, #fbbf24 var(--p, 0%), rgba(255,255,255,.18) var(--p, 0%)); }
+    input[type=range].tl::-moz-range-track { height: 6px; border-radius: 3px; background: rgba(255,255,255,.18); }
+    input[type=range].tl::-moz-range-progress { height: 6px; border-radius: 3px; background: #fbbf24; }
+    input[type=range].tl::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; margin-top: -9px; border-radius: 50%;
+      background: #fef3c7; border: 3px solid #f59e0b; box-shadow: 0 1px 6px rgba(0,0,0,.5); }
+    input[type=range].tl::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: #fef3c7; border: 3px solid #f59e0b; }
+    input[type=range].tl:focus-visible { outline: 2px solid #fde68a; outline-offset: 2px; border-radius: 4px; }
+
+    .glass { background: rgba(15,23,42,.78); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+             border: 1px solid rgba(255,255,255,.12); box-shadow: 0 8px 30px rgba(0,0,0,.45); }
+    .chips { scrollbar-width: none; }
+    .chips::-webkit-scrollbar { display: none; }
+    #drawer { bottom: calc(var(--tl-h, 150px) + 16px); }
+    @media (min-width: 640px) { #drawer { bottom: auto; top: 12px; right: 12px; width: 20rem; } }
+    @media (prefers-reduced-motion: reduce) { .wp, .wp .ar { transition: none; } }
+  </style>
+</head>
+<body class="flex h-[100dvh] flex-col overflow-hidden text-slate-100 antialiased">
+  <header class="mx-auto w-full max-w-2xl shrink-0 px-4 pb-2 pt-3" style="padding-top:max(.75rem,env(safe-area-inset-top))">
+    <div class="mb-2 flex items-center justify-between gap-4">
+      <p class="min-w-0 truncate text-sm uppercase tracking-widest text-amber-300/80">Madeira <span id="updated" class="ml-1 text-xs normal-case tracking-normal text-slate-400"></span></p>
+      <div id="lang" class="flex shrink-0 overflow-hidden rounded-xl border border-white/15 text-sm" role="group" aria-label="Language">
+        <button type="button" data-lang="cs" class="inline-flex items-center gap-1.5 px-3 py-1.5" aria-label="Čeština"><img src="flag-cz.svg" alt="" width="20" height="14" class="h-3.5 w-5 rounded-[2px]">CZ</button>
+        <button type="button" data-lang="en" class="inline-flex items-center gap-1.5 px-3 py-1.5" aria-label="English"><img src="flag-gb.svg" alt="" width="20" height="14" class="h-3.5 w-5 rounded-[2px]">EN</button>
+      </div>
+    </div>
+    <nav id="mainnav" class="grid grid-cols-5 gap-1 rounded-2xl border border-neutral-800 bg-neutral-900/80 p-1 backdrop-blur-md" aria-label="Navigation">
+      <a href="./index.html" data-nav="sun" class="flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 py-1.5 text-center text-xs font-medium leading-tight transition-colors sm:flex-row sm:gap-2 sm:text-sm text-neutral-400 hover:text-white hover:bg-white/5"><span aria-hidden="true" class="text-base leading-none">🌅</span><span data-nav-label>Golden Hour</span></a>
+      <a href="./escape.html" data-nav="escape" class="flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 py-1.5 text-center text-xs font-medium leading-tight transition-colors sm:flex-row sm:gap-2 sm:text-sm text-neutral-400 hover:text-white hover:bg-white/5"><span aria-hidden="true" class="text-base leading-none">☀️</span><span data-nav-label>Sunny Escape</span></a>
+      <a href="./fanal.html" data-nav="fanal" class="flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 py-1.5 text-center text-xs font-medium leading-tight transition-colors sm:flex-row sm:gap-2 sm:text-sm text-neutral-400 hover:text-white hover:bg-white/5"><span aria-hidden="true" class="text-base leading-none">🌫️</span><span data-nav-label>Mlžný Fanal</span></a>
+      <a href="./webcams.html" data-nav="cams" class="flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 py-1.5 text-center text-xs font-medium leading-tight transition-colors sm:flex-row sm:gap-2 sm:text-sm text-neutral-400 hover:text-white hover:bg-white/5"><span aria-hidden="true" class="text-base leading-none">📷</span><span data-nav-label>Webkamery</span></a>
+      <a href="./map.html" data-nav="map" aria-current="page" class="flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 py-1.5 text-center text-xs font-medium leading-tight transition-colors sm:flex-row sm:gap-2 sm:text-sm bg-neutral-800 text-white ring-1 ring-white/15 shadow-[0_0_14px_rgba(255,255,255,.08)]"><span aria-hidden="true" class="text-base leading-none">🗺️</span><span data-nav-label>Mapa</span></a>
+    </nav>
+  </header>
+
+  <div class="relative min-h-0 flex-1">
+    <div id="map" class="absolute inset-0" role="application"></div>
+
+    <div id="legend" class="chips pointer-events-auto absolute left-14 top-2.5 z-[1100] flex max-w-[calc(100%-4.5rem)] gap-1 overflow-x-auto text-[11px] font-medium"></div>
+    <div id="state" class="absolute inset-0 z-[1200] flex items-center justify-center bg-slate-900/80 p-6 text-center text-slate-300" role="status"></div>
+
+    <aside id="drawer" class="glass absolute inset-x-2 z-[1100] hidden max-h-[46%] overflow-y-auto rounded-2xl p-3 sm:inset-x-auto sm:max-h-[calc(100%-24px)]" aria-live="polite"></aside>
+
+    <section id="timeline" class="glass absolute inset-x-2 bottom-2 z-[1100] mx-auto max-w-xl rounded-2xl px-3 pb-2.5 pt-2.5 sm:bottom-3" style="margin-bottom:env(safe-area-inset-bottom)" aria-label="Timeline">
+      <div class="flex items-center gap-3">
+        <button id="play" type="button" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-amber-400 text-slate-900 transition hover:bg-amber-300 active:scale-95" aria-label="Play">
+          <svg id="ic-play" viewBox="0 0 24 24" class="h-5 w-5" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+          <svg id="ic-pause" viewBox="0 0 24 24" class="hidden h-5 w-5" fill="currentColor" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+        </button>
+        <div class="min-w-0 flex-1">
+          <p id="tl-time" class="truncate text-lg font-semibold leading-tight text-amber-100"></p>
+          <p id="tl-sub" class="text-xs text-slate-400"></p>
+        </div>
+      </div>
+      <input id="slider" class="tl mt-1" type="range" min="0" max="48" step="1" value="0">
+      <div class="-mt-1 flex justify-between text-[11px] text-slate-400"><span id="tl-min"></span><span id="tl-max"></span></div>
+      <div id="jumps" class="chips mt-1.5 flex gap-1.5 overflow-x-auto"></div>
+    </section>
+  </div>
+
+<script>
+(() => {
+  const TZ = "Atlantic/Madeira";
+  const HOME = [[32.60, -17.30], [32.90, -16.65]];  // pohled na celý ostrov
+  const LIMITS = [[31.3, -18.6], [34.2, -15.4]];  // zamčené meze posunu
+  const STEP_MS = 1200;
+  const TILE_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";  // s API klíčem lze vrátit https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png a odstranit filtr v CSS
+  const ARROW = '<svg class="ar" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l7 19-7-4-7 4z"/></svg>';
+
+  const T = {
+    cs: {
+      title: "Sunny Escape Mapa", loading: "Načítám mapu…", error: "Nepodařilo se načíst předpověď", retry: "Zkuste to prosím později.",
+      play: "Přehrát", pause: "Pozastavit", now: "Aktuálně", plusH: (h) => `+${h} h`, nowLabel: "Teď",
+      jumpTomMorning: "Zítra ráno 08:00", jumpTomSunset: "Zítra západ 19:00",
+      today: "Dnes", tomorrow: "Zítra", updated: (s) => `· aktualizace ${s}`, stale: "data jsou zastaralá",
+      cond: { sunny: "Slunečno", cloudy: "Zataženo", rain: "Déšť", fog: "Mlha", above_clouds: "Nad mraky" },
+      legend: { sunny: "Slunce", cloudy: "Mraky", rain: "Déšť", fog: "Mlha", above_clouds: "Nad mraky" },
+      region: { peaks: "Hory", north: "Sever", south: "Jih", west: "Západ", east: "Východ" },
+      feels: "Pocitově", humidity: "Vlhkost", wind: "Vítr", gusts: "nárazy", precip: "Srážky", chance: "pravděpodobnost",
+      next12: "Dalších 12 hodin", webcam: "Webkamera poblíž", close: "Zavřít", altitude: (m) => `${m} m n. m.`,
+      compass: ["S", "SV", "V", "JV", "J", "JZ", "Z", "SZ"], kmh: "km/h", mm: "mm", locale: "cs-CZ",
+    },
+    en: {
+      title: "Sunny Escape Map", loading: "Loading map…", error: "Could not load the forecast", retry: "Please try again later.",
+      play: "Play", pause: "Pause", now: "Now", plusH: (h) => `+${h} h`, nowLabel: "Now",
+      jumpTomMorning: "Tomorrow 08:00", jumpTomSunset: "Tomorrow sunset 19:00",
+      today: "Today", tomorrow: "Tomorrow", updated: (s) => `· updated ${s}`, stale: "data is out of date",
+      cond: { sunny: "Sunny", cloudy: "Cloudy", rain: "Rain", fog: "Fog", above_clouds: "Above the clouds" },
+      legend: { sunny: "Sun", cloudy: "Clouds", rain: "Rain", fog: "Fog", above_clouds: "Above clouds" },
+      region: { peaks: "Mountains", north: "North", south: "South", west: "West", east: "East" },
+      feels: "Feels like", humidity: "Humidity", wind: "Wind", gusts: "gusts", precip: "Rain", chance: "chance",
+      next12: "Next 12 hours", webcam: "Nearby webcam", close: "Close", altitude: (m) => `${m} m a.s.l.`,
+      compass: ["N", "NE", "E", "SE", "S", "SW", "W", "NW"], kmh: "km/h", mm: "mm", locale: "en-GB",
+    },
+  };
+  const NAV = { cs: { sun: "Golden Hour", escape: "Sunny Escape", fanal: "Mlžný Fanal", cams: "Webkamery", map: "Mapa" }, en: { sun: "Golden Hour", escape: "Sunny Escape", fanal: "Misty Fanal", cams: "Webcams", map: "Map" } };
+  const applyNav = (l) => document.querySelectorAll("#mainnav [data-nav]").forEach((a) => { a.querySelector("[data-nav-label]").textContent = NAV[l][a.dataset.nav]; });
+  const COLORS = { sunny: "#fbbf24", cloudy: "#9ca3af", rain: "#60a5fa", fog: "#cbd5e1", above_clouds: "#67e8f9" };
+
+  let lang = "";
+  try { lang = localStorage.getItem("lang") || ""; } catch (e) {}
+  if (!T[lang]) lang = (navigator.language || "cs").toLowerCase().startsWith("cs") ? "cs" : "en";
+  const t = () => T[lang];
+  const $ = (id) => document.getElementById(id);
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+
+  let data = null, map = null, markers = [], start = 0, last = 0, hour = 0, selected = null;
+  let timer = null, raf = 0, failed = false;
+
+  // ---------- čas (vše v místním čase Madeiry, časy z JSONu jsou "YYYY-MM-DDTHH:00") ----------
+  const nowKey = () => {
+    const p = new Intl.DateTimeFormat("sv-SE", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", hourCycle: "h23" }).format(new Date());
+    return p.replace(" ", "T").slice(0, 13) + ":00";  // "2026-10-21T14:00"
+  };
+  const dayNo = (iso) => { const [y, m, d] = iso.slice(0, 10).split("-").map(Number); return Date.UTC(y, m - 1, d) / 864e5; };
+  const addDays = (iso, n) => new Date((dayNo(iso) + n) * 864e5).toISOString().slice(0, 10);
+  const stamp = (i) => data.timestamps[start + i];
+  const dayLabel = (iso) => {
+    const diff = dayNo(iso) - dayNo(nowKey());
+    if (diff === 0) return t().today;
+    if (diff === 1) return t().tomorrow;
+    const [y, m, d] = iso.slice(0, 10).split("-").map(Number);
+    return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(t().locale, { weekday: "long", timeZone: "UTC" });
+  };
+  const timeLabel = (i) => `${dayLabel(stamp(i))}, ${stamp(i).slice(11, 16)}`;
+
+  // ---------- mapování stavů ----------
+  const iconFor = (c, code, cloud) => {
+    if (c === "rain") return code >= 95 ? "⛈️" : "🌧️";
+    if (c === "fog") return "🌫️";
+    if (c === "cloudy") return cloud >= 85 || code === 3 ? "☁️" : "⛅";
+    return cloud != null && cloud >= 30 && c === "sunny" ? "⛅" : "☀️";
+  };
+  const compass = (deg) => t().compass[Math.round((deg % 360) / 45) % 8];
+
+  // ---------- markery: vytvoří se jednou, při změně hodiny se jen přepisují ----------
+  function buildMarkers() {
+    markers = data.spots.map((s) => {
+      const pill = el("div", "wp");
+      const icEl = el("span", "ic"), tpEl = el("span", "tp");
+      pill.append(icEl, tpEl);
+      pill.insertAdjacentHTML("beforeend", ARROW);
+      const arEl = pill.lastChild;
+      const marker = L.marker([s.lat, s.lon], {
+        icon: L.divIcon({ className: "wp-icon", html: pill, iconSize: [0, 0] }),
+        title: s.name, riseOnHover: true,
+      }).addTo(map);
+      marker.on("click", () => select(s.id));
+      return { spot: s, marker, pill, icEl, tpEl, arEl, c: null, ic: null, tp: null, rot: null, off: false };
+    });
+  }
+
+  function paint(i) {
+    const k = start + i;
+    for (const m of markers) {
+      const s = m.spot, c = s.condition_type[k];
+      if (m.c !== c) {
+        if (m.c) m.pill.classList.remove("c-" + m.c);
+        m.pill.classList.add("c-" + c);
+        m.marker.setZIndexOffset(c === "sunny" || c === "above_clouds" ? 200 : 0);
+        m.c = c;
+      }
+      const ic = iconFor(c, s.code[k], s.cloud[k]);
+      if (m.ic !== ic) { m.icEl.textContent = ic; m.ic = ic; }
+      const tp = s.temp[k] == null ? "–" : Math.round(s.temp[k]) + "°";
+      if (m.tp !== tp) { m.tpEl.textContent = tp; m.tp = tp; }
+      const rot = s.dir[k] == null ? 0 : (s.dir[k] + 180) % 360;  // šipka ukazuje, kam vítr fouká
+      if (m.rot !== rot) { m.arEl.style.transform = `rotate(${rot}deg)`; m.arEl.style.opacity = (s.wind[k] || 0) < 5 ? ".3" : ".95"; m.rot = rot; }
+    }
+  }
+
+  // při malém přiblížení schová body, které by se překrývaly (pořadí v JSONu = priorita)
+  function declutter() {
+    const z = map.getZoom();
+    $("map").classList.toggle("compact", z < 10.5);
+    const kept = [];
+    for (const m of markers) {
+      const p = map.latLngToContainerPoint(m.marker.getLatLng());
+      const w = z < 10.5 ? 46 : 62, h = 26;
+      const hide = m.spot.id !== selected && kept.some((q) => Math.abs(q.x - p.x) < w && Math.abs(q.y - p.y) < h);
+      if (!hide) kept.push(p);
+      if (hide !== m.off) { m.pill.classList.toggle("off", hide); m.off = hide; }
+    }
+  }
+
+  // ---------- časová osa ----------
+  function setHour(i, user) {
+    hour = Math.max(0, Math.min(last, i));
+    if (user) stop();
+    $("slider").value = hour;
+    $("slider").style.setProperty("--p", last ? (hour / last) * 100 + "%" : "0%");
+    $("tl-time").textContent = timeLabel(hour);
+    $("tl-sub").textContent = hour === 0 ? t().now : t().plusH(hour);
+    $("slider").setAttribute("aria-valuetext", timeLabel(hour));
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(() => { paint(hour); if (selected) renderDrawer(); });
+  }
+
+  function stop() {
+    clearTimeout(timer); timer = null;
+    $("ic-play").classList.remove("hidden"); $("ic-pause").classList.add("hidden");
+    $("play").setAttribute("aria-label", t().play);
+  }
+  function play() {
+    $("ic-play").classList.add("hidden"); $("ic-pause").classList.remove("hidden");
+    $("play").setAttribute("aria-label", t().pause);
+    const tick = () => { setHour(hour >= last ? 0 : hour + 1); timer = setTimeout(tick, STEP_MS); };
+    timer = setTimeout(tick, STEP_MS);
+    if (hour >= last) setHour(0);
+  }
+
+  function jumpTo(key) {
+    const idx = data.timestamps.indexOf(key) - start;
+    if (idx >= 0 && idx <= last) setHour(idx, true);
+  }
+  function renderJumps() {
+    const L = t(), tom = addDays(nowKey(), 1);
+    const defs = [
+      [L.nowLabel, () => setHour(0, true), true],
+      [L.plusH(3), () => setHour(hour + 3, true), hour < last],
+      [L.plusH(6), () => setHour(hour + 6, true), hour < last],
+      [L.jumpTomMorning, () => jumpTo(`${tom}T08:00`), data.timestamps.includes(`${tom}T08:00`)],
+      [L.jumpTomSunset, () => jumpTo(`${tom}T19:00`), data.timestamps.includes(`${tom}T19:00`)],
+    ];
+    $("jumps").replaceChildren(...defs.map(([label, fn, ok]) => {
+      const b = el("button", "min-h-[40px] shrink-0 rounded-xl border border-white/15 bg-white/5 px-3 text-sm font-medium transition hover:bg-white/10 active:bg-white/20 disabled:opacity-40", label);
+      b.type = "button"; b.disabled = !ok; b.addEventListener("click", fn);
+      return b;
+    }));
+  }
+
+  // ---------- detail bodu ----------
+  function select(id) {
+    selected = id;
+    markers.forEach((m) => m.pill.classList.toggle("sel", m.spot.id === id));
+    renderDrawer();
+    const m = markers.find((x) => x.spot.id === id);
+    if (m) {
+      m.pill.classList.remove("off");
+      const mobile = window.innerWidth < 640, size = map.getSize();
+      const covered = mobile ? $("timeline").offsetHeight + $("drawer").offsetHeight + 24 : 0;
+      const p = map.latLngToContainerPoint(m.marker.getLatLng());
+      const goal = L.point(mobile ? size.x / 2 : (size.x - 340) / 2, mobile ? Math.max(40, (size.y - covered) / 2) : size.y / 2 - 40);
+      map.panBy(p.subtract(goal), { animate: true });
+    }
+  }
+  function closeDrawer() {
+    selected = null;
+    $("drawer").classList.add("hidden");
+    markers.forEach((m) => m.pill.classList.remove("sel"));
+  }
+
+  function stat(label, value, sub) {
+    const d = el("div", "min-w-0 rounded-xl bg-white/5 px-2 py-1.5");
+    d.append(el("p", "truncate text-[10px] uppercase tracking-wide text-slate-400", label), el("p", "truncate text-sm font-semibold text-slate-100", value));
+    if (sub) d.append(el("p", "truncate text-[11px] text-slate-400", sub));
+    return d;
+  }
+
+  function renderDrawer() {
+    const m = markers.find((x) => x.spot.id === selected);
+    if (!m) return;
+    const L = t(), s = m.spot, k = start + hour, c = s.condition_type[k];
+    const dr = $("drawer");
+    dr.classList.remove("hidden");
+
+    const head = el("div", "flex items-start justify-between gap-2");
+    const title = el("div", "min-w-0");
+    title.append(el("p", "truncate text-base font-semibold text-white", s.name),
+      el("p", "text-xs text-slate-400", `${L.altitude(s.altitude_m)} · ${L.region[s.region]}`));
+    const close = el("button", "flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-slate-200 hover:bg-white/20", "✕");
+    close.type = "button"; close.setAttribute("aria-label", L.close); close.addEventListener("click", closeDrawer);
+    head.append(title, close);
+
+    const big = el("div", "mt-1.5 flex items-center gap-2.5");
+    const temp = s.temp[k] == null ? "–" : `${Math.round(s.temp[k])} °C`;
+    const tag = el("p", "min-w-0 flex-1 truncate text-sm font-medium", L.cond[c]);
+    tag.style.color = COLORS[c];
+    big.append(el("span", "text-3xl leading-none", iconFor(c, s.code[k], s.cloud[k])), el("span", "text-2xl font-bold leading-none text-white", temp), tag);
+    if (s.webcam) {
+      const a = el("a", "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white/5 text-lg hover:bg-white/10", "📷");
+      a.href = `./webcams.html#${encodeURIComponent(s.webcam)}`;
+      a.title = L.webcam; a.setAttribute("aria-label", L.webcam);
+      big.append(a);
+    }
+
+    const grid = el("div", "mt-2 grid grid-cols-4 gap-1.5 sm:grid-cols-2");
+    const wind = s.wind[k] == null ? "–" : `${s.dir[k] == null ? "" : compass(s.dir[k]) + " "}${s.wind[k]}`;
+    const gust = s.gust[k] != null && s.gust[k] > (s.wind[k] || 0) + 5 ? `${L.gusts} ${s.gust[k]}` : L.kmh;
+    grid.append(
+      stat(L.feels, s.feels[k] == null ? "–" : `${Math.round(s.feels[k])}°`),
+      stat(L.humidity, s.rh[k] == null ? "–" : `${s.rh[k]} %`),
+      stat(L.wind, wind, gust),
+      stat(L.precip, s.precip[k] == null ? "–" : `${s.precip[k].toLocaleString(L.locale)} ${L.mm}`, s.pop[k] == null ? "" : `${s.pop[k]} %`),
+    );
+
+    const strip = el("div", "chips mt-2 flex gap-1 overflow-x-auto");
+    for (let h = 0; h < 12 && hour + h <= last; h++) {
+      const j = k + h, cj = s.condition_type[j];
+      const col = el("div", "flex w-11 shrink-0 flex-col items-center gap-0.5 rounded-lg py-1 text-center " + (h === 0 ? "bg-white/15" : "bg-white/5"));
+      const bar = el("div", "w-1.5 rounded-full bg-sky-400");
+      bar.style.height = Math.max(2, Math.round((s.pop[j] || 0) * 0.16)) + "px";
+      const barBox = el("div", "flex h-4 items-end"); barBox.append(bar);
+      col.append(el("span", "text-[10px] text-slate-400", data.timestamps[j].slice(11, 13)),
+        el("span", "text-base leading-none", iconFor(cj, s.code[j], s.cloud[j])),
+        el("span", "text-xs font-semibold", s.temp[j] == null ? "–" : Math.round(s.temp[j]) + "°"), barBox);
+      strip.append(col);
+    }
+
+    dr.replaceChildren(head, big, grid, el("p", "mt-2 text-[11px] uppercase tracking-wide text-slate-400", L.next12), strip);
+  }
+
+  // ---------- texty ----------
+  function renderText() {
+    const L = t();
+    document.documentElement.lang = lang;
+    document.title = `Madeira ${L.title}`;
+    applyNav(lang);
+    document.querySelectorAll("#lang button").forEach((b) => {
+      const on = b.dataset.lang === lang;
+      b.setAttribute("aria-pressed", on);
+      b.className = "inline-flex items-center gap-1.5 px-3 py-1.5 " + (on ? "seg-on" : "seg-off");
+    });
+    $("tl-min").textContent = L.now;
+    $("play").setAttribute("aria-label", timer ? L.pause : L.play);
+    const state = $("state");
+    state.classList.toggle("hidden", !!data);
+    if (!data) state.textContent = failed ? `${L.error}. ${L.retry}` : L.loading;
+    $("legend").replaceChildren(...Object.keys(L.legend).map((c) => {
+      const chip = el("span", "inline-flex shrink-0 items-center gap-1 rounded-full bg-slate-900/80 px-2 py-1 text-slate-200 ring-1 ring-white/10");
+      const dot = el("i", "inline-block h-2 w-2 rounded-full"); dot.style.background = COLORS[c];
+      chip.append(dot, L.legend[c]);
+      return chip;
+    }));
+    if (data) {
+      $("tl-max").textContent = L.plusH(last);
+      $("updated").textContent = data.generated_at ? L.updated(data.generated_at.slice(11, 16)) : "";
+      renderJumps();
+      setHour(hour);
+    }
+  }
+
+  // ---------- inicializace ----------
+  function initMap() {
+    map = L.map("map", { zoomSnap: 0.5, zoomDelta: 0.5, maxZoom: 13, maxBounds: LIMITS, maxBoundsViscosity: 1, attributionControl: true, zoomControl: true });
+    L.tileLayer(TILE_URL, {
+      maxZoom: 19, attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · <a href="https://open-meteo.com">Open-Meteo</a>',
+    }).addTo(map);
+    map.fitBounds(HOME, { paddingTopLeft: [8, 8], paddingBottomRight: [8, $("timeline").offsetHeight + 16], animate: false });
+    map.setMinZoom(Math.max(8, map.getZoom() - 1));
+    map.on("zoomend moveend", declutter);
+    map.on("click", closeDrawer);
+    ["timeline", "drawer", "legend"].forEach((id) => { L.DomEvent.disableClickPropagation($(id)); L.DomEvent.disableScrollPropagation($(id)); });
+  }
+
+  function load(d) {
+    if (!d || !Array.isArray(d.timestamps) || !Array.isArray(d.spots) || !d.spots.length) throw new Error("bad data");
+    data = d;
+    const key = nowKey();
+    const idx = d.timestamps.findIndex((x) => x >= key);
+    start = idx < 0 ? Math.max(0, d.timestamps.length - 1) : idx;  // zastaralá data: ukaž aspoň poslední hodinu
+    last = d.timestamps.length - 1 - start;
+    $("slider").max = last;
+    buildMarkers();
+    declutter();
+    hour = 0;
+    renderText();
+  }
+
+  new ResizeObserver(() => document.documentElement.style.setProperty("--tl-h", $("timeline").offsetHeight + "px")).observe($("timeline"));
+  $("slider").addEventListener("input", (e) => setHour(+e.target.value, true));
+  $("play").addEventListener("click", () => (timer ? stop() : play()));
+  document.addEventListener("visibilitychange", () => { if (document.hidden && timer) stop(); });
+  document.querySelectorAll("#lang button").forEach((b) => b.addEventListener("click", () => {
+    lang = b.dataset.lang;
+    try { localStorage.setItem("lang", lang); } catch (e) {}
+    renderText();
+    if (selected) renderDrawer();
+  }));
+
+  initMap();
+  renderText();
+  fetch("map_data.json", { cache: "no-cache" })
+    .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(load)
+    .catch(() => { failed = true; renderText(); });
+})();
+</script>
+</body>
+</html>

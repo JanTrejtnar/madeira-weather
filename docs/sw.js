@@ -1,10 +1,10 @@
 // Service worker: shell aplikace z cache (offline start), data.json network-first.
 // Při změně shellu zvyš VERSION, stará cache se při aktivaci smaže.
-const VERSION = "v7";
+const VERSION = "v8";
 const CACHE = `madeirasky-${VERSION}`;
 const CDN_HOSTS = ["unpkg.com", "cdn.tailwindcss.com"];
 const SHELL = [
-  "./", "./index.html", "./escape.html", "./fanal.html", "./webcams.html", "./manifest.json", "./icon.svg", "./icon-192.png", "./icon-512.png",
+  "./", "./index.html", "./escape.html", "./fanal.html", "./webcams.html", "./map.html", "./manifest.json", "./icon.svg", "./icon-192.png", "./icon-512.png",
   "./apple-touch-icon.png", "./flag-cz.svg", "./flag-gb.svg", "./favicon.svg", "./favicon.ico",
   "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
   "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
@@ -47,7 +47,7 @@ async function cacheFirst(req) {
 self.addEventListener("fetch", (e) => {
   const req = e.request, url = new URL(req.url);
   if (req.method !== "GET") return;
-  if (url.origin === location.origin && url.pathname.endsWith("/data.json")) {
+  if (url.origin === location.origin && (url.pathname.endsWith("/data.json") || url.pathname.endsWith("/map_data.json"))) {
     e.respondWith(networkFirst(req));
   } else if (url.origin === location.origin || CDN_HOSTS.includes(url.hostname)) {
     // HTML navigace: síť první (nové verze nezůstanou viset), offline fallback na index; ostatní shell z cache

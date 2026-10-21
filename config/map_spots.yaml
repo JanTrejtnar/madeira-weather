@@ -1,0 +1,27 @@
+# Body pro docs/map.html (Sunny Escape Mapa): hodinová předpověď na 48 h z Open-Meteo.
+# region: peaks | north | south | west | east
+# webcam: id kamery z webcams.yaml (nejbližší pohled); bez klíče = žádný odkaz.
+# altitude_m se posílá do Open-Meteo jako `elevation` (korekce teploty na výšku bodu).
+spots:
+  # Hory
+  - {id: pico-do-arieiro,  name: Pico do Arieiro,        lat: 32.7358, lon: -16.9285, altitude_m: 1818, region: peaks, webcam: pico-do-arieiro}
+  - {id: pico-ruivo,       name: Pico Ruivo (Achada do Teixeira), lat: 32.7640, lon: -16.9200, altitude_m: 1590, region: peaks, webcam: achada-do-teixeira}
+  - {id: encumeada,        name: Encumeada,              lat: 32.7467, lon: -17.0180, altitude_m: 1000, region: peaks}
+  - {id: paul-da-serra,    name: Paul da Serra,          lat: 32.7590, lon: -17.0900, altitude_m: 1500, region: peaks, webcam: rabacal}
+  # Sever a vnitrozemí
+  - {id: fanal,            name: Fanal,                  lat: 32.8083, lon: -17.1417, altitude_m: 1150, region: north, webcam: rabacal}
+  - {id: rabacal,          name: Rabaçal,                lat: 32.7550, lon: -17.1317, altitude_m: 1100, region: north, webcam: rabacal}
+  - {id: porto-moniz,      name: Porto Moniz,            lat: 32.8667, lon: -17.1692, altitude_m: 10,   region: north, webcam: porto-moniz}
+  - {id: seixal,           name: Seixal,                 lat: 32.8219, lon: -17.1100, altitude_m: 20,   region: north, webcam: seixal}
+  - {id: sao-vicente,      name: São Vicente,            lat: 32.8000, lon: -17.0400, altitude_m: 30,   region: north}
+  - {id: santana,          name: Santana,                lat: 32.8056, lon: -16.8806, altitude_m: 400,  region: north}
+  # Jih
+  - {id: funchal,          name: Funchal,                lat: 32.6500, lon: -16.9080, altitude_m: 25,   region: south, webcam: funchal-baia}
+  - {id: camara-de-lobos,  name: Câmara de Lobos,        lat: 32.6480, lon: -16.9770, altitude_m: 10,   region: south, webcam: camara-de-lobos}
+  - {id: ribeira-brava,    name: Ribeira Brava,          lat: 32.6730, lon: -17.0620, altitude_m: 20,   region: south, webcam: ribeira-brava}
+  - {id: ponta-do-sol,     name: Ponta do Sol,           lat: 32.6783, lon: -17.1034, altitude_m: 20,   region: south, webcam: ponta-do-sol}
+  - {id: calheta,          name: Calheta,                lat: 32.7200, lon: -17.1750, altitude_m: 20,   region: south}
+  # Západ a východ
+  - {id: ponta-do-pargo,   name: Ponta do Pargo,         lat: 32.8100, lon: -17.2630, altitude_m: 300,  region: west}
+  - {id: machico,          name: Machico,                lat: 32.7167, lon: -16.7667, altitude_m: 10,   region: east, webcam: machico}
+  - {id: canical,          name: Caniçal (Ponta de São Lourenço), lat: 32.7370, lon: -16.7060, altitude_m: 20, region: east, webcam: canical}
