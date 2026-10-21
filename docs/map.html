@@ -88,7 +88,7 @@
 <body class="flex h-[100dvh] flex-col overflow-hidden text-slate-100 antialiased">
   <header class="mx-auto w-full max-w-3xl shrink-0 px-4 pt-8 sm:pt-12" style="padding-top:max(2rem,env(safe-area-inset-top))">
     <div class="mb-4 flex items-center justify-between gap-4">
-      <p class="min-w-0 truncate text-sm uppercase tracking-widest text-amber-300/80">Madeira <span id="updated" class="ml-1 text-xs normal-case tracking-normal text-slate-400"></span></p>
+      <p class="min-w-0 truncate text-sm uppercase tracking-widest text-amber-300/80">Madeira · <span id="page-kicker"></span> <span id="updated" class="ml-1 text-xs normal-case tracking-normal text-slate-400"></span></p>
       <div id="lang" class="flex shrink-0 overflow-hidden rounded-xl border border-white/15 text-sm" role="group" aria-label="Language">
         <button type="button" data-lang="cs" class="inline-flex items-center gap-1.5 px-3 py-1.5" aria-label="Čeština"><img src="flag-cz.svg" alt="" width="20" height="14" class="h-3.5 w-5 rounded-[2px]">CZ</button>
         <button type="button" data-lang="en" class="inline-flex items-center gap-1.5 px-3 py-1.5" aria-label="English"><img src="flag-gb.svg" alt="" width="20" height="14" class="h-3.5 w-5 rounded-[2px]">EN</button>
@@ -165,7 +165,8 @@
     },
   };
   const NAV = { cs: { sun: "Golden Hour", escape: "Sunny Escape", fanal: "Mlžný Fanal", cams: "Webkamery", map: "Mapa" }, en: { sun: "Golden Hour", escape: "Sunny Escape", fanal: "Misty Fanal", cams: "Webcams", map: "Map" } };
-  const applyNav = (l) => document.querySelectorAll("#mainnav [data-nav]").forEach((a) => { a.querySelector("[data-nav-label]").textContent = NAV[l][a.dataset.nav]; });
+  const HEAD = { cs: "Mapa předpovědi", en: "Forecast map" };
+  const applyNav = (l) => { document.getElementById("page-kicker").textContent = HEAD[l]; document.querySelectorAll("#mainnav [data-nav]").forEach((a) => { a.querySelector("[data-nav-label]").textContent = NAV[l][a.dataset.nav]; }); };
   const COLORS = { sunny: "#fbbf24", cloudy: "#9ca3af", rain: "#60a5fa", fog: "#cbd5e1", above_clouds: "#67e8f9" };
 
   let lang = "";

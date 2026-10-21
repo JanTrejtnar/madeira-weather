@@ -45,7 +45,7 @@
 <body class="min-h-screen text-slate-100 antialiased">
   <main class="mx-auto max-w-3xl px-4 py-8 sm:py-12" style="padding-top:max(2rem,env(safe-area-inset-top));padding-bottom:max(2rem,env(safe-area-inset-bottom))">
     <div class="mb-4 flex items-center justify-between gap-4">
-      <p class="text-sm uppercase tracking-widest text-amber-300/80">Madeira</p>
+      <p class="text-sm uppercase tracking-widest text-amber-300/80">Madeira · <span id="page-kicker"></span></p>
       <div id="lang" class="flex shrink-0 overflow-hidden rounded-xl border border-white/15 text-sm" role="group" aria-label="Language">
           <button type="button" data-lang="cs" class="inline-flex items-center gap-1.5 px-3 py-1.5" aria-label="Čeština"><img src="flag-cz.svg" alt="" width="20" height="14" class="h-3.5 w-5 rounded-[2px]">CZ</button>
           <button type="button" data-lang="en" class="inline-flex items-center gap-1.5 px-3 py-1.5" aria-label="English"><img src="flag-gb.svg" alt="" width="20" height="14" class="h-3.5 w-5 rounded-[2px]">EN</button>
@@ -150,7 +150,8 @@
   try { lang = localStorage.getItem("lang") || ""; } catch (e) {}
   if (!T[lang]) lang = (navigator.language || "cs").toLowerCase().startsWith("cs") ? "cs" : "en";
   const NAV = { cs: { sun: "Golden Hour", escape: "Sunny Escape", fanal: "Mlžný Fanal", cams: "Webkamery", map: "Mapa" }, en: { sun: "Golden Hour", escape: "Sunny Escape", fanal: "Misty Fanal", cams: "Webcams", map: "Map" } };
-  const applyNav = (l) => document.querySelectorAll("#mainnav [data-nav]").forEach((a) => { a.querySelector("[data-nav-label]").textContent = NAV[l][a.dataset.nav]; });
+  const HEAD = { cs: "Kam za sluncem", en: "Where to find sun" };
+  const applyNav = (l) => { document.getElementById("page-kicker").textContent = HEAD[l]; document.querySelectorAll("#mainnav [data-nav]").forEach((a) => { a.querySelector("[data-nav-label]").textContent = NAV[l][a.dataset.nav]; }); };
   const t = () => T[lang];
   const locale = () => (lang === "cs" ? "cs-CZ" : "en-GB");
   const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
