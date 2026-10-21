@@ -38,17 +38,22 @@
 </head>
 <body class="min-h-screen text-slate-100 antialiased">
   <main class="mx-auto max-w-2xl px-4 py-8 sm:py-12" style="padding-top:max(2rem,env(safe-area-inset-top));padding-bottom:max(2rem,env(safe-area-inset-bottom))">
-    <nav class="mb-6 flex items-center justify-between gap-4">
-      <a href="./index.html" id="back" class="text-sm text-slate-400 transition hover:text-amber-200"></a>
+    <div class="mb-4 flex items-center justify-between gap-4">
+      <p class="text-sm uppercase tracking-widest text-amber-300/80">Madeira</p>
       <div id="lang" class="flex shrink-0 overflow-hidden rounded-xl border border-white/15 text-sm" role="group" aria-label="Language">
-        <button type="button" data-lang="cs" class="inline-flex items-center gap-1.5 px-3 py-1.5" aria-label="Čeština"><img src="flag-cz.svg" alt="" width="20" height="14" class="h-3.5 w-5 rounded-[2px]">CZ</button>
-        <button type="button" data-lang="en" class="inline-flex items-center gap-1.5 px-3 py-1.5" aria-label="English"><img src="flag-gb.svg" alt="" width="20" height="14" class="h-3.5 w-5 rounded-[2px]">EN</button>
-      </div>
+          <button type="button" data-lang="cs" class="inline-flex items-center gap-1.5 px-3 py-1.5" aria-label="Čeština"><img src="flag-cz.svg" alt="" width="20" height="14" class="h-3.5 w-5 rounded-[2px]">CZ</button>
+          <button type="button" data-lang="en" class="inline-flex items-center gap-1.5 px-3 py-1.5" aria-label="English"><img src="flag-gb.svg" alt="" width="20" height="14" class="h-3.5 w-5 rounded-[2px]">EN</button>
+        </div>
+    </div>
+    <nav id="mainnav" class="mb-6 grid grid-cols-4 gap-1 rounded-2xl border border-neutral-800 bg-neutral-900/80 p-1 backdrop-blur-md" aria-label="Navigation">
+      <a href="./index.html" data-nav="sun" class="flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 py-1.5 text-center text-xs font-medium leading-tight transition-colors sm:flex-row sm:gap-2 sm:text-sm text-neutral-400 hover:text-white hover:bg-white/5"><span aria-hidden="true" class="text-base leading-none">🌅</span><span data-nav-label>Golden Hour</span></a>
+      <a href="./escape.html" data-nav="escape" aria-current="page" class="flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 py-1.5 text-center text-xs font-medium leading-tight transition-colors sm:flex-row sm:gap-2 sm:text-sm bg-neutral-800 text-white ring-1 ring-white/15 shadow-[0_0_14px_rgba(255,255,255,.08)]"><span aria-hidden="true" class="text-base leading-none">☀️</span><span data-nav-label>Sunny Escape</span></a>
+      <a href="./fanal.html" data-nav="fanal" class="flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 py-1.5 text-center text-xs font-medium leading-tight transition-colors sm:flex-row sm:gap-2 sm:text-sm text-neutral-400 hover:text-white hover:bg-white/5"><span aria-hidden="true" class="text-base leading-none">🌫️</span><span data-nav-label>Mlžný Fanal</span></a>
+      <a href="./webcams.html" data-nav="cams" class="flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 py-1.5 text-center text-xs font-medium leading-tight transition-colors sm:flex-row sm:gap-2 sm:text-sm text-neutral-400 hover:text-white hover:bg-white/5"><span aria-hidden="true" class="text-base leading-none">📷</span><span data-nav-label>Webkamery</span></a>
     </nav>
 
     <header class="mb-6 flex items-end justify-between gap-4">
       <div>
-        <p class="text-sm uppercase tracking-widest text-amber-300/80">Madeira</p>
         <h1 class="text-2xl font-semibold sm:text-3xl">Sunny Escape</h1>
         <p id="note" class="mt-1 text-sm text-slate-400"></p>
       </div>
@@ -92,7 +97,6 @@
     </section>
 
     <footer class="mt-10 text-xs text-slate-500">
-      <a href="./fanal.html" id="fanal" class="mb-3 inline-block text-sm text-emerald-200/80 transition hover:text-emerald-100"></a>
       <p id="updated"></p>
       <p id="disclaimer" class="mt-1"></p>
     </footer>
@@ -103,7 +107,7 @@
   const $ = (id) => document.getElementById(id);
   const T = {
     cs: {
-      fanal: "🌲 Hledáte mlžný les? Fanal Fog Index →", back: "← Zpět na Východy & Západy v horách", loading: "Načítám předpověď…",
+      loading: "Načítám předpověď…",
       note: (w) => `Nejslunnější pobřeží, ${w[0]}:00–${w[1]}:00`,
       today: "Dnes", tomorrow: "Zítra", kicker: "Doporučení", others: "Ostatní místa",
       title: (w, d) => `🏆 ${d === "today" ? "Dnes" : "Zítra"} jeďte do ${w.name_gen || w.name}`,
@@ -118,7 +122,7 @@
       disclaimer: "Model: Open-Meteo. Orientační předpověď, ne záruka; před odjezdem zkontroluj aktuální stav.",
     },
     en: {
-      fanal: "🌲 Looking for a misty forest? Fanal Fog Index →", back: "← Back to mountain Sunrises & Sunsets", loading: "Loading forecast…",
+      loading: "Loading forecast…",
       note: (w) => `Sunniest coastal spot, ${w[0]}:00–${w[1]}:00`,
       today: "Today", tomorrow: "Tomorrow", kicker: "Recommendation", others: "Other places",
       title: (w, d) => `🏆 Head to ${w.name} ${d === "today" ? "today" : "tomorrow"}`,
@@ -138,6 +142,8 @@
   let lang = "", data = null, day = null;
   try { lang = localStorage.getItem("lang") || ""; } catch (e) {}
   if (!T[lang]) lang = (navigator.language || "cs").toLowerCase().startsWith("cs") ? "cs" : "en";
+  const NAV = { cs: { sun: "Golden Hour", escape: "Sunny Escape", fanal: "Mlžný Fanal", cams: "Webkamery" }, en: { sun: "Golden Hour", escape: "Sunny Escape", fanal: "Misty Fanal", cams: "Webcams" } };
+  const applyNav = (l) => document.querySelectorAll("#mainnav [data-nav]").forEach((a) => { a.querySelector("[data-nav-label]").textContent = NAV[l][a.dataset.nav]; });
   const t = () => T[lang];
   const locale = () => (lang === "cs" ? "cs-CZ" : "en-GB");
   const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
@@ -154,8 +160,7 @@
   function render() {
     const L = t(), cur = current();
     document.documentElement.lang = lang;
-    $("back").textContent = L.back;
-    $("fanal").textContent = L.fanal;
+    applyNav(lang);
     $("disclaimer").textContent = L.disclaimer;
     document.querySelectorAll("#lang button").forEach((b) => {
       const on = b.dataset.lang === lang;

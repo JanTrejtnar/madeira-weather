@@ -47,17 +47,17 @@
           <button type="button" data-lang="en" class="inline-flex items-center gap-1.5 px-3 py-1.5" aria-label="English"><img src="flag-gb.svg" alt="" width="20" height="14" class="h-3.5 w-5 rounded-[2px]">EN</button>
         </div>
     </div>
-    <nav id="mainnav" class="mb-6 grid grid-cols-3 gap-1 rounded-2xl border border-neutral-800 bg-neutral-900/80 p-1 backdrop-blur-md" aria-label="Navigation">
-      <a href="./index.html" data-nav="sun" class="flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1.5 text-center text-xs font-medium leading-tight transition-colors sm:flex-row sm:gap-2 sm:text-sm text-neutral-400 hover:text-white hover:bg-white/5"><span aria-hidden="true" class="text-base leading-none">☀️</span><span data-nav-label>Slunce &amp; Hory</span></a>
-      <a href="./fanal.html" data-nav="fanal" aria-current="page" class="flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1.5 text-center text-xs font-medium leading-tight transition-colors sm:flex-row sm:gap-2 sm:text-sm bg-neutral-800 text-white ring-1 ring-white/15 shadow-[0_0_14px_rgba(255,255,255,.08)]"><span aria-hidden="true" class="text-base leading-none">🌫️</span><span data-nav-label>Mlžný Fanal</span></a>
-      <a href="./webcams.html" data-nav="cams" class="flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1.5 text-center text-xs font-medium leading-tight transition-colors sm:flex-row sm:gap-2 sm:text-sm text-neutral-400 hover:text-white hover:bg-white/5"><span aria-hidden="true" class="text-base leading-none">📷</span><span data-nav-label>Webkamery</span></a>
+    <nav id="mainnav" class="mb-6 grid grid-cols-4 gap-1 rounded-2xl border border-neutral-800 bg-neutral-900/80 p-1 backdrop-blur-md" aria-label="Navigation">
+      <a href="./index.html" data-nav="sun" class="flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 py-1.5 text-center text-xs font-medium leading-tight transition-colors sm:flex-row sm:gap-2 sm:text-sm text-neutral-400 hover:text-white hover:bg-white/5"><span aria-hidden="true" class="text-base leading-none">🌅</span><span data-nav-label>Golden Hour</span></a>
+      <a href="./escape.html" data-nav="escape" class="flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 py-1.5 text-center text-xs font-medium leading-tight transition-colors sm:flex-row sm:gap-2 sm:text-sm text-neutral-400 hover:text-white hover:bg-white/5"><span aria-hidden="true" class="text-base leading-none">☀️</span><span data-nav-label>Sunny Escape</span></a>
+      <a href="./fanal.html" data-nav="fanal" aria-current="page" class="flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 py-1.5 text-center text-xs font-medium leading-tight transition-colors sm:flex-row sm:gap-2 sm:text-sm bg-neutral-800 text-white ring-1 ring-white/15 shadow-[0_0_14px_rgba(255,255,255,.08)]"><span aria-hidden="true" class="text-base leading-none">🌫️</span><span data-nav-label>Mlžný Fanal</span></a>
+      <a href="./webcams.html" data-nav="cams" class="flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 py-1.5 text-center text-xs font-medium leading-tight transition-colors sm:flex-row sm:gap-2 sm:text-sm text-neutral-400 hover:text-white hover:bg-white/5"><span aria-hidden="true" class="text-base leading-none">📷</span><span data-nav-label>Webkamery</span></a>
     </nav>
 
     <header class="mb-6 flex items-end justify-between gap-4">
       <div>
         <h1 class="text-2xl font-semibold sm:text-3xl">Fanal Fog Index</h1>
         <p id="note" class="mt-1 text-sm text-slate-400"></p>
-        <a href="./escape.html" id="escape" class="mt-1 inline-block text-sm text-slate-500 transition hover:text-emerald-200"></a>
       </div>
       <div id="days" class="hidden shrink-0 overflow-hidden rounded-xl border border-white/15 text-sm" role="group"></div>
     </header>
@@ -134,7 +134,7 @@
   const $ = (id) => document.getElementById(id);
   const T = {
     cs: {
-      escape: "☀️ Sunny Escape →", loading: "Načítám předpověď…",
+      loading: "Načítám předpověď…",
       note: "Skóre dne = nejlepší ze slotů 9:00, 13:00 a 17:00",
       today: "Dnes", tomorrow: "Zítra", kicker: "Fanal Fog Index",
       status: { MYSTIC: "🌫️ MYSTICAL FOG", PARTIAL: "🌤️ PARTIAL FOG", CLEAR: "☀️ CLEAR · NO FOG" },
@@ -172,7 +172,7 @@
       disclaimer: "Model: Open-Meteo. Základna mraků je odhad z teploty a rosného bodu. Orientační předpověď, ne záruka; zkontroluj kameru.",
     },
     en: {
-      escape: "☀️ Sunny Escape →", loading: "Loading forecast…",
+      loading: "Loading forecast…",
       note: "Day score = best of the 9:00, 13:00 and 17:00 slots",
       today: "Today", tomorrow: "Tomorrow", kicker: "Fanal Fog Index",
       status: { MYSTIC: "🌫️ MYSTICAL FOG", PARTIAL: "🌤️ PARTIAL FOG", CLEAR: "☀️ CLEAR · NO FOG" },
@@ -222,7 +222,7 @@
   let lang = "", data = null, day = null;
   try { lang = localStorage.getItem("lang") || ""; } catch (e) {}
   if (!T[lang]) lang = (navigator.language || "cs").toLowerCase().startsWith("cs") ? "cs" : "en";
-  const NAV = { cs: { sun: "Slunce & Hory", fanal: "Mlžný Fanal", cams: "Webkamery" }, en: { sun: "Sun & Peaks", fanal: "Misty Fanal", cams: "Webcams" } };
+  const NAV = { cs: { sun: "Golden Hour", escape: "Sunny Escape", fanal: "Mlžný Fanal", cams: "Webkamery" }, en: { sun: "Golden Hour", escape: "Sunny Escape", fanal: "Misty Fanal", cams: "Webcams" } };
   const applyNav = (l) => document.querySelectorAll("#mainnav [data-nav]").forEach((a) => { a.querySelector("[data-nav-label]").textContent = NAV[l][a.dataset.nav]; });
   const t = () => T[lang];
   const locale = () => (lang === "cs" ? "cs-CZ" : "en-GB");
@@ -349,7 +349,6 @@
     const L = t(), cur = current();
     document.documentElement.lang = lang;
     applyNav(lang);
-    $("escape").textContent = L.escape;
     $("note").textContent = L.note;
     $("disclaimer").textContent = L.disclaimer;
     document.querySelectorAll("#lang button").forEach((b) => {
