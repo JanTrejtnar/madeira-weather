@@ -716,7 +716,7 @@
     const pts = allSpots().filter((s) => s.lat != null && s.lon != null).map((s) => [s.lat, s.lon]);
     if (pts.length > 1) {
       map.fitBounds(pts, { padding: [46, 40], animate: false });
-      map.setZoom(map.getZoom() + 0.5, { animate: false });  // o jedno stisknutí "+" blíž než celý ostrov
+      if ($("map").clientWidth < 640) map.setZoom(map.getZoom() + 0.5, { animate: false });  // jen na mobilu: o jedno stisknutí "+" blíž než celý ostrov
     }
     LL.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
