@@ -1,6 +1,6 @@
 // Service worker: shell aplikace z cache (offline start), data.json network-first.
 // Při změně shellu zvyš VERSION, stará cache se při aktivaci smaže.
-const VERSION = "v15";
+const VERSION = "v16";
 const CACHE = `madeirasky-${VERSION}`;
 const CDN_HOSTS = ["unpkg.com", "cdn.tailwindcss.com"];
 const SHELL = [
