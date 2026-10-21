@@ -63,6 +63,11 @@
       <div id="days" class="hidden shrink-0 overflow-hidden rounded-xl border border-white/15 text-sm" role="group"></div>
     </header>
 
+    <div class="mb-4 flex gap-3 rounded-2xl border border-amber-400/40 bg-amber-400/10 p-4 text-sm text-amber-100" role="note">
+      <span aria-hidden="true" class="text-lg leading-none">⚠️</span>
+      <div><p id="beta-title" class="font-semibold"></p><p id="beta-text" class="mt-0.5 text-amber-100/90"></p></div>
+    </div>
+
     <div id="state" class="rounded-2xl bg-white/5 p-6 text-slate-300" role="status"></div>
 
     <section id="content" class="hidden space-y-4">
@@ -135,6 +140,8 @@
   const $ = (id) => document.getElementById(id);
   const T = {
     cs: {
+      betaTitle: "Beta verze předpovědi",
+      betaText: "Předpověď mlhy pro Fanal je zatím ve zkušebním provozu a nefunguje zcela správně. Neřiď se podle ní; bude se ještě ladit.",
       loading: "Načítám předpověď…",
       note: "Skóre dne = nejlepší ze slotů 9:00, 13:00 a 17:00",
       today: "Dnes", tomorrow: "Zítra", kicker: "Fanal Fog Index",
@@ -173,6 +180,8 @@
       disclaimer: "Model: Open-Meteo. Základna mraků je odhad z teploty a rosného bodu. Orientační předpověď, ne záruka; zkontroluj kameru.",
     },
     en: {
+      betaTitle: "Beta forecast",
+      betaText: "The Fanal fog forecast is still in beta and does not work entirely correctly yet. Do not rely on it; it will be tuned further.",
       loading: "Loading forecast…",
       note: "Day score = best of the 9:00, 13:00 and 17:00 slots",
       today: "Today", tomorrow: "Tomorrow", kicker: "Fanal Fog Index",
@@ -351,6 +360,8 @@
     document.documentElement.lang = lang;
     applyNav(lang);
     $("note").textContent = L.note;
+    $("beta-title").textContent = L.betaTitle;
+    $("beta-text").textContent = L.betaText;
     $("disclaimer").textContent = L.disclaimer;
     document.querySelectorAll("#lang button").forEach((b) => {
       const on = b.dataset.lang === lang;
