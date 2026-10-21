@@ -71,16 +71,21 @@
 </head>
 <body class="dark min-h-screen text-slate-100 antialiased" data-mode="sunrise">
   <main class="mx-auto max-w-3xl px-4 py-8 sm:py-12" style="padding-top:max(2rem,env(safe-area-inset-top));padding-bottom:max(2rem,env(safe-area-inset-bottom))">
-    <header class="mb-6 flex items-start justify-between gap-4">
-      <div>
-        <p class="acc-300 text-sm uppercase tracking-widest">Madeira Peaks &amp; Sky</p>
-        <h1 id="title" class="text-2xl sm:text-3xl font-semibold">Východ slunce – Pico do Arieiro</h1>
-        <a href="./escape.html" data-i18n="navEscape" class="mt-2 inline-block text-sm text-amber-200/80 transition hover:text-amber-100"></a>
-      </div>
+    <div class="mb-4 flex items-center justify-between gap-4">
+      <p class="acc-300 text-sm uppercase tracking-widest">Madeira Peaks &amp; Sky</p>
       <div id="lang" class="flex shrink-0 overflow-hidden rounded-xl border border-white/15 text-sm" role="group" aria-label="Language">
-        <button type="button" data-lang="cs" class="inline-flex items-center gap-1.5 px-3 py-1.5" aria-label="Čeština"><img src="flag-cz.svg" alt="" width="20" height="14" class="h-3.5 w-5 rounded-[2px]">CZ</button>
-        <button type="button" data-lang="en" class="inline-flex items-center gap-1.5 px-3 py-1.5" aria-label="English"><img src="flag-gb.svg" alt="" width="20" height="14" class="h-3.5 w-5 rounded-[2px]">EN</button>
-      </div>
+          <button type="button" data-lang="cs" class="inline-flex items-center gap-1.5 px-3 py-1.5" aria-label="Čeština"><img src="flag-cz.svg" alt="" width="20" height="14" class="h-3.5 w-5 rounded-[2px]">CZ</button>
+          <button type="button" data-lang="en" class="inline-flex items-center gap-1.5 px-3 py-1.5" aria-label="English"><img src="flag-gb.svg" alt="" width="20" height="14" class="h-3.5 w-5 rounded-[2px]">EN</button>
+        </div>
+    </div>
+    <nav id="mainnav" class="mb-6 grid grid-cols-3 gap-1 rounded-2xl border border-neutral-800 bg-neutral-900/80 p-1 backdrop-blur-md" aria-label="Navigation">
+      <a href="./index.html" data-nav="sun" aria-current="page" class="flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1.5 text-center text-xs font-medium leading-tight transition-colors sm:flex-row sm:gap-2 sm:text-sm bg-neutral-800 text-white ring-1 ring-white/15 shadow-[0_0_14px_rgba(255,255,255,.08)]"><span aria-hidden="true" class="text-base leading-none">☀️</span><span data-nav-label>Slunce &amp; Hory</span></a>
+      <a href="./fanal.html" data-nav="fanal" class="flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1.5 text-center text-xs font-medium leading-tight transition-colors sm:flex-row sm:gap-2 sm:text-sm text-neutral-400 hover:text-white hover:bg-white/5"><span aria-hidden="true" class="text-base leading-none">🌫️</span><span data-nav-label>Mlžný Fanal</span></a>
+      <a href="./webcams.html" data-nav="cams" class="flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1.5 text-center text-xs font-medium leading-tight transition-colors sm:flex-row sm:gap-2 sm:text-sm text-neutral-400 hover:text-white hover:bg-white/5"><span aria-hidden="true" class="text-base leading-none">📷</span><span data-nav-label>Webkamery</span></a>
+    </nav>
+    <header class="mb-6">
+      <h1 id="title" class="text-2xl sm:text-3xl font-semibold">Východ slunce – Pico do Arieiro</h1>
+      <a href="./escape.html" data-i18n="navEscape" class="mt-2 inline-block text-sm text-amber-200/80 transition hover:text-amber-100"></a>
     </header>
 
     <div id="modes" class="mb-3 hidden grid-cols-2 gap-2" role="tablist" aria-label="Sunrise / Sunset"></div>
@@ -187,8 +192,6 @@
     </section>
 
     <footer class="mt-10 text-xs text-slate-500">
-      <a href="./fanal.html" data-i18n="navFanal" class="mb-3 inline-block text-sm text-emerald-200/80 transition hover:text-emerald-100"></a>
-      <a href="./webcams.html" data-i18n="navWebcams" class="mb-3 ml-4 inline-block text-sm text-sky-200/80 transition hover:text-sky-100"></a>
       <button id="install" type="button" data-i18n="install" class="mb-3 hidden rounded-lg border border-white/10 px-3 py-1.5 text-slate-300 transition hover:bg-white/10"></button>
       <p id="updated"></p>
       <p class="mt-1" data-i18n="disclaimer">Model: Open-Meteo. Orientační předpověď, ne záruka; před odjezdem zkontroluj aktuální stav.</p>
@@ -248,8 +251,6 @@
       },
       historyEmpty: "Historie pro toto místo se začíná zaznamenávat.", unknown: "❔ Nevíme, jak to dopadlo", backfillNote: "* zpětně dopočteno z archivovaných dat modelu",
       navEscape: "☀️ Hledáte slunce u moře? Zkusit Sunny Escape →",
-      navFanal: "🌲 Hledáte mlžný les? Fanal Fog Index →",
-      navWebcams: "📷 Webkamery →",
       install: "📲 Nainstalovat aplikaci",
       disclaimer: "Model: Open-Meteo. Orientační předpověď, ne záruka; před odjezdem zkontroluj aktuální stav.",
       updated: "Naposledy aktualizováno", stale: "data jsou starší než den!",
@@ -344,8 +345,6 @@
       },
       historyEmpty: "History for this spot is only starting to be recorded.", unknown: "❔ We don't know how it turned out", backfillNote: "* back-computed from archived model data",
       navEscape: "☀️ Looking for sun by the sea? Try Sunny Escape →",
-      navFanal: "🌲 Looking for a misty forest? Fanal Fog Index →",
-      navWebcams: "📷 Webcams →",
       install: "📲 Install app",
       disclaimer: "Model: Open-Meteo. Indicative forecast, not a guarantee; check current conditions before you leave.",
       updated: "Last updated", stale: "data is more than a day old!",
@@ -401,6 +400,8 @@
   let lang = "", data = null, selected = 0, mode = "sunrise", spotKey = "arieiro";
   try { lang = localStorage.getItem("lang") || ""; } catch (e) {}
   if (!T[lang]) lang = (navigator.language || "cs").toLowerCase().startsWith("cs") ? "cs" : "en";
+  const NAV = { cs: { sun: "Slunce & Hory", fanal: "Mlžný Fanal", cams: "Webkamery" }, en: { sun: "Sun & Peaks", fanal: "Misty Fanal", cams: "Webcams" } };
+  const applyNav = (l) => document.querySelectorAll("#mainnav [data-nav]").forEach((a) => { a.querySelector("[data-nav-label]").textContent = NAV[l][a.dataset.nav]; });
   const t = () => T[lang];
   const locale = () => (lang === "cs" ? "cs-CZ" : "en-GB");
   // datum se nikdy nepřevádí přes časovou zónu prohlížeče: den a měsíc jdou přímo z "YYYY-MM-DD"
@@ -871,6 +872,7 @@
 
   function applyLang() {
     document.documentElement.lang = lang;
+    applyNav(lang);
     if (!data) { $("title").textContent = t().titleSunrise(ARIEIRO.name); document.title = $("title").textContent; }
     document.querySelectorAll("[data-i18n]").forEach((n) => { n.textContent = t()[n.dataset.i18n]; });
     document.querySelectorAll("#lang button").forEach((b) => {
