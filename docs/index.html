@@ -166,7 +166,7 @@
       <!-- parametry -->
       <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
-          <p class="text-xs uppercase tracking-wider text-slate-400" data-i18n="departure">Odjezd z Funchalu</p>
+          <p class="text-xs uppercase tracking-wider text-slate-400" data-i18n="departure">Doporučený odjezd</p>
           <p id="departure" class="acc-200 mt-1 text-2xl font-semibold"></p>
         </div>
         <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
@@ -187,7 +187,7 @@
       <!-- počasí během dne -->
       <article id="wx-card" class="rounded-2xl border border-white/10 bg-white/5 p-5">
         <h2 class="text-sm uppercase tracking-widest text-slate-400" data-i18n="wxTitle">Počasí během dne</h2>
-        <p class="mt-1 text-xs text-slate-500" data-i18n="wxNote">Orientačně pro 7:00–20:00. Nemá vliv na skóre.</p>
+        <p class="mt-1 text-xs text-slate-500" data-i18n="wxNote">Orientačně pro 7:00–20:00.</p>
         <div id="wx" class="mt-4 grid gap-4 sm:grid-cols-2"></div>
       </article>
 
@@ -197,19 +197,6 @@
         <div id="tabs" class="grid grid-cols-3 gap-2" role="tablist"></div>
       </div>
 
-      <!-- historie -->
-      <details id="history" class="group mt-6 rounded-2xl border border-white/10 bg-white/5">
-        <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm uppercase tracking-widest text-slate-300">
-          <span data-i18n="history">Historie predikcí</span>
-          <span class="text-slate-400 transition group-open:rotate-180">▾</span>
-        </summary>
-        <div class="px-4 pb-4">
-          <p class="mb-3 text-xs text-slate-400" data-i18n="historyNote">Predikce modelu vs. skutečnost podle ručního hodnocení.</p>
-          <ul id="history-rows" class="divide-y divide-white/5"></ul>
-          <p id="history-empty" class="hidden text-sm text-slate-400" data-i18n="historyEmpty">Zatím žádné dny v historii.</p>
-          <p class="mt-3 text-xs text-slate-500" data-i18n="backfillNote">* zpětně dopočteno z archivovaných dat modelu</p>
-        </div>
-      </details>
     </section>
 
     <footer class="mt-10 text-xs text-slate-500">
@@ -253,7 +240,7 @@
       sunsetAlert: (a) => ({ fog: "Vrchol bude pravděpodobně v mraku/mlze.", overcast: "Zataženo – slunce nebude vidět.", gusts: `Silné nárazy větru na útesu (${a.value} km/h).`, horizon_east: `Nízké mraky na východním obzoru (${a.value} %) mohou zakrýt slunce.`,
                              precip: `Srážky kolem západu: ${a.value} mm.`, horizon: `Nízké mraky na západním obzoru (${a.value} %) mohou zakrýt slunce.`,
                              visibility: `Snížená dohlednost (${a.value} km).`, no_cloud_data: "Chybí data o oblačnosti." })[a.code] || a.code,
-      score: "% skóre", departure: "Odjezd z Funchalu", deck: "Hladina mraků",
+      score: "% skóre", departure: "Doporučený odjezd", deck: "Hladina mraků",
       above: (n) => `${n} nad mraky`, wind: "Vítr", gust: "nárazy", outlook: "Výhled", today: "Dnes", tomorrow: "Zítra",
       history: "Historie predikcí", historyNote: "Predikce modelu vs. skutečnost podle ručního hodnocení (pokud je zadané).",
       hActual: "Skutečnost", hDetail: "Detail dne",
@@ -282,7 +269,7 @@
       outcome: { cloud_sea: "🌊 Nádherná inverze", clear: "☀️ Jasno bez mraků", mixed: "⛅ Částečně zataženo", fail: "🌫 V mlze / nepovedlo se" },
       head: { GO: "Vypadá to dobře.", MAYBE: "Hazard, výsledek je nejistý.", NO_GO: "Spíš zůstaň v posteli." },
       comp: { sky: "oblačnost", color: "barvy oblohy", visibility: "dohlednost", wind: "vítr", cloudsea: "moře mraků" },
-      wxTitle: "Počasí během dne", wxNote: "Orientačně pro 7:00–20:00. Nemá vliv na skóre.",
+      wxTitle: "Počasí během dne", wxNote: "Orientačně pro 7:00–20:00.",
       place: { arieiro: "Pico do Arieiro (hory)", pico_ruivo: "Pico Ruivo (hory)", bica_da_cana: "Bica da Cana (hory)",
                ponta_do_rosto: "Ponta do Rosto (pobřeží)", ponta_do_pargo: "Ponta do Pargo (pobřeží)", cristo_rei: "Cristo Rei (pobřeží)" },
       mapTime: { sunrise: "Východ", sunset: "Západ" }, mapScore: "skóre", mapDetail: "Detail předpovědi ↓", mapClose: "Zavřít",
@@ -346,7 +333,7 @@
       sunsetAlert: (a) => ({ fog: "The summit will probably be in cloud/fog.", overcast: "Overcast – the sun will not be visible.", gusts: `Strong gusts on the cliff (${a.value} km/h).`, horizon_east: `Low clouds on the eastern horizon (${a.value}%) may hide the sun.`,
                              precip: `Rain around sunset: ${a.value} mm.`, horizon: `Low clouds on the western horizon (${a.value}%) may hide the sun.`,
                              visibility: `Reduced visibility (${a.value} km).`, no_cloud_data: "Cloud cover data missing." })[a.code] || a.code,
-      score: "% score", departure: "Leave Funchal", deck: "Cloud deck top",
+      score: "% score", departure: "Suggested departure", deck: "Cloud deck top",
       above: (n) => `${n} above clouds`, wind: "Wind", gust: "gusts", outlook: "Outlook", today: "Today", tomorrow: "Tomorrow",
       history: "Prediction history", historyNote: "Model prediction vs. what actually happened (when rated by hand).",
       hActual: "Actual", hDetail: "Day details",
@@ -375,7 +362,7 @@
       outcome: { cloud_sea: "🌊 Magnificent cloud sea", clear: "☀️ Clear, no clouds", mixed: "⛅ Partly cloudy", fail: "🌫 Fogged in / failed" },
       head: { GO: "Looks good.", MAYBE: "A gamble, the outcome is uncertain.", NO_GO: "Better stay in bed." },
       comp: { sky: "cloud cover", color: "sky colours", visibility: "visibility", wind: "wind", cloudsea: "cloud sea" },
-      wxTitle: "Weather during the day", wxNote: "Rough guide for 7:00–20:00. Does not affect the score.",
+      wxTitle: "Weather during the day", wxNote: "Rough guide for 7:00–20:00.",
       place: { arieiro: "Pico do Arieiro (mountains)", pico_ruivo: "Pico Ruivo (mountains)", bica_da_cana: "Bica da Cana (mountains)",
                ponta_do_rosto: "Ponta do Rosto (coast)", ponta_do_pargo: "Ponta do Pargo (coast)", cristo_rei: "Cristo Rei (coast)" },
       mapTime: { sunrise: "Sunrise", sunset: "Sunset" }, mapScore: "score", mapDetail: "Forecast detail ↓", mapClose: "Close",
@@ -552,7 +539,6 @@
             openSnapshot(null);
             if (u === snapPrimary || urls.includes(snapUrl("morning")) || urls.includes(snapUrl("sunset"))) { snapLoaded = ""; renderMorning(); }
             brokenSnaps.add(snapPrimary);
-            renderHistory();
           }
         });
         img.src = u;
@@ -805,108 +791,6 @@
     const grp = mode === "sunset" ? data.sunset : data.sunrise;
     return (grp && grp.spots && grp.spots[spotKey]) || null;
   }
-  const dash = "—";
-  const val = (v, unit = "") => (v == null ? dash : `${num(v)}${unit}`);
-  let openRow = null;
-
-  function histCell(icon, label, value, sub) {
-    const c = el("div", "rounded-lg bg-white/5 px-3 py-2");
-    c.append(el("p", "text-[11px] uppercase tracking-wider text-slate-400", `${icon} ${label}`),
-      el("p", "mt-0.5 text-base font-semibold text-slate-100", value));
-    if (sub) c.append(el("p", "text-xs text-slate-400", sub));
-    return c;
-  }
-
-  function diagnosis(h) {
-    const L = t(), names = { ...L.comp, ...L.sunsetComp }, r = h.reason;
-    if (h.inversion_case && L.hDiag[h.inversion_case]) {
-      let text = L.hDiag[h.inversion_case](h);
-      if (h.humidity_peak != null) text += ` ${L.hHum}: ${num(h.humidity_peak)} % (${h.humidity_peak < 40 ? L.hDry : L.hMoist}).`;
-      return text;
-    }
-    if (r) return r.problem ? L.hProblem[r.problem] : r.weakest ? L.hWeakest(names[r.weakest] || r.weakest) : L.hNoProblem;
-    return h.summary || dash;
-  }
-
-  function historyDetail(h) {
-    const L = t(), grid = el("div", "grid grid-cols-2 gap-2 sm:grid-cols-3");
-    const sign = (v) => (v >= 0 ? "+" : "") + num(v);
-    grid.append(
-      h.cloud_top != null
-        ? histCell("☁️", L.hTopLabel, `${num(h.cloud_top)} m`, h.above_deck_m != null ? `${sign(h.above_deck_m)} m ${L.hAbove}` : "")
-        : histCell("☁️", L.hBase, h.cloud_base == null ? dash : `~${num(h.cloud_base)} m`, h.cloud_base != null ? L.hBaseNote : ""),
-      h.humidity_peak != null
-        ? histCell("💧", L.hHum, `${num(h.humidity_peak)} %`, h.humidity_peak < 40 ? L.hDry : L.hMoist)
-        : histCell("👁", L.hVis, val(h.visibility_km, " km")),
-      histCell("💨", L.hWindGust, val(h.wind_speed, " km/h"), h.wind_gusts == null ? "" : `${L.hGust} ${num(h.wind_gusts)} km/h`),
-      histCell("🎨", L.hClouds, `${L.hLow} ${val(h.cloud_cover_low, " %")}`,
-        h.cloud_cover_high != null ? `${L.hHigh} ${num(h.cloud_cover_high)} %` : h.canvas_cloud != null ? `${L.hCanvas} ${num(h.canvas_cloud)} %` : ""),
-      histCell("🌡", L.hTemp, h.temp == null ? dash : `${num(h.temp)} °C`),
-      histCell("🌅", L.hHorizon, val(h.horizon_low_cloud, " %")),
-    );
-    const box = el("div", "mb-3 space-y-2 rounded-xl border border-white/10 bg-slate-900/80 p-3");
-    box.append(grid, el("p", "text-sm leading-relaxed text-slate-300", diagnosis(h)),
-      h.outcome ? el("p", "text-sm text-slate-200", `${L.hActual}: ${L.outcome[h.outcome] || h.outcome}`)
-                : el("p", "text-sm italic text-slate-500", L.unknown));
-    return box;
-  }
-
-  function renderHistory(spotData = currentSpotData()) {
-    const L = t();
-    const own = (spotData && spotData.history) || [];
-    const rows = spotKey === "arieiro" && (data.history || []).length ? data.history : own;
-    $("history-empty").classList.toggle("hidden", rows.length > 0);
-    $("history-rows").replaceChildren(...rows.map((h, i) => {
-      const id = `${spotKey}|${h.date}`, isOpen = openRow === id;
-      const li = el("li", "hrow" + (isOpen ? " open" : ""));
-      const day = `${L.short[parse(h.date).getDay()]} ${fmtDate(h.date)}`;
-      const score = h.score != null ? h.score : h.score_pct;
-      const head = el("div", "flex items-center");
-      const btn = el("button", "flex min-h-[52px] flex-1 items-center gap-3 py-2 text-left");
-      btn.type = "button";
-      btn.setAttribute("aria-expanded", isOpen);
-      btn.setAttribute("aria-controls", `hp-${i}`);
-      btn.title = L.hDetail;
-      const when = el("span", "whitespace-nowrap text-sm text-slate-300", day + (h.time ? ` · ${h.time}` : ""));
-      const right = el("span", "ml-auto flex items-center gap-2");
-      if (score == null) right.append(el("span", "text-slate-500", dash));
-      else {
-        right.append(el("span", `rounded-md px-2 py-0.5 text-xs font-semibold ${style(h.verdict).badge}`, L.verdict[h.verdict] || h.verdict),
-          el("span", "text-sm text-slate-300", `${score} %` + (h.source === "backfill" ? " *" : "")));
-      }
-      right.append(el("span", "chev text-slate-400", "▾"));
-      btn.append(when, right);
-      head.append(btn);
-      if (h.webcam_url && !brokenSnaps.has(h.webcam_url)) {
-        const cam = el("button", "ml-1 min-h-[44px] min-w-[44px] rounded-md hover:bg-white/10", "📷");
-        cam.type = "button";
-        cam.title = L.snapTitle;
-        cam.setAttribute("aria-label", L.snapTitle);
-        cam.addEventListener("click", () => {
-          const p = predText(h);
-          const tm = (h.webcam_times || [h.webcam_time || ""]).join(" + ");
-          openSnapshot(h.webcam_urls || [h.webcam_url], p ? L.snapCap(day, tm, p) : L.snapCapNoPred(day, tm));
-        });
-        head.append(cam);
-      }
-      const panel = el("div", "hpanel");
-      panel.id = `hp-${i}`;
-      const inner = el("div");
-      inner.append(historyDetail(h));
-      panel.append(inner);
-      btn.addEventListener("click", () => {  // harmonika: otevře se jen jeden řádek
-        openRow = openRow === id ? null : id;
-        $("history-rows").querySelectorAll(".hrow").forEach((r) => {
-          const on = r === li && openRow === id;
-          r.classList.toggle("open", on);
-          r.querySelector("button[aria-expanded]").setAttribute("aria-expanded", on);
-        });
-      });
-      li.append(head, panel);
-      return li;
-    }));
-  }
-
   function renderUpdated() {
     if (!data) return;
     const d = new Date(data.generated_at), stale = (Date.now() - d.getTime()) / 36e5 > 24;
@@ -927,7 +811,7 @@
     if (data) {
       renderMode();
       showDay();
-      renderTabs(); renderHistory(); renderUpdated(); renderSpots(); renderMap();
+      renderTabs(); renderUpdated(); renderSpots(); renderMap();
     }
   }
 
