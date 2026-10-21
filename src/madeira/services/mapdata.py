@@ -18,10 +18,11 @@ CONDITIONS = ("sunny", "cloudy", "rain", "fog", "above_clouds")
 RAIN_CODES = {51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82, 95, 96, 99}
 FOG_CODES = {45, 48}
 CLOUDY_FROM_PCT = 60  # celková oblačnost, od které je bod "cloudy"
-PEAK_MIN_M = 1000  # od této výšky může být bod nad mraky
+PEAK_MIN_M = 1400  # od této výšky může být bod nad mraky (body ~1000 m jsou v zóně vaření mraků)
 LOWLAND_MAX_M = 400  # "pod mraky" měříme na nížinných bodech
 DECK_LOW_CLOUD_PCT = 70  # medián nízké oblačnosti nížin, od kterého existuje mořské mraky
-ABOVE_MAX_RH = 90  # vlhčí vrchol je spíš v mraku než nad nimi
+ABOVE_MAX_RH = 65  # vlhčí vrchol je v cárech/mlze, ne nad mraky (suchá inverze: 20–50 %)
+ABOVE_MAX_POP = 15  # pravděpodobnost srážek (%) musí být pod touto hranicí
 
 _FIELDS = {  # klíč v JSONu → proměnná Open-Meteo
     "temp": "temperature_2m",
@@ -44,7 +45,14 @@ def condition_type(code, cloud, rh, precip, pop, altitude_m: int, deck: bool) ->
         return "rain"
     if code in FOG_CODES:
         return "fog"
-    if altitude_m >= PEAK_MIN_M and deck and (rh is None or rh <= ABOVE_MAX_RH):
+    if (
+        altitude_m >= PEAK_MIN_M
+        and deck
+        and rh is not None
+        and rh <= ABOVE_MAX_RH
+        and (pop or 0) < ABOVE_MAX_POP
+        and not precip
+    ):
         return "above_clouds"
     if (cloud or 0) >= CLOUDY_FROM_PCT or code == 3:
         return "cloudy"

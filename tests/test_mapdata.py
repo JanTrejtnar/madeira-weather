@@ -85,6 +85,14 @@ def test_spot_columns_align_with_timestamps():
         ({"code": 45, "cloud": 100, "rh": 100}, 1100, False, "fog"),
         ({"code": 0, "cloud": 5, "rh": 50}, 1800, True, "above_clouds"),
         ({"code": 3, "cloud": 100, "rh": 98}, 1800, True, "cloudy"),  # vrchol v mraku, ne nad nimi
+        ({"code": 0, "cloud": 5, "rh": 80}, 1800, True, "sunny"),  # RH 80 % → cárý, ne nad mraky
+        ({"code": 3, "cloud": 90, "rh": 80}, 1800, True, "cloudy"),
+        ({"code": 0, "cloud": 5, "rh": 66}, 1800, True, "sunny"),
+        ({"code": 0, "cloud": 5, "rh": 65}, 1800, True, "above_clouds"),
+        ({"code": 0, "cloud": 5, "rh": 50, "pop": 15}, 1800, True, "sunny"),
+        ({"code": 0, "cloud": 5, "rh": 50, "pop": 14}, 1800, True, "above_clouds"),
+        ({"code": 0, "cloud": 5, "rh": 50}, 1000, True, "sunny"),  # 1000 m už není dost vysoko
+        ({"code": 0, "cloud": 5, "rh": 50}, 1399, True, "sunny"),
         ({"code": 0, "cloud": 5}, 10, True, "sunny"),  # nížina nikdy "above_clouds"
     ],
 )

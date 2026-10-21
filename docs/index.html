@@ -51,22 +51,33 @@
     @media (prefers-reduced-motion: reduce) { .hpanel, .hrow .chev { transition: none; } }
     .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
-    /* mapa */
-    #map { background: #0f172a; }
+    /* mapa: stejný vizuální jazyk jako map.html */
+    #map { background: #212f38; }
+    #map .leaflet-tile-pane { filter: invert(1) hue-rotate(185deg) brightness(.78) contrast(.95) saturate(.55); }
     .leaflet-container { font: inherit; }
-    .dark .leaflet-tile { filter: brightness(0.6) invert(1) contrast(2.5) hue-rotate(190deg) saturate(0.2); }
-    .pin-wrap { background: none; border: 0; }
-    .pin { position: relative; display: block; width: 18px; height: 18px; border-radius: 9999px; border: 2px solid #fff;
-           background: var(--pin); animation: pin-pulse 2s infinite; }
-    .pin.dim { opacity: .4; animation: none; }
-    .pin.sel { width: 24px; height: 24px; margin: -3px 0 0 -3px; }
-    .pin-go { --pin: #34d399; } .pin-maybe { --pin: #fbbf24; } .pin-nogo { --pin: #fb7185; }
-    @keyframes pin-pulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--pin) 70%, transparent); }
-                           70% { box-shadow: 0 0 0 14px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
-    @media (prefers-reduced-motion: reduce) { .pin { animation: none; } }
-    .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: #1e293b; color: #f1f5f9; }
-    .leaflet-popup-content { margin: 10px 14px; line-height: 1.4; }
-    .leaflet-popup-content .v-go { color: #6ee7b7; } .leaflet-popup-content .v-maybe { color: #fcd34d; } .leaflet-popup-content .v-nogo { color: #fda4af; }
+    .leaflet-control-attribution { background: rgba(15,23,42,.7) !important; color: #94a3b8 !important; font-size: 10px; }
+    .leaflet-control-attribution a { color: #cbd5e1 !important; }
+    .leaflet-bar a { background: rgba(15,23,42,.85); color: #e2e8f0; border-color: rgba(255,255,255,.12); }
+    .leaflet-bar a:hover { background: #1e293b; color: #fff; }
+    .vp-icon { width: 0; height: 0; }
+    .vp { position: absolute; left: 0; top: 0; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 4px;
+          padding: 4px 9px 4px 6px; border-radius: 999px; border: 1px solid; font: 600 12px/1 system-ui, sans-serif;
+          white-space: nowrap; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.5); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+    .vp::before { content: ""; position: absolute; inset: -7px; }
+    .vp .ic { font-size: 13px; line-height: 1; }
+    .vp .vd { font-weight: 700; letter-spacing: .02em; }
+    .vp.v-go    { background: rgba(6,95,70,.9);   border-color: #fcd34d; color: #ecfdf5; }
+    .vp.v-maybe { background: rgba(154,81,6,.9);  border-color: #fb923c; color: #ffedd5; }
+    .vp.v-nogo  { background: rgba(51,65,85,.88); border-color: #94a3b8; color: #cbd5e1; }
+    .v-go-t { color: #6ee7b7; } .v-maybe-t { color: #fdba74; } .v-nogo-t { color: #cbd5e1; }
+    #map.compact .vp { padding: 2px 6px 2px 4px; font-size: 11px; gap: 2px; }
+    #map.compact .vp .vd { display: none; }
+    .vp.dim { opacity: .55; }
+    .vp.sel { box-shadow: 0 0 0 3px rgba(255,255,255,.9), 0 4px 14px rgba(0,0,0,.6); opacity: 1; }
+    .glass { background: rgba(15,23,42,.78); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+             border: 1px solid rgba(255,255,255,.12); box-shadow: 0 8px 30px rgba(0,0,0,.45); }
+    #mapdrawer { bottom: 8px; }
+    @media (min-width: 640px) { #mapdrawer { inset-inline: auto 12px; bottom: auto; top: 12px; width: 18rem; } }
   </style>
 </head>
 <body class="dark min-h-screen text-slate-100 antialiased" data-mode="sunrise">
@@ -96,7 +107,10 @@
 
     <section id="content" class="hidden space-y-4">
       <!-- mapa -->
-      <div id="map" class="h-[280px] w-full overflow-hidden rounded-2xl border border-white/10 shadow-xl" role="region" aria-label="Map"></div>
+      <div class="relative isolate overflow-hidden rounded-2xl border border-white/10 shadow-xl">
+        <div id="map" class="h-[340px] w-full sm:h-[380px]" role="region" aria-label="Map"></div>
+        <aside id="mapdrawer" class="glass absolute inset-x-2 z-[1100] hidden rounded-2xl p-3" aria-live="polite"></aside>
+      </div>
 
       <!-- hlavní karta -->
       <article class="rounded-3xl border border-white/10 bg-white/5 p-6 sm:p-8 shadow-xl backdrop-blur">
@@ -265,7 +279,7 @@
       wxTitle: "Počasí během dne", wxNote: "Orientačně pro 7:00–20:00. Nemá vliv na skóre.",
       place: { funchal: "Funchal (pobřeží)", arieiro: "Pico do Arieiro (hory)", pico_ruivo: "Pico Ruivo (hory)", bica_da_cana: "Bica da Cana (hory)",
                ponta_do_rosto: "Ponta do Rosto (pobřeží)", ponta_do_pargo: "Ponta do Pargo (pobřeží)", cristo_rei: "Cristo Rei (pobřeží)" },
-      mapTime: { sunrise: "Východ", sunset: "Západ" }, mapScore: "skóre",
+      mapTime: { sunrise: "Východ", sunset: "Západ" }, mapScore: "skóre", mapDetail: "Detail předpovědi ↓", mapClose: "Zavřít",
       wx: {
         rain: (w) => ({
           none: "☀️ Nebude pršet, suchý den.",
@@ -358,7 +372,7 @@
       wxTitle: "Weather during the day", wxNote: "Rough guide for 7:00–20:00. Does not affect the score.",
       place: { funchal: "Funchal (coast)", arieiro: "Pico do Arieiro (mountains)", pico_ruivo: "Pico Ruivo (mountains)", bica_da_cana: "Bica da Cana (mountains)",
                ponta_do_rosto: "Ponta do Rosto (coast)", ponta_do_pargo: "Ponta do Pargo (coast)", cristo_rei: "Cristo Rei (coast)" },
-      mapTime: { sunrise: "Sunrise", sunset: "Sunset" }, mapScore: "score",
+      mapTime: { sunrise: "Sunrise", sunset: "Sunset" }, mapScore: "score", mapDetail: "Forecast detail ↓", mapClose: "Close",
       wx: {
         rain: (w) => ({
           none: "☀️ No rain, a dry day.",
@@ -650,42 +664,64 @@
   }
 
   // ---- mapa ----
-  let map = null, LL = null;
+  let map = null, LL = null, mapOpen = false;
   const markers = {};
   const pinClass = (verdict) => ({ GO: "pin-go", MAYBE: "pin-maybe", NO_GO: "pin-nogo" })[verdict] || "pin-maybe";
   const pinText = (verdict) => ({ GO: "v-go", MAYBE: "v-maybe", NO_GO: "v-nogo" })[verdict] || "v-maybe";
 
-  function popupNode(s) {
-    const L = t(), box = el("div");
-    box.append(el("strong", null, s.name), el("br"),
-      el("span", pinText(s.verdict) + " font-semibold", L.verdict[s.verdict] || s.verdict),
-      document.createTextNode(` · ${s.score_pct} % ${L.mapScore}`), el("br"),
-      document.createTextNode(`${L.mapTime[s.kind]} ${s.time}`));
-    return box;
+  const vClass = (v) => ({ GO: "v-go", MAYBE: "v-maybe", NO_GO: "v-nogo" })[v] || "v-maybe";
+  const vEmoji = (s) => (s.kind === "sunset" ? "🌇" : "🌅");
+
+  function pillNode(s) {
+    const L = t(), p = el("div", `vp ${vClass(s.verdict)}${s.key === spotKey ? " sel" : ""}${s.kind !== mode ? " dim" : ""}`);
+    p.append(el("span", "ic", vEmoji(s)), el("span", null, `${s.score_pct} %`), el("span", "vd", L.verdict[s.verdict] || s.verdict));
+    return p;
   }
 
   function pinIcon(s) {
-    return LL.divIcon({ className: "pin-wrap", html: `<span class="pin ${pinClass(s.verdict)}${s.key === spotKey ? " sel" : ""}${s.kind !== mode ? " dim" : ""}"></span>`,
-                        iconSize: [18, 18], iconAnchor: [9, 9], popupAnchor: [0, -12] });
+    return LL.divIcon({ className: "vp-icon", html: pillNode(s), iconSize: [0, 0] });
+  }
+
+  function renderMapDrawer() {
+    const box = $("mapdrawer"), s = allSpots().find((x) => x.key === spotKey);
+    if (!s || !mapOpen) { box.classList.add("hidden"); return; }
+    const L = t(), head = el("div", "flex items-start justify-between gap-2");
+    const title = el("div", "min-w-0");
+    title.append(el("p", "truncate text-base font-semibold text-white", s.name),
+      el("p", "text-sm", ""), el("p", "text-xs text-slate-400", `${vEmoji(s)} ${L.mapTime[s.kind]} ${s.time}`));
+    const line = title.children[1];
+    line.append(el("span", vClass(s.verdict) + "-t font-semibold", L.verdict[s.verdict] || s.verdict), document.createTextNode(` · ${s.score_pct} % ${L.mapScore}`));
+    const x = el("button", "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-300 hover:bg-white/10", "✕");
+    x.type = "button"; x.setAttribute("aria-label", L.mapClose);
+    x.onclick = () => { mapOpen = false; renderMapDrawer(); };
+    head.append(title, x);
+    const go = el("button", "mt-2 w-full rounded-xl border border-white/10 bg-white/10 px-3 py-2.5 text-sm font-medium text-white hover:bg-white/15", L.mapDetail);
+    go.type = "button";
+    go.onclick = () => { const c = $("title"); if (c) c.scrollIntoView({ behavior: "smooth", block: "start" }); };
+    box.replaceChildren(head, go);
+    box.classList.remove("hidden");
   }
 
   function initMap() {
     if (map || !window.L || !data) return;
     LL = window.L;
-    map = LL.map("map", { scrollWheelZoom: false }).setView([32.75, -16.98], 10);
+    map = LL.map("map", { scrollWheelZoom: false, zoomSnap: 0.5, zoomDelta: 0.5 }).setView([32.75, -16.98], 10);
     const pts = allSpots().filter((s) => s.lat != null && s.lon != null).map((s) => [s.lat, s.lon]);
-    if (pts.length > 1) map.fitBounds(pts, { padding: [28, 28], maxZoom: 11 });  // všechny špendlíky se vejdou i na mobilu
-    LL.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    if (pts.length > 1) map.fitBounds(pts, { padding: [46, 40], maxZoom: 11 });  // všechny pills se vejdou i na mobilu
+    LL.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map);
+    LL.DomEvent.disableClickPropagation($("mapdrawer"));
     allSpots().forEach((s) => {
       if (s.lat == null || s.lon == null) return;
       const mk = LL.marker([s.lat, s.lon], { icon: pinIcon(s), title: s.name, keyboard: true }).addTo(map);
-      mk.bindPopup(() => popupNode(allSpots().find((x) => x.key === s.key) || s));
-      mk.on("click", () => { if (spotKey !== s.key) selectSpot(s.key, { fly: false }); });
+      mk.on("click", () => { mapOpen = true; if (spotKey !== s.key) selectSpot(s.key, { fly: false }); else renderMapDrawer(); });
       markers[s.key] = mk;
     });
+    const sizeMode = () => $("map").classList.toggle("compact", map.getZoom() < 11);  // zoom < 11: jen ikona + skóre
+    map.on("zoomend", sizeMode); sizeMode();
+    map.on("click", () => { mapOpen = false; renderMapDrawer(); });
     map.invalidateSize();
   }
 
@@ -696,21 +732,21 @@
       const mk = markers[s.key];
       if (!mk) return;
       mk.setIcon(pinIcon(s));
-      // stejný vrchol má špendlík pro východ i západ: mimo aktivní režim se schová, ať se nepřekrývají
+      mk.setZIndexOffset(s.key === spotKey ? 500 : s.kind === mode ? 100 : 0);
+      // stejný vrchol má pill pro východ i západ: mimo aktivní režim se schová, ať se nepřekrývají
       const twin = all.some((o) => o.key !== s.key && o.lat === s.lat && o.lon === s.lon);
       const hide = twin && s.kind !== mode;
       if (hide && map.hasLayer(mk)) map.removeLayer(mk);
       else if (!hide && !map.hasLayer(mk)) mk.addTo(map);
     });
+    renderMapDrawer();
   }
 
   function mapFocus(key, fly) {
     const mk = markers[key];
     if (!map || !mk) return;
-    if (fly) {
-      map.once("moveend", () => mk.openPopup());
-      map.flyTo(mk.getLatLng(), 11);
-    } else mk.openPopup();
+    if (fly) map.flyTo(mk.getLatLng(), Math.max(map.getZoom(), 11));
+    else map.panTo(mk.getLatLng());
   }
 
   const fixMap = () => { if (map) map.invalidateSize(); };

@@ -54,10 +54,10 @@
     .wp.c-fog          { background: rgba(71,85,105,.88); border-color: #cbd5e1; color: #f1f5f9; border-style: dashed; }
     .wp.c-above_clouds { background: linear-gradient(135deg, rgba(133,77,14,.92), rgba(14,116,144,.92)); border-color: #67e8f9; color: #ecfeff; }
     .wp.sel { box-shadow: 0 0 0 3px rgba(255,255,255,.9), 0 4px 14px rgba(0,0,0,.6); }
-    .wp.off { display: none; }
-    .compact .wp { padding: 3px 6px 3px 4px; font-size: 11px; gap: 2px; }
-    .compact .wp .ar { display: none; }
-    .compact .wp .ic { font-size: 12px; }
+    .wp .nm { font-weight: 500; opacity: .85; padding-left: 2px; }
+    .compact .wp { padding: 2px 5px 2px 3px; font-size: 10.5px; gap: 1px; }
+    .compact .wp .ar, .compact .wp .nm { display: none; }
+    .compact .wp .ic { font-size: 11px; }
 
     /* Posuvník */
     input[type=range].tl { -webkit-appearance: none; appearance: none; width: 100%; height: 28px; background: transparent; touch-action: none; cursor: pointer; }
@@ -127,6 +127,7 @@
   const TZ = "Atlantic/Madeira";
   const HOME = [[32.60, -17.30], [32.90, -16.65]];  // pohled na celý ostrov
   const LIMITS = [[31.3, -18.6], [34.2, -15.4]];  // zamčené meze posunu
+  const FULL_ZOOM = 11;
   const STEP_MS = 1200;
   const TILE_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";  // s API klíčem lze vrátit https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png a odstranit filtr v CSS
   const ARROW = '<svg class="ar" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l7 19-7-4-7 4z"/></svg>';
@@ -202,7 +203,8 @@
     markers = data.spots.map((s) => {
       const pill = el("div", "wp");
       const icEl = el("span", "ic"), tpEl = el("span", "tp");
-      pill.append(icEl, tpEl);
+      const nmEl = el("span", "nm", s.name);
+      pill.append(icEl, tpEl, nmEl);
       pill.insertAdjacentHTML("beforeend", ARROW);
       const arEl = pill.lastChild;
       const marker = L.marker([s.lat, s.lon], {
@@ -233,18 +235,9 @@
     }
   }
 
-  // při malém přiblížení schová body, které by se překrývaly (pořadí v JSONu = priorita)
+  // adaptivní velikost: při malém přiblížení jen ikona + teplota, od FULL_ZOOM i název a šipka větru (nic se neskrývá)
   function declutter() {
-    const z = map.getZoom();
-    $("map").classList.toggle("compact", z < 10.5);
-    const kept = [];
-    for (const m of markers) {
-      const p = map.latLngToContainerPoint(m.marker.getLatLng());
-      const w = z < 10.5 ? 46 : 62, h = 26;
-      const hide = m.spot.id !== selected && kept.some((q) => Math.abs(q.x - p.x) < w && Math.abs(q.y - p.y) < h);
-      if (!hide) kept.push(p);
-      if (hide !== m.off) { m.pill.classList.toggle("off", hide); m.off = hide; }
-    }
+    $("map").classList.toggle("compact", map.getZoom() < FULL_ZOOM);
   }
 
   // ---------- časová osa ----------
