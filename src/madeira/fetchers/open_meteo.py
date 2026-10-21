@@ -244,9 +244,9 @@ class OpenMeteoFetcher:
         return parse_response(payload, locations, model, fetched)
 
     def _get(self, params: dict, url: str = URL) -> dict | list:
-        client = self._client or httpx.Client(timeout=30)
+        client = self._client or httpx.Client(timeout=httpx.Timeout(30, connect=20))
         last: Exception | None = None
-        for attempt in range(3):
+        for attempt in range(5):
             try:
                 resp = client.get(url, params=params)
                 if resp.status_code == 429 or resp.status_code >= 500:
@@ -257,5 +257,6 @@ class OpenMeteoFetcher:
                 return resp.json()
             except httpx.HTTPError as exc:
                 last = exc
-                time.sleep(2**attempt)
+                if attempt < 4:
+                    time.sleep(3 * 2**attempt)  # 3, 6, 12, 24 s – přechodné výpadky sítě na runneru
         raise RuntimeError(f"Open-Meteo nedostupné: {last}")

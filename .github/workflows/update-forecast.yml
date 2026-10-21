@@ -36,6 +36,7 @@ jobs:
         run: madeira export-map
 
       - name: Commit and push if changed
+        if: ${{ !cancelled() }}  # i při selhání mapy se uloží, co se podařilo vyexportovat
         run: |
           if git diff --quiet -- docs/data.json docs/map_data.json docs/story-latest.png docs/og-preview.png; then
             echo "No changes in docs/data.json"
