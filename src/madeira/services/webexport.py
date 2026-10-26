@@ -46,13 +46,11 @@ NETMADEIRA_SNAPSHOT = (
     "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/"
     "pico-do-arieiro/{day:%Y-%m-%d}/{slot}.jpg"
 )
-MORNING_SNAPSHOT_SLOTS = ["08_00", "08_30"]  # ranní sloty timelapsu (půlhodinové, místní čas Madeiry)
-MORNING_SNAPSHOT_SLOT = MORNING_SNAPSHOT_SLOTS[0]
+MORNING_SNAPSHOT_SLOTS = ["08_00", "08_30"]  # ranní sloty za letního času (WEST); v zimě (WET) o hodinu dřív
 SNAPSHOT_RETENTION_DAYS = 7  # NetMadeira drží snímky jen týden zpět
 ARIEIRO_LAT, ARIEIRO_LON = 32.7358, -16.9291
 
 
-MORNING_READY = time(8, 0)  # od tohoto místního času (WET i WEST) je snímek „Dnes 08:00“; dřív je to včerejší ráno
 SNAPSHOT_AFTER_SUNSET_MIN = 30  # večerní slot po západu (barvy oblohy) je hotový zhruba o půl hodiny později
 
 
@@ -93,9 +91,10 @@ def relative_label(day: date, today: date) -> str | None:
 
 
 def morning_snapshot_day(local: datetime) -> tuple[date, str]:
-    """Den ranního snímku: dnes od 08:00 místního času, před tím striktně včerejší ráno (idempotentní)."""
+    """Den ranního snímku: dnes od prvního ranního slotu (08:00 WEST / 07:00 WET), před tím včerejší ráno."""
     today = local.date()
-    return (today, "today") if local.time() >= MORNING_READY else (today - timedelta(days=1), "yesterday")
+    first = morning_snapshot_slots(today)[0]
+    return (today, "today") if local.time() >= time(int(first[:2]), int(first[3:])) else (today - timedelta(days=1), "yesterday")
 
 
 def sunset_snapshot_day(local: datetime) -> tuple[date, str]:
@@ -116,6 +115,12 @@ def _slot(minutes: int) -> str:
     return f"{minutes // 60:02d}_{minutes % 60:02d}"
 
 
+def morning_snapshot_slots(day: date) -> list[str]:
+    """Ranní sloty u východu slunce: `08_00`, `08_30` za WEST, po přechodu na zimní čas (WET) `07_00`, `07_30`."""
+    shift = round(datetime(day.year, day.month, day.day, 12, tzinfo=TZ).utcoffset().total_seconds() / 60)
+    return [_slot(int(x[:2]) * 60 + int(x[3:]) + shift - 60) for x in MORNING_SNAPSHOT_SLOTS]
+
+
 def sunset_snapshot_slots(day: date) -> list[str]:
     """Slot nejblíž západu slunce a ten následující (po západu, barvy oblohy), např. `19_30`, `20_00`."""
     t = sunset_local(day)
@@ -129,7 +134,7 @@ def sunset_snapshot_slot(day: date) -> str:
 
 def morning_webcam_urls(day) -> list[str]:
     """URL ranních snímků (08:00 a o půl hodiny později) timelapsu NetMadeira z Arieira (nic se nestahuje)."""
-    return [NETMADEIRA_SNAPSHOT.format(day=day, slot=slot) for slot in MORNING_SNAPSHOT_SLOTS]
+    return [NETMADEIRA_SNAPSHOT.format(day=day, slot=slot) for slot in morning_snapshot_slots(day)]
 
 
 def morning_webcam_url(day) -> str:
@@ -268,7 +273,7 @@ def with_snapshot_links(history: list[dict], today, evening: bool = False) -> li
         day = date.fromisoformat(row["date"])
         if oldest <= day <= today:
             urls = sunset_webcam_urls(day) if evening else morning_webcam_urls(day)
-            slots = sunset_snapshot_slots(day) if evening else MORNING_SNAPSHOT_SLOTS
+            slots = sunset_snapshot_slots(day) if evening else morning_snapshot_slots(day)
             row["webcam_url"], row["webcam_time"] = urls[0], _slot_time(slots[0])
             row["webcam_urls"], row["webcam_times"] = urls, [_slot_time(x) for x in slots]
         out.append(row)
@@ -798,9 +803,9 @@ def build_payload(
         "morning_webcam_url": morning_webcam_url(morning_day),
         "morning_webcam_date": morning_day.isoformat(),
         "morning_webcam_day": morning_rel,
-        "morning_webcam_time": _slot_time(MORNING_SNAPSHOT_SLOT),
+        "morning_webcam_time": _slot_time(morning_snapshot_slots(morning_day)[0]),
         "morning_webcam_urls": morning_webcam_urls(morning_day),
-        "morning_webcam_times": [_slot_time(x) for x in MORNING_SNAPSHOT_SLOTS],
+        "morning_webcam_times": [_slot_time(x) for x in morning_snapshot_slots(morning_day)],
         "sunset_webcam_url": sunset_webcam_url(sunset_day),
         "sunset_webcam_date": sunset_day.isoformat(),
         "sunset_webcam_day": sunset_rel,

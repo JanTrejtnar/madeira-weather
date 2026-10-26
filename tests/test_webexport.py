@@ -528,3 +528,11 @@ def test_sun_times_follow_wet_winter_and_west_summer_offsets():
     winter, summer = webexport.sunrise_local(date(2026, 10, 26)), webexport.sunrise_local(date(2026, 7, 1))
     assert winter.utcoffset() == timedelta(0) and summer.utcoffset() == timedelta(hours=1)
     assert (winter.hour, 5 <= winter.minute <= 30) == (7, True)  # východ kolem 07:15 WET
+
+
+def test_morning_slots_follow_winter_time():
+    assert webexport.morning_snapshot_slots(date(2026, 10, 24)) == ["08_00", "08_30"]
+    assert webexport.morning_snapshot_slots(date(2026, 10, 25)) == ["07_00", "07_30"]
+    rows = webexport.with_snapshot_links([{"date": "2026-10-24"}, {"date": "2026-10-25"}], date(2026, 10, 26))
+    assert rows[0]["webcam_times"] == ["08:00", "08:30"]
+    assert rows[1]["webcam_times"] == ["07:00", "07:30"] and rows[1]["webcam_url"].endswith("/2026-10-25/07_00.jpg")
