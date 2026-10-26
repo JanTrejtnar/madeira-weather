@@ -10,7 +10,13 @@ from madeira.analyzers.inversion import (
     summit_clear_factor,
     summit_rh,
 )
-from madeira.analyzers.mountain import cloud_cover, high_deck_gate, wind_driven_fog
+from madeira.analyzers.mountain import (
+    cloud_cover,
+    high_deck_gate,
+    spillover_cap,
+    spillover_hard,
+    wind_driven_fog,
+)
 from madeira.analyzers.scoring_utils import pw
 from madeira.domain.config import FogConfig, MountainCloudConfig, Settings, SpotTuning
 from madeira.domain.models import ForecastBundle, ScoreComponent, SunriseAnalysis
@@ -95,12 +101,31 @@ def score_sunrise(
     if tuning.peak_rh_max is not None:
         fog_cfg = fog_cfg.model_copy(update={"summit_rh_clear": tuning.peak_rh_max})
     clear = summit_clear_factor(f, deck_margin(f, tuning.cloud_top_max_m))
+    # Přelévání mraků přes hřeben (stejná orografie ráno i večer jako u západu): hrozí-li, žádný
+    # inverzní bonus – mraky pod vrcholem pohled neblokují jen tehdy, když nepřetékají. Rezerva je
+    # relativní (vrchol − horní hranice mraků), takže platí pro Arieiro i Bica da Cana.
+    mcfg = settings.mountain_clouds
+    spill, spill_deck = None, inv.cloud_deck_top_m
+    # vlhký sloupec: 850 i 800 hPa vlhké (≥ práh) = žádný suchý strop nad vrcholem (nejde o
+    # inverzi), i když RH nepřekročí 85 % a horní hranice mraků se nenajde → mrak sahá výš
+    if (
+        f.rh.get(850) is not None
+        and f.rh[850] >= mcfg.spill_hard_rh
+        and (rh_aloft(f) or 0) >= mcfg.spill_hard_rh
+        and f.z.get(f.aloft_hpa) is not None
+    ):
+        spill_deck = max(spill_deck or 0, f.z[f.aloft_hpa])
+    # jen tvrdé pravidlo (RH 800 hPa ≥ práh nebo silné nárazy): plynulá rampa laděná na západy
+    # by ořízla ověřenou inverzi z 10. 10. (deck 1 673 m, RH 800 hPa 45 %, nárazy 28 km/h)
+    if spill_deck is not None and spillover_hard(rh_aloft(f), f.gust_kmh, mcfg):
+        spill = spillover_cap(spill_deck, f.summit_m, rh_aloft(f), mcfg, f.gust_kmh)
+        if spill is not None:
+            clear = 0.0
     eff_low = None if f.low_cloud_summit is None else f.low_cloud_summit * (1 - clear)
     # Stejně nízká oblačnost nad mořem na východě: pohled nad ni neblokuje, jen střední vrstva.
     east_block = None
     if f.east_low_cloud is not None and f.east_mid_cloud is not None:
         east_block = max(f.east_low_cloud * (1 - clear), 0.6 * f.east_mid_cloud)
-    mcfg = settings.mountain_clouds
     fog = fog_likelihood(f, fog_cfg, mcfg)
     trust = surface_trust(f, fog_cfg)
 
@@ -199,6 +224,12 @@ def score_sunrise(
         "fog": round(1 - fog_cfg.gate_strength * (fog or 0.0), 2),
         "gale": round(pw(f.gust_kmh, GALE) if f.gust_kmh is not None else 1.0, 2),
     }
+    # zatažení střední oblačností: slunce nebude vidět, ať je vrchol nad nízkými mraky nebo ne
+    if f.mid_cloud is not None:
+        overcast = pw(f.mid_cloud, [(cfg.overcast_from, 1.0), (100, cfg.overcast_gate_min)])
+        if overcast < 1:
+            gates["overcast"] = round(overcast, 2)
+            warnings.append(f"Zataženo střední oblačností ({f.mid_cloud:.0f} %) – slunce nebude vidět.")
 
     # základna mraků nad vrcholem + zakrytá obloha: vrchol je pod mraky, ne nad mořem mraků
     # (potvrzená inverze – vrchol jasně nad horní hranicí mraků – se nepenalizuje)
@@ -210,7 +241,14 @@ def score_sunrise(
         gates["high_deck"] = round(deck_gate, 2)
         warnings.append("Základna mraků je nad vrcholem – vrchol je pod mraky, ne nad nimi.")
     # brány mlhy a mraků nad vrcholem popisují stejný jev → platí přísnější, netrestá se dvakrát
-    score = raw * gates["precip"] * min(gates["fog"], deck_gate) * gates["gale"]
+    score = raw * gates["precip"] * min(gates["fog"], deck_gate) * gates["gale"] * gates.get("overcast", 1.0)
+
+    if spill is not None and score > spill:
+        score = spill
+        gates["spillover"] = round(spill / 100, 2)
+        warnings.append(
+            f"Mraky sahají k ~{spill_deck:.0f} m, tedy těsně pod hřeben – hrozí přelévání."
+        )
 
     if gates["precip"] < 1:
         warnings.append(f"Srážky kolem východu: {f.precip_mm:.1f} mm (gate ×{gates['precip']}).")
@@ -260,6 +298,8 @@ def _summary_cs(score, verdict, inv_text, components, gates) -> str:
         parts.append("Největší problém jsou srážky.")
     elif gates["fog"] < 0.6 or gates.get("high_deck", 1.0) < 0.6:
         parts.append("Největší problém je mlha/mrak na vrcholu.")
+    elif gates.get("overcast", 1.0) < 0.6:
+        parts.append("Největší problém je zatažení střední oblačností.")
     elif weakest.value < 0.6:
         parts.append(f"Nejslabší stránka: {_NAMES_CS[weakest.name]} ({weakest.explanation}).")
     parts.append(inv_text)

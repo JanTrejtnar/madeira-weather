@@ -424,6 +424,7 @@ def test_oct18_summit_under_cloud_is_no_go():
     # bez nových pravidel to byl falešný GO (~75 %)
     old = Settings()
     old.mountain_clouds.aloft_rh_fog_windy = 99
+    old.mountain_clouds.spill_hard_rh = 999  # vlhký sloupec / přelévání je pozdější pravidlo
     assert score_sunrise(features_oct18(), old).score_pct >= 70
 
 
@@ -520,3 +521,106 @@ def test_mountain_sunset_cloud_top_near_ridge_is_capped():
     assert a.verdict == "NO_GO" and a.score_pct <= 40 and "spillover" in a.gates
     low = score_sunset(replace(f, deck_top_m=1100.0, rh_aloft=30.0), s)
     assert low.verdict == "GO" and "spillover" not in low.gates
+
+
+# --- východ: přelévání mraků přes hřeben (24. 10. 2026) a backtest 19.–25. 10. -----------
+
+
+def features_oct24(**over):
+    """24. 10. 2026 Arieiro: horní hranice mraků 1 652 m (166 m pod vrcholem), nárazy 46 km/h;
+    na vrcholu totální mlha, model přitom hlásil GO 88 %."""
+    base = {
+        "target_date": date(2026, 10, 24),
+        "sunrise_utc": datetime(2026, 10, 24, 7, 20, tzinfo=UTC),
+        "low_cloud_summit": 59.0,
+        "mid_cloud": 0.0,
+        "high_cloud": 0.0,
+        "east_low_cloud": 43.0,
+        "east_mid_cloud": 0.0,
+        "lowland_low_cloud": 80.0,
+        "precip_prob": 10.0,
+        "gust_kmh": 46.0,
+        "wind_kmh": 30.0,
+        "visibility_km": 0.8,
+        "dewpoint_depression_c": 0.6,
+        "t": {925: 15.0, 850: 13.0, 800: 14.0, 700: 5.0},
+        "rh": {925: 95.0, 850: 90.0, 800: 27.0, 700: 7.0},
+        "z": {925: 903.0, 850: 1610.0, 800: 2114.0, 700: 3219.0},
+    }
+    base.update(over)
+    return features(**base)
+
+
+def test_oct24_sunrise_spillover_is_no_go_without_inversion_bonus():
+    s = Settings()
+    f = features_oct24()
+    a = score_sunrise(f, s)
+    assert a.verdict == "NO_GO" and a.score_pct <= 35, a
+    assert a.gates["spillover"] <= 0.35 and any("přelévání" in w for w in a.warnings)
+    # RH 800 hPa >= 60 % spustí pravidlo i bez nárazů
+    humid = score_sunrise(features_oct24(gust_kmh=20.0, rh={**f.rh, 800: 62.0}), s)
+    assert humid.score_pct <= 35, humid
+    # sucho a klid: inverze drží a nic se neořezává
+    calm = score_sunrise(features_oct24(gust_kmh=20.0), s)
+    assert "spillover" not in calm.gates
+
+
+def test_spillover_cap_hard_rule_is_same_for_sunrise_and_sunset():
+    mc = Settings().mountain_clouds
+    assert spillover_cap(1652, 1818, 20.0, mc, 46.0) == mc.spill_hard_cap
+    assert spillover_cap(1652, 1818, 61.0, mc, 10.0) == mc.spill_hard_cap
+    assert spillover_cap(1652, 1818, 20.0, mc, 10.0) is None  # sucho + klid = inverze drží
+    assert spillover_cap(1450, 1818, 80.0, mc, 60.0) is not None and spillover_cap(1400, 1818, 80.0, mc, 60.0) is None
+
+
+def test_oct25_clean_inversion_stays_go():
+    f = features_oct24(
+        low_cloud_summit=0.0, east_low_cloud=0.0, visibility_km=33.0, dewpoint_depression_c=9.9,
+        gust_kmh=36.0, lowland_low_cloud=70.0,
+        rh={925: 45.0, 850: 5.0, 800: 10.0, 700: 22.0},
+    )
+    a = score_sunrise(f, Settings())
+    assert a.verdict == "GO" and a.score_pct >= 85, a
+
+
+def test_oct22_overcast_mid_cloud_is_no_go():
+    f = features_oct24(
+        low_cloud_summit=69.0, mid_cloud=96.5, high_cloud=100.0, east_low_cloud=61.0,
+        east_mid_cloud=88.0, gust_kmh=18.0, visibility_km=0.7,
+        rh={925: 99.6, 850: 89.2, 800: 40.7, 700: 11.0}, z={925: 867.0, 850: 1573.0, 800: 2075.0, 700: 3174.0},
+    )
+    a = score_sunrise(f, Settings())
+    assert a.verdict == "NO_GO" and a.score_pct < 40 and a.gates["overcast"] < 0.6, a
+
+
+def test_spillover_clearance_is_relative_to_summit_height():
+    from madeira.analyzers.mountain import spillover_cap
+
+    cfg = Settings().mountain_clouds
+    # Arieiro 1818 m: rezerva 300 m ~ horní hranice 1518 m; Bica da Cana 1560 m: ~1242 m
+    assert spillover_cap(1650, 1818, 27, cfg, gust_kmh=46) == cfg.spill_hard_cap
+    assert spillover_cap(1400, 1560, 20, cfg, gust_kmh=50) == cfg.spill_hard_cap
+    assert spillover_cap(1400, 1560, 65, cfg, gust_kmh=10) == cfg.spill_hard_cap
+    # dost velká rezerva nebo sucho a klid: tvrdý strop nehrozí
+    assert spillover_cap(1200, 1560, 80, cfg, gust_kmh=60) is None
+    assert spillover_cap(1400, 1818, 80, cfg, gust_kmh=60) is None
+
+
+def test_bica_clouds_just_below_plateau_do_not_get_false_go():
+    s = Settings()
+    tuning = s.bica_da_cana.tuning()
+    common = dict(
+        summit_m=1560.0,
+        aloft_hpa=850,
+        low_cloud_summit=5.0,
+        east_low_cloud=5.0,
+        east_mid_cloud=0.0,
+        mid_cloud=0.0,
+        high_cloud=0.0,
+        rh={925: 99.0, 850: 98.0, 800: 42.0, 700: 9.0},
+        z={925: 860.0, 850: 1500.0, 800: 2040.0, 700: 3175.0},
+    )
+    windy = score_sunrise(features(gust_kmh=52.0, **common), s, tuning)
+    assert windy.score_pct <= s.mountain_clouds.spill_hard_cap and windy.verdict == "NO_GO"
+    calm = score_sunrise(features(gust_kmh=12.0, **common), s, tuning)
+    assert calm.score_pct > windy.score_pct

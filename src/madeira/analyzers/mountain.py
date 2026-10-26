@@ -50,14 +50,22 @@ def spillover_cap(
     summit_m: float,
     rh_aloft: float | None,
     cfg: MountainCloudConfig,
+    gust_kmh: float | None = None,
 ) -> float | None:
-    """Strop skóre (0..100) pro západ, když horní hranice mraků leží příliš blízko hřebenu.
+    """Strop skóre (0..100) pro východ i západ, když horní hranice mraků leží příliš blízko hřebenu.
 
     Pod `spill_from_m` je rezerva dost; od `spill_full_m` do hřebenu hrozí přelévání mraků přes
     hřeben (strop `spill_cap`), nad hřebenem je vrchol uvnitř mraků (`inside_cap`). Přelévání se
-    bere vážně jen při vlhku nad vrcholem – nad suchým vzduchem (800 hPa) inverze drží."""
+    bere vážně jen při vlhku nad vrcholem – nad suchým vzduchem (800 hPa) inverze drží.
+
+    Tvrdé pravidlo (relativní, škáluje s výškou vrcholu): rezerva `summit_m − horní hranice` menší
+    než `spill_clearance_m` a ZÁROVEŇ RH(800 hPa) ≥ `spill_hard_rh` nebo
+    nárazy ≥ `windy_gust_kmh` → strop `spill_hard_cap` (NO-GO) bez ohledu na rampu vlhkosti."""
     if deck_top_m is None:
         return None
+    if summit_m - deck_top_m < cfg.spill_clearance_m and spillover_hard(rh_aloft, gust_kmh, cfg):
+        floor = cfg.inside_cap if deck_top_m >= summit_m else cfg.spill_hard_cap
+        return min(floor, cfg.spill_hard_cap)
     risk = pw(deck_top_m, [(cfg.spill_from_m, 0.0), (cfg.spill_full_m, 1.0)])
     if rh_aloft is not None:
         risk *= pw(rh_aloft, [(cfg.spill_rh_dry, 0.0), (cfg.spill_rh_moist, 1.0)])
@@ -65,6 +73,15 @@ def spillover_cap(
         return None
     floor = cfg.inside_cap if deck_top_m >= summit_m else cfg.spill_cap
     return 100.0 - risk * (100.0 - floor)
+
+
+def spillover_hard(
+    rh_aloft: float | None, gust_kmh: float | None, cfg: MountainCloudConfig
+) -> bool:
+    """Mraky u hřebene se přelévají: vlhko nad vrcholem nebo silné nárazy větru."""
+    return (rh_aloft is not None and rh_aloft >= cfg.spill_hard_rh) or (
+        gust_kmh is not None and gust_kmh >= cfg.windy_gust_kmh
+    )
 
 
 def high_deck_gate(

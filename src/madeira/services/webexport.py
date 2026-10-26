@@ -52,7 +52,7 @@ SNAPSHOT_RETENTION_DAYS = 7  # NetMadeira drží snímky jen týden zpět
 ARIEIRO_LAT, ARIEIRO_LON = 32.7358, -16.9291
 
 
-MORNING_READY = time(8, 30)  # od tohoto místního času už je ranní snímek (08:00 + 08:30) k dispozici
+MORNING_READY = time(8, 0)  # od tohoto místního času (WET i WEST) je snímek „Dnes 08:00“; dřív je to včerejší ráno
 SNAPSHOT_AFTER_SUNSET_MIN = 30  # večerní slot po západu (barvy oblohy) je hotový zhruba o půl hodiny později
 
 
@@ -93,7 +93,7 @@ def relative_label(day: date, today: date) -> str | None:
 
 
 def morning_snapshot_day(local: datetime) -> tuple[date, str]:
-    """Den ranního snímku: dnes od 08:30 místního času, před tím včerejší ráno."""
+    """Den ranního snímku: dnes od 08:00 místního času, před tím striktně včerejší ráno (idempotentní)."""
     today = local.date()
     return (today, "today") if local.time() >= MORNING_READY else (today - timedelta(days=1), "yesterday")
 
@@ -275,14 +275,13 @@ def with_snapshot_links(history: list[dict], today, evening: bool = False) -> li
     return out
 
 
-def _day_entry(analysis: SunriseAnalysis, features, departure_before_min: int) -> dict:
+def _day_entry(analysis: SunriseAnalysis, features) -> dict:
     sunrise = analysis.sunrise_utc.astimezone(TZ)
     deck = analysis.inversion.cloud_deck_top_m
     above = analysis.inversion.summit_above_deck_m
     return {
         "date": analysis.target_date.isoformat(),
         "sunrise": f"{sunrise:%H:%M}",
-        "departure_funchal": f"{sunrise - timedelta(minutes=departure_before_min):%H:%M}",
         "verdict": analysis.verdict,
         "score_pct": round(analysis.score_pct),
         "score_range": [round(analysis.score_range[0]), round(analysis.score_range[1])],
@@ -304,13 +303,12 @@ def _day_entry(analysis: SunriseAnalysis, features, departure_before_min: int) -
     }
 
 
-def _coastal_sunrise_entry(analysis: SunriseAnalysis, features, departure_before_min: int) -> dict:
-    """Východ na útesu: ranní klíče jako u hor (sunrise, departure), ale bez inverze; tvar horizontu jako u západu."""
+def _coastal_sunrise_entry(analysis: SunriseAnalysis, features) -> dict:
+    """Východ na útesu: ranní klíče jako u hor (sunrise), ale bez inverze; tvar horizontu jako u západu."""
     sunrise = analysis.sunrise_utc.astimezone(TZ)
     return {
         "date": analysis.target_date.isoformat(),
         "sunrise": f"{sunrise:%H:%M}",
-        "departure_funchal": f"{sunrise - timedelta(minutes=departure_before_min):%H:%M}",
         "verdict": analysis.verdict,
         "score_pct": round(analysis.score_pct),
         "score_range": [round(analysis.score_range[0]), round(analysis.score_range[1])],
@@ -351,12 +349,11 @@ def _canvas_pct(features) -> int | None:
     return round(sum(vals) / len(vals)) if vals else None
 
 
-def _sunset_entry(analysis: SunsetAnalysis, features, departure_min: int) -> dict:
+def _sunset_entry(analysis: SunsetAnalysis, features) -> dict:
     sunset = analysis.sunset_utc.astimezone(TZ)
     return {
         "date": analysis.target_date.isoformat(),
         "sunset": f"{sunset:%H:%M}",
-        "departure_funchal": f"{sunset - timedelta(minutes=departure_min):%H:%M}",
         "verdict": analysis.verdict,
         "score_pct": round(analysis.score_pct),
         "score_range": [round(analysis.score_range[0]), round(analysis.score_range[1])],
@@ -422,7 +419,6 @@ def _spot_summary(spot: dict, kind: str, history: list[dict] | None = None) -> d
         "target_date": spot["date"],
         "relative": spot.get("relative"),
         "time": spot[kind],
-        "departure": spot["departure_funchal"],
         "verdict": spot["verdict"],
         "score": spot["score_pct"],
         "score_range": spot["score_range"],
@@ -471,18 +467,17 @@ def spot_entry(settings: Settings, bundle: ForecastBundle, key: str, day, now: d
 
 
 def _spot_entry(settings: Settings, bundle: ForecastBundle, key: str, day, now: datetime) -> dict:
-    departure = settings.spots[key].departure_from_funchal_min
     if key in EVENING_SPOTS:
         spot = settings.spots[key]
         features = extract_sunset_features(
             bundle, day, now, settings, spot_key=spot.location or key,
             mountain=spot.type == "mountain_sunset",
         )
-        return _sunset_entry(score_sunset(features, settings), features, departure)
+        return _sunset_entry(score_sunset(features, settings), features)
     features, tuning = extract_spot_features(bundle, day, settings, now, key)
     if settings.spots[key].type == "coastal_sunrise":
-        return _coastal_sunrise_entry(score_coastal_sunrise(features, settings), features, departure)
-    return _day_entry(score_sunrise(features, settings, tuning), features, departure)
+        return _coastal_sunrise_entry(score_coastal_sunrise(features, settings), features)
+    return _day_entry(score_sunrise(features, settings, tuning), features)
 
 
 def tomorrow_spots(
@@ -773,7 +768,7 @@ def build_payload(
                 analysis, features, bundle.fetched_at_utc, bundle.model,
                 settings.sunrise.weights.model_dump(),
             )
-        entry = _day_entry(analysis, features, settings.bot.departure_before_min)
+        entry = _day_entry(analysis, features)
         entry["weather"] = day_weather(bundle, day)
         entries.append(stamp_target(entry, local))
     if not entries:

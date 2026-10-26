@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from datetime import timedelta
 from html import escape
 
 from madeira.domain.models import MicroclimateComparison, SunriseAnalysis
@@ -61,15 +60,12 @@ def format_comparison(c: MicroclimateComparison) -> str:
     )
 
 
-def format_digest(
-    tomorrow: SunriseAnalysis, week: list[SunriseAnalysis], departure_before_min: int
-) -> str:
+def format_digest(tomorrow: SunriseAnalysis, week: list[SunriseAnalysis]) -> str:
     sunrise = tomorrow.sunrise_utc.astimezone(TZ)
     if tomorrow.verdict == "NO_GO":
         advice = "😴 Zítra klidně spi."
     else:
-        leave = sunrise - timedelta(minutes=departure_before_min)
-        advice = f"⏰ Odjezd z Funchalu cca <b>{leave:%H:%M}</b> (východ {sunrise:%H:%M})."
+        advice = f"🌅 Východ slunce zítra v <b>{sunrise:%H:%M}</b>."
     later = [a for a in week if a.target_date != tomorrow.target_date]
     outlook = ""
     if later:

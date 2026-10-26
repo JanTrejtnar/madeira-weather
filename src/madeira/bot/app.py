@@ -213,7 +213,7 @@ async def job_digest(context: ContextTypes.DEFAULT_TYPE) -> None:
         tomorrow = next((a for a in week if a.target_date == tomorrow_date), None)
         if tomorrow is None:
             raise RuntimeError("Předpověď neobsahuje zítřejší den")
-        text = fmt.format_digest(tomorrow, week, settings.bot.departure_before_min)
+        text = fmt.format_digest(tomorrow, week)
     except Exception:
         log.exception("Digest selhal")
         text = "⚠️ Nepodařilo se získat předpověď pro večerní digest."

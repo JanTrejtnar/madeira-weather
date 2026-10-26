@@ -122,7 +122,6 @@ def render_story(payload: dict) -> Image.Image:
     _text(d, (pad + 30, top + 40), "VÝCHOD SLUNCE", font(30, True), ORANGE)
     _text(d, (pad + 30, top + 90), sr["location"]["name"], font(58, True))
     _text(d, (pad + 30, top + 190), sr["time"], font(150, True))
-    _text(d, (pad + 30, top + 372), f"Odjezd z Funchalu  {sr['departure']}", font(38), MUTED)
     _badge(d, pad + 30, top + 430, sr, 130, 66)
     sy, sw, gap = top + 620, (W - 2 * pad - 60 - 2 * 24) // 3, 24
     stats = [
@@ -141,7 +140,6 @@ def render_story(payload: dict) -> Image.Image:
     _text(d, (pad + 30, top2 + 36), "ZÁPAD SLUNCE", font(30, True), (240, 171, 252))
     _text(d, (pad + 30, top2 + 84), ss["location"]["name"], font(46, True))
     _text(d, (pad + 30, top2 + 160), ss["time"], font(110, True))
-    _text(d, (pad + 30, top2 + 305), f"Odjezd {ss['departure']}", font(34), MUTED)
     _badge(d, W - pad - 30 - 420, top2 + 190, ss, 110, 54)
 
     # call to action

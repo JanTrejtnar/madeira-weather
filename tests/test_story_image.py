@@ -6,7 +6,7 @@ from madeira.services import story_image
 
 SPOT = {
     "location": {"name": "Pico do Arieiro"},
-    "date": "2026-10-17", "time": "08:13", "departure": "06:53",
+    "date": "2026-10-17", "time": "08:13",
     "verdict": "GO", "score": 82,
     "cloud_sea": {"above_deck_m": 700}, "wind": {"kmh": 9, "gust_kmh": 20},
     "clouds_canvas": {"pct": 30},

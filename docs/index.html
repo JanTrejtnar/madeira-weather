@@ -164,11 +164,7 @@
       </div>
 
       <!-- parametry -->
-      <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
-          <p class="text-xs uppercase tracking-wider text-slate-400" data-i18n="departure">Doporučený odjezd</p>
-          <p id="departure" class="acc-200 mt-1 text-2xl font-semibold"></p>
-        </div>
+      <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
         <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
           <p id="l-deck" class="text-xs uppercase tracking-wider text-slate-400"></p>
           <p id="deck" class="mt-1 text-2xl font-semibold"></p>
@@ -177,7 +173,7 @@
           <p id="l-above" class="text-xs uppercase tracking-wider text-slate-400"></p>
           <p id="above" class="mt-1 text-2xl font-semibold"></p>
         </div>
-        <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+        <div class="col-span-2 rounded-2xl border border-white/10 bg-white/5 p-4 sm:col-span-1">
           <p class="text-xs uppercase tracking-wider text-slate-400" data-i18n="wind">Vítr</p>
           <p id="wind" class="mt-1 text-2xl font-semibold"></p>
           <p id="gust" class="text-xs text-slate-400"></p>
@@ -253,7 +249,7 @@
       sunsetAlert: (a) => ({ fog: "Vrchol bude pravděpodobně v mraku/mlze.", overcast: "Zataženo – slunce nebude vidět.", gusts: `Silné nárazy větru na útesu (${a.value} km/h).`, horizon_east: `Nízké mraky na východním obzoru (${a.value} %) mohou zakrýt slunce.`,
                              precip: `Srážky kolem západu: ${a.value} mm.`, horizon: `Nízké mraky na západním obzoru (${a.value} %) mohou zakrýt slunce.`,
                              visibility: `Snížená dohlednost (${a.value} km).`, no_cloud_data: "Chybí data o oblačnosti." })[a.code] || a.code,
-      score: "% skóre", departure: "Doporučený odjezd", deck: "Hladina mraků",
+      score: "% skóre", deck: "Hladina mraků",
       above: (n) => `${n} nad mraky`, wind: "Vítr", gust: "nárazy", outlook: "Výhled", today: "Dnes", tomorrow: "Zítra",
       history: "Historie predikcí", historyNote: "Predikce modelu vs. skutečnost podle ručního hodnocení (pokud je zadané).",
       hActual: "Skutečnost", hDetail: "Detail dne",
@@ -346,7 +342,7 @@
       sunsetAlert: (a) => ({ fog: "The summit will probably be in cloud/fog.", overcast: "Overcast – the sun will not be visible.", gusts: `Strong gusts on the cliff (${a.value} km/h).`, horizon_east: `Low clouds on the eastern horizon (${a.value}%) may hide the sun.`,
                              precip: `Rain around sunset: ${a.value} mm.`, horizon: `Low clouds on the western horizon (${a.value}%) may hide the sun.`,
                              visibility: `Reduced visibility (${a.value} km).`, no_cloud_data: "Cloud cover data missing." })[a.code] || a.code,
-      score: "% score", departure: "Suggested departure", deck: "Cloud deck top",
+      score: "% score", deck: "Cloud deck top",
       above: (n) => `${n} above clouds`, wind: "Wind", gust: "gusts", outlook: "Outlook", today: "Today", tomorrow: "Tomorrow",
       history: "Prediction history", historyNote: "Model prediction vs. what actually happened (when rated by hand).",
       hActual: "Actual", hDetail: "Day details",
@@ -462,7 +458,6 @@
     $("bar").style.width = `${Math.max(0, Math.min(100, day.score_pct))}%`;
     $("summary").textContent = L.summary(day, L, sp);
     $("warnings").replaceChildren(...(day.alerts || []).map((a) => el("li", null, "⚠ " + L.alert(a))));
-    $("departure").textContent = day.departure_funchal;
     $("deck").textContent = m(day.cloud_deck_top_m);
     $("above").textContent = day.summit_above_deck_m == null ? "–" : `${day.summit_above_deck_m >= 0 ? "+" : ""}${num(day.summit_above_deck_m)} m`;
     $("wind").textContent = day.wind_kmh == null ? "–" : `${day.wind_kmh} km/h ${compass(day.wind_dir_deg)}`;
@@ -473,7 +468,7 @@
 
   // denní záznam večerního spotu -> tvar kořenového klíče `sunset`
   function sunsetView(e, sp) {
-    return { ...e, time: e.sunset || e.sunrise, departure: e.departure_funchal, score: e.score_pct,
+    return { ...e, time: e.sunset || e.sunrise, score: e.score_pct,
              wind: { kmh: e.wind_kmh, gust_kmh: e.gust_kmh, dir_deg: e.wind_dir_deg },
              clouds_canvas: { pct: e.canvas_cloud_pct }, webcam_url: sp.webcam_url };
   }
@@ -494,7 +489,6 @@
     $("bar").style.width = `${Math.max(0, Math.min(100, s.score))}%`;
     $("summary").textContent = L.sunsetSummary(s, L, kind);
     $("warnings").replaceChildren(...(s.alerts || []).map((a) => el("li", null, "⚠ " + L.sunsetAlert(a))));
-    $("departure").textContent = s.departure;
     const pct = (x) => (x == null ? "–" : `${x} %`);
     $("deck").textContent = pct(s.horizon_low_cloud_pct);
     $("above").textContent = pct(s.clouds_canvas && s.clouds_canvas.pct);

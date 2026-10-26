@@ -75,10 +75,10 @@ def test_formatters_produce_html_with_key_facts():
     a, _ = analysis_and_features()
     text = fmt.format_sunrise(a)
     assert "GO" in text and f"{a.score_pct:.0f} %" in text
-    digest = fmt.format_digest(a, [a], departure_before_min=80)
-    assert "Odjezd z Funchalu" in digest
+    digest = fmt.format_digest(a, [a])
+    assert "Odjezd" not in digest
     bad, _ = analysis_and_features(precip_mm=2, precip_prob=95)
-    assert "spi" in fmt.format_digest(bad, [bad], 80)
+    assert "spi" in fmt.format_digest(bad, [bad])
     assert "<pre>" in fmt.format_week([a])
 
 

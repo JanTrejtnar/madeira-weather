@@ -54,6 +54,9 @@ class MountainCloudConfig(BaseModel):
     spill_full_m: float = 1500  # od tohoto po hřeben hrozí přelévání mraků (strop skóre)
     spill_cap: float = 39  # strop skóre při hrozícím přelévání (NO-GO)
     inside_cap: float = 25  # strop skóre, když je horní hranice mraků nad vrcholem
+    spill_clearance_m: float = 318  # min. rezerva vrcholu nad horní hranicí mraků (Arieiro 1818 → 1500 m)
+    spill_hard_cap: float = 35  # tvrdý strop (NO-GO), když rezerva < spill_clearance_m a vlhko / nárazy
+    spill_hard_rh: float = 60  # RH v 800 hPa od tohoto (nebo nárazy >= windy_gust_kmh) = tvrdý strop
     spill_rh_dry: float = 35  # RH v 800 hPa pod tímto = suchý vzduch nad vrstvou, přelévání nehrozí
     spill_rh_moist: float = 55  # nad tímto je riziko přelévání plné
     cover_min_pct: float = 25  # nízká/střední oblačnost nad tímto
@@ -66,6 +69,8 @@ class SunriseConfig(BaseModel):
     verdict: VerdictThresholds = Field(default_factory=VerdictThresholds)
     window: SunriseWindow = Field(default_factory=SunriseWindow)
     fog: FogConfig = Field(default_factory=FogConfig)
+    overcast_from: float = 80  # střední oblačnost od tohoto (%) = zataženo, východ není vidět
+    overcast_gate_min: float = 0.3  # při 100 % zatažení se skóre násobí tímto (→ NO-GO)
 
 
 class InversionWeights(BaseModel):

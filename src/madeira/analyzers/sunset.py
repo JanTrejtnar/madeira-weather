@@ -275,7 +275,7 @@ def score_sunset(f: SunsetFeatures, settings: Settings) -> SunsetAnalysis:
     # brány mlhy a mraků nad vrcholem popisují stejný jev → platí přísnější, netrestá se dvakrát
     score *= min(gates.get("fog", 1.0), deck_gate)
     if f.summit_elevation_m is not None:
-        cap = spillover_cap(f.deck_top_m, f.summit_elevation_m, f.rh_aloft, mc)
+        cap = spillover_cap(f.deck_top_m, f.summit_elevation_m, f.rh_aloft, mc, f.gust_kmh)
         if cap is not None and score > cap:
             score = cap
             gates["spillover"] = round(cap / 100, 2)

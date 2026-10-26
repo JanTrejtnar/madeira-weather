@@ -18,7 +18,6 @@ def test_payload_shape(tmp_path):
     assert t["date"] == "2026-10-13"
     assert t["verdict"] in {"GO", "MAYBE", "NO_GO"}
     assert 0 <= t["score_pct"] <= 100
-    assert t["departure_funchal"] < t["sunrise"]
     assert t["inversion_case"] in {"none", "above", "edge", "inside"}
     assert payload["history"] == []
     assert len(payload["days"]) == 3
@@ -109,7 +108,6 @@ def test_payload_has_tomorrow_spots():
     pargo = spots["evening"][0]
     assert pargo["date"] == "2026-10-12" and pargo["relative"] == "today"  # NOW = 13:00, západ ještě nenastal
     assert spots["morning"][0]["date"] == payload["tomorrow"]["date"]
-    assert pargo["departure_funchal"] < pargo["sunset"]
     assert pargo["verdict"] in {"GO", "MAYBE", "NO_GO"}
     for spot in spots["morning"] + spots["evening"]:  # mapa potřebuje souřadnice
         assert isinstance(spot["lat"], float) and isinstance(spot["lon"], float)
@@ -121,10 +119,10 @@ def test_payload_has_sunrise_and_sunset_roots():
     for key, time_key in (("sunrise", "arieiro"), ("sunset", "ponta_do_pargo")):
         s = payload[key]
         assert s["location"]["key"] == time_key
-        for field in ("time", "departure", "verdict", "score", "cloud_sea", "wind",
+        for field in ("time", "verdict", "score", "cloud_sea", "wind",
                       "clouds_canvas", "summary"):
             assert field in s
-        assert s["departure"] < s["time"]
+            assert field in s
         assert set(s["wind"]) == {"kmh", "gust_kmh", "dir_deg"}
     assert payload["sunrise"]["score"] == payload["tomorrow"]["score_pct"]
     assert payload["sunrise"]["cloud_sea"]["probability_pct"] == payload["tomorrow"]["inversion_pct"]
@@ -159,9 +157,9 @@ def test_sunrise_and_sunset_sections_list_every_spot():
         assert set(spots) == keys
         for s in spots.values():
             assert isinstance(s["location"]["lat"], float) and isinstance(s["location"]["lon"], float)
-            for field in ("verdict", "score", "departure", "summary"):
+            for field in ("verdict", "score", "summary"):
                 assert s[field] is not None
-            assert s["departure"] < s["time"]
+            assert "departure_funchal" not in s
     assert payload["sunrise"]["spots"]["arieiro"]["score"] == payload["sunrise"]["score"]
     assert payload["sunrise"]["spots"]["pico_ruivo"]["cloud_sea"] is not None  # horská inverze
     rosto = payload["sunrise"]["spots"]["ponta_do_rosto"]
@@ -257,7 +255,6 @@ def test_mountain_sunset_spots_use_summit_location_data():
     assert arieiro["location"]["elevation_m"] == 1818 and ruivo["location"]["elevation_m"] == 1862
     assert arieiro["location"]["type"] == "mountain_sunset" and arieiro["cloud_sea"] is None
     assert arieiro["webcam_url"].endswith("/pico-do-arieiro")
-    assert arieiro["departure"] < arieiro["time"]
     sunrise = payload["sunrise"]["spots"]
     assert (arieiro["location"]["lat"], arieiro["location"]["lon"]) == (
         sunrise["arieiro"]["location"]["lat"], sunrise["arieiro"]["location"]["lon"])
@@ -310,8 +307,11 @@ def test_morning_run_0830_targets_tomorrow_sunrise_and_todays_sunset_and_photo()
     assert p["sunset_webcam_date"] == "2026-10-11" and p["sunset_webcam_day"] == "yesterday"
 
 
-def test_photo_before_0830_is_yesterdays_morning():
-    p = _payload_at(8, 29)
+def test_photo_from_0800_is_today_before_that_yesterdays_morning():
+    today = _payload_at(8, 0)
+    assert today["morning_webcam_date"] == "2026-10-12" and today["morning_webcam_day"] == "today"
+    assert today["morning_webcam_time"] == "08:00"
+    p = _payload_at(7, 59)
     assert p["morning_webcam_date"] == "2026-10-11" and p["morning_webcam_day"] == "yesterday"
     assert p["morning_webcam_url"].endswith("/2026-10-11/08_00.jpg")
 
@@ -521,3 +521,10 @@ def test_fetch_current_batches_one_request():
     out = fetch_current([(32.7, -16.9, 1800), (32.6, -16.9, 20), (32.8, -17.1, 10)], client=client)
     assert len(calls) == 1 and len(out) == 3
     assert "weather_code" in calls[0].url.params["current"]
+
+
+def test_sun_times_follow_wet_winter_and_west_summer_offsets():
+    """Po přechodu na zimní čas (25. 10. 2026) je Madeira UTC+0, v létě UTC+1."""
+    winter, summer = webexport.sunrise_local(date(2026, 10, 26)), webexport.sunrise_local(date(2026, 7, 1))
+    assert winter.utcoffset() == timedelta(0) and summer.utcoffset() == timedelta(hours=1)
+    assert (winter.hour, 5 <= winter.minute <= 30) == (7, True)  # východ kolem 07:15 WET
