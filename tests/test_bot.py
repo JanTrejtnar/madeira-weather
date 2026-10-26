@@ -143,7 +143,7 @@ def test_application_registers_handlers_and_jobs(store):
 
 
 # --- zpětné dopočítání predikce při hodnocení ---------------------------------
-from madeira.services import forecast  # noqa: E402
+from madeira.services import forecast
 
 
 def test_record_outcome_backfills_missing_prediction(store, monkeypatch):

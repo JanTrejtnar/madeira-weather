@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import itertools
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
@@ -18,7 +19,7 @@ def interp(points: list[HourlyPoint], getter: Getter, t: datetime) -> float | No
         return None
     if t <= points[0].time_utc:
         return getter(points[0])
-    for a, b in zip(points, points[1:]):
+    for a, b in itertools.pairwise(points):
         if t <= b.time_utc:
             va, vb = getter(a), getter(b)
             if va is None or vb is None:

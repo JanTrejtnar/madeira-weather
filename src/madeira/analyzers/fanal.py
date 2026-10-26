@@ -7,6 +7,7 @@ body = rosný bod (max 50) + návětrný směr (+25 / −30) + dohlednost (max 2
 
 from __future__ import annotations
 
+import itertools
 from dataclasses import dataclass
 from datetime import date, datetime
 from zoneinfo import ZoneInfo
@@ -54,7 +55,7 @@ def rh_at_height(p: HourlyPoint, height_m: float) -> float | None:
         return None
     if height_m <= pts[0][0]:
         return pts[0][1]
-    for (z0, r0), (z1, r1) in zip(pts, pts[1:]):
+    for (z0, r0), (z1, r1) in itertools.pairwise(pts):
         if height_m <= z1:
             return r0 + (r1 - r0) * (height_m - z0) / (z1 - z0)
     return pts[-1][1]

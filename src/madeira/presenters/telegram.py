@@ -19,8 +19,8 @@ def format_sunrise(a: SunriseAnalysis) -> str:
     lo, hi = a.score_range
     lines = [
         f"🌅 <b>Východ slunce {_day(a)} v {sunrise:%H:%M}</b> (Pico do Arieiro)",
-        f"{VERDICT_ICON[a.verdict]} <b>{VERDICT_CS[a.verdict]}</b> · skóre <b>{a.score_pct:.0f} %</b> "
-        f"({lo:.0f}–{hi:.0f} %, důvěra {CONF_CS[a.confidence]})",
+        (f"{VERDICT_ICON[a.verdict]} <b>{VERDICT_CS[a.verdict]}</b> · skóre <b>{a.score_pct:.0f} %</b> "
+        f"({lo:.0f}–{hi:.0f} %, důvěra {CONF_CS[a.confidence]})"),
         f"Inverze / moře mraků: {a.inversion.probability_pct:.0f} %",
         "",
         escape(a.summary_cs),

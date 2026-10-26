@@ -201,7 +201,7 @@ def label(
 
 @app.command("import-labels")
 def import_labels(
-    file: Path = typer.Argument(
+    file: Path = typer.Argument(  # noqa: B008
         ..., exists=True, dir_okay=False, help="CSV: date,location,actual_verdict,notes"
     ),
 ) -> None:
@@ -304,7 +304,8 @@ def export_calibration() -> None:
 
 @app.command("export-web")
 def export_web(
-    out: Path = typer.Option(Path("docs/data.json"), "--out", "-o", help="Cílový JSON"),
+    out: Path = typer.Option(  # noqa: B008
+        Path("docs/data.json"), "--out", "-o", help="Cílový JSON"),
     days: int = typer.Option(3, min=1, max=7, help="Počet dní výhledu (od zítřka)"),
     history: int = typer.Option(60, min=0, help="Kolik hodnocených dní historie přibalit"),
 ) -> None:
@@ -333,7 +334,8 @@ def export_web(
 
 @app.command("export-map")
 def export_map(
-    out: Path = typer.Option(Path("docs/map_data.json"), "--out", "-o", help="Cílový JSON"),
+    out: Path = typer.Option(  # noqa: B008
+        Path("docs/map_data.json"), "--out", "-o", help="Cílový JSON"),
 ) -> None:
     """Hodinová předpověď (48 h) pro body mapy docs/map.html."""
     payload = mapdata.build_map_data()

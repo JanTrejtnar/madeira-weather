@@ -1,3 +1,4 @@
+import itertools
 import json
 from dataclasses import replace
 from datetime import UTC, date, datetime, timedelta
@@ -13,7 +14,6 @@ from madeira.analyzers.sunset import SunsetFeatures, analyze_sunset, score_sunse
 from madeira.domain.config import MountainCloudConfig, Settings, load_locations
 from madeira.domain.models import HourlyPoint
 from madeira.fetchers.open_meteo import parse_response
-import itertools
 
 FIXTURE = Path(__file__).parent / "fixtures" / "forecast_sample.json"
 NOW = datetime(2026, 10, 12, 12, 0, tzinfo=UTC)
@@ -608,17 +608,17 @@ def test_spillover_clearance_is_relative_to_summit_height():
 def test_bica_clouds_just_below_plateau_do_not_get_false_go():
     s = Settings()
     tuning = s.bica_da_cana.tuning()
-    common = dict(
-        summit_m=1560.0,
-        aloft_hpa=850,
-        low_cloud_summit=5.0,
-        east_low_cloud=5.0,
-        east_mid_cloud=0.0,
-        mid_cloud=0.0,
-        high_cloud=0.0,
-        rh={925: 99.0, 850: 98.0, 800: 42.0, 700: 9.0},
-        z={925: 860.0, 850: 1500.0, 800: 2040.0, 700: 3175.0},
-    )
+    common = {
+        "summit_m": 1560.0,
+        "aloft_hpa": 850,
+        "low_cloud_summit": 5.0,
+        "east_low_cloud": 5.0,
+        "east_mid_cloud": 0.0,
+        "mid_cloud": 0.0,
+        "high_cloud": 0.0,
+        "rh": {925: 99.0, 850: 98.0, 800: 42.0, 700: 9.0},
+        "z": {925: 860.0, 850: 1500.0, 800: 2040.0, 700: 3175.0},
+    }
     windy = score_sunrise(features(gust_kmh=52.0, **common), s, tuning)
     assert windy.score_pct <= s.mountain_clouds.spill_hard_cap and windy.verdict == "NO_GO"
     calm = score_sunrise(features(gust_kmh=12.0, **common), s, tuning)
@@ -628,10 +628,10 @@ def test_bica_clouds_just_below_plateau_do_not_get_false_go():
 def test_mountain_sunset_low_cloud_with_moist_summit_is_no_go():
     """23. 10. 2026 na Arieiru: nízká oblačnost 58 %, RH 800 hPa 67 %, mraky pod vrcholem – byla mlha."""
     s = Settings()
-    day = dict(
-        summit_clear=1.0, summit_elevation_m=1818.0, deck_top_m=1015.0, coast_dd_c=6.9,
-        local_low_cloud=58.0, horizon_low_cloud=1.0, west_mid_cloud=6.0, gust_kmh=29.0,
-    )
+    day = {
+        "summit_clear": 1.0, "summit_elevation_m": 1818.0, "deck_top_m": 1015.0, "coast_dd_c": 6.9,
+        "local_low_cloud": 58.0, "horizon_low_cloud": 1.0, "west_mid_cloud": 6.0, "gust_kmh": 29.0,
+    }
     foggy = score_sunset(sunset_features(**day, rh_aloft=67.0, summit_rh=70.0), s)
     assert foggy.score_pct <= 35 and foggy.verdict == "NO_GO"
     assert foggy.gates["low_cloud"] <= 0.35

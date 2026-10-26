@@ -193,7 +193,7 @@ def record_outcome(
             extra = {} if location == "arieiro" else {"location": location}
             result.analysis = backfill_prediction(day, settings, store, **extra)
             result.backfilled = True
-        except Exception as exc:  # hodnocení se uloží i bez predikce, ať o něj nepřijdeš
+        except Exception as exc:  # noqa: BLE001 - hodnocení se uloží i bez predikce, ať o něj nepřijdeš
             result.warning = f"Predikci se nepodařilo dopočítat ({exc}); hodnocení uloženo bez ní."
     store.set_outcome(day, outcome, chat_id, location=location, notes=notes)
     return result

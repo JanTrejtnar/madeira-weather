@@ -74,7 +74,7 @@ def _rows(pairs):
         out.append({
             "target_date": f"2026-09-{i + 1:02d}", "outcome": outcome, "score": score,
             "verdict": verdict, "notes": None, "components_json": "[]",
-            "features_json": '{"horizon_low_cloud": %d}' % (50 if verdict == "GO" else 5),
+            "features_json": f'{{"horizon_low_cloud": {50 if verdict == "GO" else 5}}}',
         })
     return out
 

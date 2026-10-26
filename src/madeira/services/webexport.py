@@ -640,7 +640,7 @@ def _fanal_day(cfg: FanalConfig, points, day, from_hour: int = 0) -> dict | None
     peak = max(slots, key=lambda r: (r["raw"], -r["hour"]))  # při shodě dřívější slot
     f = peak["f"]
     score = peak["score"]
-    rnd = lambda v, d=None: None if v is None else round(v, d)  # noqa: E731
+    rnd = lambda v, d=None: None if v is None else round(v, d)
     out = {
         "date": day.isoformat(),
         "verdict": fanal.verdict(peak["raw"], cfg),

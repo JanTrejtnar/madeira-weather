@@ -57,7 +57,7 @@ def test_verdict_boundaries():
 
 
 def test_dew_point_spread_points():
-    pts = lambda spread, rh=50: fanal.dew_points(_f(spread=spread, rh=rh), CFG)  # noqa: E731
+    pts = lambda spread, rh=50: fanal.dew_points(_f(spread=spread, rh=rh), CFG)
     assert pts(0.4) == pts(2.0) == 50  # plný zisk do 2,0 °C
     assert pts(2.5) == pts(3.0) == 30  # částečný zisk do 3,0 °C
     assert 0 < pts(3.5) < 30  # mezi 3,0 a 4,0 °C lineárně klesá
@@ -117,14 +117,14 @@ def test_visibility_is_only_a_bonus():
 
 
 def test_drizzle_is_fine_but_downpour_kills_the_score():
-    s = lambda rain: score_fog(_f(spread=0.3, deg=20, speed=12, rain=rain), CFG)  # noqa: E731
+    s = lambda rain: score_fog(_f(spread=0.3, deg=20, speed=12, rain=rain), CFG)
     assert s(1.4) == s(0)  # mrholení < 1,5 mm/h nevadí
     assert 0 < s(2.25) < s(1.5)
     assert s(3.0) == 0 and s(8) == 0  # liják > 3 mm/h = 0
 
 
 def test_only_extreme_gusts_penalize():
-    s = lambda gust: score_fog(_f(spread=0.3, deg=20, speed=12, gust=gust), CFG)  # noqa: E731
+    s = lambda gust: score_fog(_f(spread=0.3, deg=20, speed=12, gust=gust), CFG)
     assert s(10) == s(50) == 75  # 17.–18. 10. byla mlha i při nárazech 39–72 km/h
     assert s(65) < 75
     assert s(120) == pytest.approx(0.3 * 75, abs=0.1)
