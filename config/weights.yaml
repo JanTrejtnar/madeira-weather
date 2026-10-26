@@ -51,41 +51,33 @@ spots:
   arieiro:
     name: "Pico do Arieiro"
     type: mountain_inversion
-    departure_from_funchal_min: 80
     webcam_url: "https://www.netmadeira.com/webcams-madeira/pico-do-arieiro"
   bica_da_cana:
     name: "Miradouro da Bica da Cana"
     type: mountain_inversion
-    departure_from_funchal_min: 70
   ponta_do_pargo:
     name: "Farol da Ponta do Pargo"
     type: coastal_sunset
-    departure_from_funchal_min: 65
   pico_ruivo:               # nejvyšší vrchol (1862 m), stejný model inverze jako Arieiro (800 hPa)
     name: "Pico Ruivo"
     type: mountain_inversion
-    departure_from_funchal_min: 120   # ~60 min jízda na Achada do Teixeira + 45 min pěšky + rezerva
   ponta_do_rosto:
     name: "Miradouro da Ponta do Rosto"
     type: coastal_sunrise
-    departure_from_funchal_min: 50    # ~35 min jízda + parkování a chůze + rezerva
   cristo_rei:
     name: "Miradouro do Cristo Rei"
     type: coastal_sunset
-    departure_from_funchal_min: 25    # ~15 min jízda + chůze + rezerva
   # Západ ze stejných vrcholů jako východ: vlastní klíč spotu (kvůli historii), data z lokality `location`.
   # Mraky pod vrcholem (moře mraků) západ neblokují; do skóre vstupují jen mraky nad ním.
   arieiro_sunset:
     name: "Pico do Arieiro"
     type: mountain_sunset
     location: arieiro
-    departure_from_funchal_min: 80
     webcam_url: "https://www.netmadeira.com/webcams-madeira/pico-do-arieiro"
   pico_ruivo_sunset:
     name: "Pico Ruivo"
     type: mountain_sunset
     location: pico_ruivo
-    departure_from_funchal_min: 120   # stejná cesta jako východ; zpět se sestupuje po setmění
 # Východ na útesu Ponta do Rosto: východní obzor nad mořem musí být čistý, vítr na útesu mírný.
 coastal_sunrise:
   max_horizon_low_clouds: 20   # nad tímto (%) nízké mraky na východě zakrývají slunce
@@ -155,7 +147,6 @@ sunset:
 bot:
   digest_time: "20:00"        # večerní digest (místní čas Madeiry)
   feedback_time: "10:00"      # dotaz "jak dopadl východ?"
-  departure_before_min: 80    # odjezd z Funchalu před východem
   compare_from: "13:00"
   compare_to: "18:00"
 

@@ -40,7 +40,7 @@ Jeden primární uživatel (osobní nástroj), potenciálně sdílený s přáte
 
 | ID | Otázka uživatele | Výstup | Priorita |
 |----|------------------|--------|----------|
-| UC1 | „Mám zítra vstávat ve 5:30 na Arieiro?“ | Verdikt GO / MAYBE / NO-GO + skóre 0–100 % + 3 hlavní důvody + doba východu slunce + doporučený čas odjezdu | **MUST** |
+| UC1 | „Mám zítra vstávat ve 5:30 na Arieiro?“ | Verdikt GO / MAYBE / NO-GO + skóre 0–100 % + 3 hlavní důvody + doba východu slunce | **MUST** |
 | UC2 | „Bude zítra na Arieiro moře mraků (inverze)?“ | Pravděpodobnost inverze 0–100 % + odhad výšky vrstvy | **MUST** |
 | UC3 | „Kde na ostrově bude zítra odpoledne jasno?“ | Žebříček lokalit pro zadané časové okno (např. 13–18 h) s jasem/srážkami/větrem | **MUST** |
 | UC4 | „Který ze 3–7 dnů je nejlepší na východ slunce?“ | Tabulka/graf skóre po dnech (7denní výhled, s klesající důvěrou) | SHOULD |

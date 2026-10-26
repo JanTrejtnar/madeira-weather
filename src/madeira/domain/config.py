@@ -89,7 +89,6 @@ class SpotConfig(BaseModel):
 
     name: str
     type: Literal["mountain_inversion", "coastal_sunrise", "coastal_sunset", "mountain_sunset"]
-    departure_from_funchal_min: int  # odjezd z Funchalu před východem/západem (jízda + chůze)
     webcam_url: str | None = None  # živá webkamera (odkaz na webu)
     location: str | None = None  # klíč lokality v locations.yaml; None = klíč spotu (jeden vrchol, dva spoty)
 
@@ -98,35 +97,32 @@ def _default_spots() -> dict[str, SpotConfig]:
         "arieiro": SpotConfig(
             name="Pico do Arieiro",
             type="mountain_inversion",
-            departure_from_funchal_min=80,
             webcam_url="https://www.netmadeira.com/webcams-madeira/pico-do-arieiro",
         ),
         "bica_da_cana": SpotConfig(
             name="Miradouro da Bica da Cana",
             type="mountain_inversion",
-            departure_from_funchal_min=70,
         ),
         "ponta_do_pargo": SpotConfig(
             name="Farol da Ponta do Pargo",
             type="coastal_sunset",
-            departure_from_funchal_min=65,
         ),
         "pico_ruivo": SpotConfig(
-            name="Pico Ruivo", type="mountain_inversion", departure_from_funchal_min=120
+            name="Pico Ruivo", type="mountain_inversion"
         ),
         "ponta_do_rosto": SpotConfig(
-            name="Miradouro da Ponta do Rosto", type="coastal_sunrise", departure_from_funchal_min=50
+            name="Miradouro da Ponta do Rosto", type="coastal_sunrise"
         ),
         "cristo_rei": SpotConfig(
-            name="Miradouro do Cristo Rei", type="coastal_sunset", departure_from_funchal_min=25
+            name="Miradouro do Cristo Rei", type="coastal_sunset"
         ),
         "arieiro_sunset": SpotConfig(
-            name="Pico do Arieiro", type="mountain_sunset", departure_from_funchal_min=80,
+            name="Pico do Arieiro", type="mountain_sunset",
             location="arieiro",
             webcam_url="https://www.netmadeira.com/webcams-madeira/pico-do-arieiro",
         ),
         "pico_ruivo_sunset": SpotConfig(
-            name="Pico Ruivo", type="mountain_sunset", departure_from_funchal_min=120,
+            name="Pico Ruivo", type="mountain_sunset",
             location="pico_ruivo",
         ),
     }
@@ -337,7 +333,6 @@ class FanalConfig(BaseModel):
 class BotConfig(BaseModel):
     digest_time: str = "20:00"  # místní čas Madeiry
     feedback_time: str = "10:00"
-    departure_before_min: int = 80  # odjezd z Funchalu před východem (jízda + chůze + rezerva)
     compare_from: str = "13:00"
     compare_to: str = "18:00"
 

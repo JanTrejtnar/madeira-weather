@@ -276,7 +276,6 @@ def test_new_spot_configuration():
     assert s.spots["ponta_do_rosto"].type == "coastal_sunrise"
     assert s.spots["pico_ruivo"].type == "mountain_inversion"
     assert s.spots["cristo_rei"].type == "coastal_sunset"
-    assert s.spots["pico_ruivo"].departure_from_funchal_min > s.spots["arieiro"].departure_from_funchal_min
 
 
 def test_coastal_sunrise_rewards_clear_east_horizon_and_penalises_gusts():
