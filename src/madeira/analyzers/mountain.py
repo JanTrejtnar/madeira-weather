@@ -75,6 +75,31 @@ def spillover_cap(
     return 100.0 - risk * (100.0 - floor)
 
 
+def low_cloud_moist_cap(
+    low_cloud_pct: float | None,
+    rh_aloft: float | None,
+    summit_rh: float | None,
+    cfg: MountainCloudConfig,
+) -> float | None:
+    """Strop skóre západu z vrcholu: hodně nízké oblačnosti a vlhko u vrcholu bez suché pokličky.
+
+    Odhad horní hranice mraků může být hluboko pod vrcholem, ale když je vzduch v 800 hPa / ve výšce
+    vrcholu vlhký, mraky se na masivu tvoří (orograficky) a vrchol skončí v mlze. Suchý vzduch
+    nahoře (inverze) strop vypne. Lineární rampy: oblačnost × vlhkost (větší z obou profilů)."""
+    if low_cloud_pct is None:
+        return None
+    moisture = max(
+        pw(rh_aloft, [(cfg.lc_rh_dry, 0.0), (cfg.lc_rh_moist, 1.0)]) if rh_aloft is not None else 0.0,
+        pw(summit_rh, [(cfg.lc_summit_rh_dry, 0.0), (cfg.lc_summit_rh_moist, 1.0)])
+        if summit_rh is not None
+        else 0.0,
+    )
+    risk = moisture * pw(low_cloud_pct, [(cfg.low_cloud_from, 0.0), (cfg.low_cloud_full, 1.0)])
+    if risk <= 0:
+        return None
+    return 100.0 - risk * (100.0 - cfg.low_cloud_cap)
+
+
 def spillover_hard(
     rh_aloft: float | None, gust_kmh: float | None, cfg: MountainCloudConfig
 ) -> bool:

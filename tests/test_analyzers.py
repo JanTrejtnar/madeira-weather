@@ -623,3 +623,21 @@ def test_bica_clouds_just_below_plateau_do_not_get_false_go():
     assert windy.score_pct <= s.mountain_clouds.spill_hard_cap and windy.verdict == "NO_GO"
     calm = score_sunrise(features(gust_kmh=12.0, **common), s, tuning)
     assert calm.score_pct > windy.score_pct
+
+
+def test_mountain_sunset_low_cloud_with_moist_summit_is_no_go():
+    """23. 10. 2026 na Arieiru: nízká oblačnost 58 %, RH 800 hPa 67 %, mraky pod vrcholem – byla mlha."""
+    s = Settings()
+    day = dict(
+        summit_clear=1.0, summit_elevation_m=1818.0, deck_top_m=1015.0, coast_dd_c=6.9,
+        local_low_cloud=58.0, horizon_low_cloud=1.0, west_mid_cloud=6.0, gust_kmh=29.0,
+    )
+    foggy = score_sunset(sunset_features(**day, rh_aloft=67.0, summit_rh=70.0), s)
+    assert foggy.score_pct <= 35 and foggy.verdict == "NO_GO"
+    assert foggy.gates["low_cloud"] <= 0.35
+    # suchý vzduch nad vrstvou (inverze), stejná oblačnost: strop se nespustí
+    dry = score_sunset(sunset_features(**day, rh_aloft=12.0, summit_rh=35.0), s)
+    assert dry.verdict == "GO" and "low_cloud" not in dry.gates
+    # málo nízké oblačnosti: vlhko samo strop nespustí
+    clearish = score_sunset(sunset_features(**{**day, "local_low_cloud": 30.0}, rh_aloft=67.0, summit_rh=70.0), s)
+    assert "low_cloud" not in clearish.gates

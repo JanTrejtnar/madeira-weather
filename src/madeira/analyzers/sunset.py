@@ -8,7 +8,13 @@ from types import SimpleNamespace
 
 from madeira.analyzers.features import _avg, _max, window_values
 from madeira.analyzers.inversion import estimate_deck_top, summit_clear_factor, summit_rh
-from madeira.analyzers.mountain import cloud_cover, high_deck_gate, spillover_cap, wind_driven_fog
+from madeira.analyzers.mountain import (
+    cloud_cover,
+    high_deck_gate,
+    low_cloud_moist_cap,
+    spillover_cap,
+    wind_driven_fog,
+)
 from madeira.analyzers.scoring_utils import pw
 from madeira.analyzers.sunrise import DEWPOINT_DEP, NEUTRAL, _confidence
 from madeira.domain.config import Settings
@@ -172,6 +178,11 @@ def score_sunset(f: SunsetFeatures, settings: Settings) -> SunsetAnalysis:
     bonus = _inversion_bonus(f, cfg.mountain)  # z původních (netlumených) hodnot mraků
     mc = settings.mountain_clouds
     cover = cloud_cover(f.local_low_cloud, f.west_mid_cloud)
+    low_cap = (  # z původní (netlumené) nízké oblačnosti, dřív než ji _above_deck zeslabí
+        low_cloud_moist_cap(f.local_low_cloud, f.rh_aloft, f.summit_rh, mc)
+        if f.summit_clear is not None
+        else None
+    )
     fog = _mountain_fog(f, cfg.mountain, mc, cover) if f.summit_clear is not None else None
     f = _above_deck(f)
     curves = cfg.piecewise
@@ -274,6 +285,12 @@ def score_sunset(f: SunsetFeatures, settings: Settings) -> SunsetAnalysis:
             warnings.append("Základna mraků je nad vrcholem – vrchol je pod mraky, ne nad nimi.")
     # brány mlhy a mraků nad vrcholem popisují stejný jev → platí přísnější, netrestá se dvakrát
     score *= min(gates.get("fog", 1.0), deck_gate)
+    if low_cap is not None and score > low_cap:
+        score = low_cap
+        gates["low_cloud"] = round(low_cap / 100, 2)
+        warnings.append(
+            f"Hodně nízké oblačnosti ({f.local_low_cloud:.0f} %) a vlhko u vrcholu – hrozí mlha."
+        )
     if f.summit_elevation_m is not None:
         cap = spillover_cap(f.deck_top_m, f.summit_elevation_m, f.rh_aloft, mc, f.gust_kmh)
         if cap is not None and score > cap:
@@ -324,7 +341,15 @@ def _summary_cs(score, verdict, components, gates) -> str:
     weakest = min(components, key=lambda c: c.value)
     if gates["precip"] < 1:
         parts.append("Největší problém jsou srážky.")
-    elif min(gates.get("fog", 1.0), gates.get("high_deck", 1.0), gates.get("spillover", 1.0)) < 0.6:
+    elif (
+        min(
+            gates.get("fog", 1.0),
+            gates.get("high_deck", 1.0),
+            gates.get("spillover", 1.0),
+            gates.get("low_cloud", 1.0),
+        )
+        < 0.6
+    ):
         parts.append("Největší problém je mlha/mrak na vrcholu.")
     elif gates["overcast"] < 0.6:
         parts.append("Největší problém je úplné zatažení.")

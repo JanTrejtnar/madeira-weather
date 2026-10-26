@@ -62,6 +62,13 @@ class MountainCloudConfig(BaseModel):
     cover_min_pct: float = 25  # nízká/střední oblačnost nad tímto
     wind_fog_max: float = 0.85  # strop mlhy z větru (brána ~0.28, ne nula)
     high_deck_gate: float = 0.35  # koeficient skóre, když je základna mraků nad vrcholem
+    low_cloud_cap: float = 35  # západ: strop (NO-GO) při velké nízké oblačnosti a vlhku bez suché pokličky
+    low_cloud_from: float = 45  # nízká oblačnost (%) od tohoto začíná strop ...
+    low_cloud_full: float = 55  # ... a od tohoto je plný
+    lc_rh_dry: float = 50  # RH (800 hPa) pod tímto = suchá poklička; nad ní roste vlhkost ...
+    lc_rh_moist: float = 65  # ... až do plné síly
+    lc_summit_rh_dry: float = 60  # totéž pro RH ve výšce vrcholu
+    lc_summit_rh_moist: float = 72
 
 
 class SunriseConfig(BaseModel):

@@ -37,7 +37,15 @@ mountain_clouds:
   spill_hard_rh: 60
   spill_rh_dry: 35          # RH 800 hPa pod tímto = sucho nad vrstvou, inverze drží (bez stropu)
   spill_rh_moist: 55        # nad tímto je riziko přelévání plné
-  wind_fog_max: 0.85        # strop mlhy z větru → brána ≈ 1 − 0.85·0.85 ≈ 0.28 (NO-GO, ne nula)
+  # Západ: hodně nízké oblačnosti + vlhko u vrcholu bez suché pokličky = mlha na vrcholu (i při nízké horní hranici mraků)
+  low_cloud_cap: 35         # strop (NO-GO)
+  low_cloud_from: 45        # nízká oblačnost (%) od tohoto začíná strop, plný od low_cloud_full
+  low_cloud_full: 55
+  lc_rh_dry: 50             # RH 800 hPa: pod = suchá poklička (bez stropu), plná vlhkost od lc_rh_moist
+  lc_rh_moist: 65
+  lc_summit_rh_dry: 60      # totéž pro RH ve výšce vrcholu
+  lc_summit_rh_moist: 72
+  wind_fog_max: 0.85       # strop mlhy z větru → brána ≈ 1 − 0.85·0.85 ≈ 0.28 (NO-GO, ne nula)
   high_deck_gate: 0.35      # koeficient skóre, když základna mraků od hladiny moře (125·(T−Td) na pobřeží) > výška vrcholu;
                             # jen při vlhku i nad vrcholem a nikdy při inverzi (mraky pod vrcholem)
 inversion:
