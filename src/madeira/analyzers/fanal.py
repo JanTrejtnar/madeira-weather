@@ -2,7 +2,10 @@
 
 Hledáme hustou mlhu / nízký mrak v lese (1150 m). Globální modely orografickou mlhu z pasátu přes severní
 útes nevidí v základně mraků, proto je primární metrika rosný bod (T − Td) a směr větru:
-body = rosný bod (max 50) + návětrný směr (+25 / −30) + dohlednost (max 25), pak × brána srážek × brána nárazů.
+body = vlhkost ve výšce lesa (max 50) + návětrný směr (+25 / −30) + dohlednost (max 25), pak × brána srážek × brána nárazů.
+
+Vlhkost se bere z izobarických hladin 900/850 hPa (≈ 1 100 / 1 550 m, tedy kolem lesa), ne z 2 m: přízemní RH a T − Td
+padají ráno k nasycení téměř každý den i bez mlhy. MYSTIC navíc vyžaduje nasycenou vrstvu v obou hladinách.
 """
 
 from __future__ import annotations
@@ -32,6 +35,10 @@ class FogFeatures:
     wind_kmh: float | None = None
     wind_dir_deg: float | None = None
     temp_c: float | None = None
+    rh_forest_pct: float | None = None  # RH ve výšce lesa (interpolace z hladin 900/850/925 hPa)
+    rh900_pct: float | None = None
+    rh850_pct: float | None = None
+    local_hour: int | None = None  # místní hodina bodu (pravidlo rozbřesku)
 
 
 def _mean(values: list[float]) -> float | None:
@@ -68,6 +75,7 @@ def extract_fog_features(p: HourlyPoint, cfg: FanalConfig) -> FogFeatures:
         spread = max(0.0, p.temperature_c - p.dew_point_c)
         base = cfg.elevation_m + cfg.cloud_base_m_per_c * spread
     cover = p.cloud_cover_low_pct if p.cloud_cover_low_pct is not None else p.cloud_cover_total_pct
+    level_rh = lambda hpa: p.levels[hpa].relative_humidity_pct if hpa in p.levels else None
     return FogFeatures(
         humidity_pct=_mean(rh),
         cloud_base_m=base,
@@ -80,36 +88,56 @@ def extract_fog_features(p: HourlyPoint, cfg: FanalConfig) -> FogFeatures:
         wind_kmh=p.wind_speed_kmh,
         wind_dir_deg=p.wind_direction_deg,
         temp_c=p.temperature_c,
+        rh_forest_pct=rh_at_height(p, cfg.elevation_m),
+        rh900_pct=level_rh(900),
+        rh850_pct=level_rh(850),
+        local_hour=_local(p).hour,
     )
 
 
 def dew_points(f: FogFeatures, cfg: FanalConfig) -> float:
-    """Body za vlhkost: lepší z rosného bodu (spread) a povrchové RH; mezi likely a dry lineárně klesá k 0."""
+    """Body za vlhkost ve výšce lesa; mezi dry a likely lineárně rostou. Bez hladin se použije přízemní RH.
+
+    Ráno (před `dawn_until_hour`) se vlhkost počítá jen s modelem potvrzenou nízkou oblačností, jinak by
+    nasycení po nočním ochlazení dalo body "zdarma".
+    """
     d = cfg.dew
-    by_spread = 0.0
-    if f.spread_c is not None:
-        if f.spread_c <= d.spread_extreme:
-            by_spread = d.points_extreme
-        elif f.spread_c <= d.spread_likely:
-            by_spread = d.points_likely
-        elif f.spread_c < d.spread_dry:
-            by_spread = d.points_likely * (d.spread_dry - f.spread_c) / (d.spread_dry - d.spread_likely)
-    by_rh = 0.0
-    if f.surface_rh_pct is not None:
-        by_rh = d.points_extreme if f.surface_rh_pct >= d.rh_extreme else d.points_likely if f.surface_rh_pct >= d.rh_likely else 0.0
-    return max(by_spread, by_rh)
+    rh = f.rh_forest_pct if f.rh_forest_pct is not None else f.surface_rh_pct
+    if rh is None:
+        return 0.0
+    dawn = f.local_hour is not None and f.local_hour < d.dawn_until_hour
+    if dawn and (f.cloud_cover_pct is None or f.cloud_cover_pct < d.dawn_min_low_cloud_pct):
+        return 0.0
+    if rh >= d.rh_extreme:
+        return d.points_extreme
+    if rh >= d.rh_likely:
+        return d.points_likely
+    if rh > d.rh_dry:
+        return d.points_likely * (rh - d.rh_dry) / (d.rh_likely - d.rh_dry)
+    return 0.0
 
 
 def wind_points(f: FogFeatures, cfg: FanalConfig, moist: bool) -> float:
-    """Orografický bonus (pasát z N/NE, 8–30 km/h, jen ve vlhku) a föhnová penalizace (jih)."""
+    """Orografický bonus (pasát z N/NE, 8–30 km/h, jen ve vlhku), föhnová penalizace (jih), bezvětří z NW/N při nasycených 900 hPa."""
     w = cfg.wind
     if f.wind_dir_deg is None:
         return 0.0
     if in_sector(f.wind_dir_deg, w.lee_from, w.lee_to):
         return -w.lee_penalty
-    if moist and f.wind_kmh is not None and w.speed_min <= f.wind_kmh <= w.speed_max             and in_sector(f.wind_dir_deg, w.windward_from, w.windward_to):
+    if not moist or f.wind_kmh is None:
+        return 0.0
+    if w.speed_min <= f.wind_kmh <= w.speed_max and in_sector(f.wind_dir_deg, w.windward_from, w.windward_to):
+        return w.bonus
+    calm = f.wind_kmh < w.speed_min and in_sector(f.wind_dir_deg, w.calm_from, w.calm_to)
+    if calm and f.rh900_pct is not None and f.rh900_pct >= w.calm_rh_min:
         return w.bonus
     return 0.0
+
+
+def layer_blocks_mystic(f: FogFeatures, cfg: FanalConfig) -> bool:
+    """Nenasycená vrstva v 900 nebo 850 hPa: mlha ve výšce lesa není možná v plné hustotě. Bez dat se nerozhoduje."""
+    rh = [v for v in (f.rh900_pct, f.rh850_pct) if v is not None]
+    return bool(rh) and min(rh) < cfg.layer.mystic_rh_min
 
 
 def fog_points(f: FogFeatures, cfg: FanalConfig) -> dict[str, float]:
@@ -119,9 +147,12 @@ def fog_points(f: FogFeatures, cfg: FanalConfig) -> dict[str, float]:
     vis = 0.0 if f.visibility_m is None else cfg.visibility_points * pw(f.visibility_m, cfg.curves.visibility)
     rain_gate = pw(f.precip_mm_h, cfg.curves.precip)
     wind_gate = 1.0 if f.gust_kmh is None else pw(f.gust_kmh, cfg.curves.gusts)
-    raw = max(0.0, min(100.0, dew + wind + vis))
+    raw = max(0.0, min(100.0, dew + wind + vis)) * rain_gate * wind_gate
+    capped = layer_blocks_mystic(f, cfg)
+    if capped:
+        raw = min(raw, cfg.verdict.go - 1)
     return {"dew": dew, "wind": wind, "visibility": vis, "rain_gate": rain_gate, "gust_gate": wind_gate,
-            "score": round(raw * rain_gate * wind_gate, 1)}
+            "layer_capped": float(capped), "score": round(raw, 1)}
 
 
 def score_fog(f: FogFeatures, cfg: FanalConfig) -> float:

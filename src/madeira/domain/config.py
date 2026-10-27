@@ -283,15 +283,24 @@ class EscapeConfig(BaseModel):
 
 
 class FanalDew(BaseModel):
-    """Primární metrika: rosný bod. Orografická mlha globální modely nevidí v základně mraků, ale v T − Td."""
+    """Primární metrika: vlhkost vzduchu ve výšce lesa (izobarické hladiny 900/850 hPa), ne přízemní RH a rosný bod.
 
-    spread_extreme: float = 2.0  # T − Td do tohoto [°C] (nebo RH ≥ rh_extreme) = plný zisk (points_extreme)
-    spread_likely: float = 3.0  # do tohoto (nebo RH ≥ rh_likely) = částečný zisk (points_likely)
-    spread_dry: float = 4.0  # nad tímto = suchý vzduch; mezi likely a dry body lineárně klesají k 0
-    rh_extreme: float = 85  # [%] kalibrováno na orografickou kondenzaci na hřebeni (17.–18. 10. 2026)
-    rh_likely: float = 78  # [%]
+    Přízemní RH a T − Td ráno kvůli nočnímu ochlazení padají k nasycení téměř každý den, i když v lese mlha není.
+    """
+
+    rh_extreme: float = 95  # [%] vlhkost ve výšce lesa od této hodnoty = plný zisk (points_extreme)
+    rh_likely: float = 90  # [%] od této hodnoty částečný zisk (points_likely)
+    rh_dry: float = 80  # [%] pod touto hodnotou nic; mezi dry a likely body lineárně rostou
     points_extreme: float = 50
     points_likely: float = 30
+    dawn_until_hour: int = 10  # před touto místní hodinou (rozbřesk) platí pravidlo níže
+    dawn_min_low_cloud_pct: float = 50  # ráno se vlhkost započítá jen při modelem potvrzené nízké oblačnosti ≥ tato hodnota
+
+
+class FanalLayer(BaseModel):
+    """Vrstva vzduchu ve výšce lesa: pod nasycenou vrstvou (900 hPa ≈ 1 100 m) a nad ní (850 hPa ≈ 1 550 m)."""
+
+    mystic_rh_min: float = 80  # MYSTIC jen když RH v 900 i 850 hPa ≥ tato hodnota; v suchém 850 hPa (< 60 %) leží inverzní poklička pod lesem
 
 
 class FanalWind(BaseModel):
@@ -303,8 +312,11 @@ class FanalWind(BaseModel):
     lee_to: float = 220
     speed_min: float = 8  # bonus jen při rychlosti větru v tomto rozsahu [km/h]
     speed_max: float = 30
-    bonus: float = 25  # jen při vlhkém vzduchu (spread < spread_dry nebo RH ≥ rh_likely)
+    bonus: float = 25  # jen při vlhkém vzduchu (vlhkost ve výšce lesa ≥ dew.rh_dry)
     lee_penalty: float = 30
+    calm_from: float = 290  # slabý vítr pod speed_min z NW/N (290°–020°) dostane bonus taky, pokud je 900 hPa nasycená
+    calm_to: float = 20
+    calm_rh_min: float = 95  # [%] RH v 900 hPa pro „plně nasycenou“ vrstvu při bezvětří
 
 
 class FanalCurves(BaseModel):
@@ -328,6 +340,7 @@ class FanalConfig(BaseModel):
     cloud_base_m_per_c: float = 125  # jen informativní odhad na webu, do skóre nevstupuje: základna mraků nad zemí ≈ 125 m za každý °C rozdílu T − rosný bod
     dew: FanalDew = Field(default_factory=FanalDew)
     wind: FanalWind = Field(default_factory=FanalWind)
+    layer: FanalLayer = Field(default_factory=FanalLayer)
     visibility_points: float = 25  # bonus za nízkou dohlednost (model ji často nevidí, proto jen bonus)
     curves: FanalCurves = Field(default_factory=FanalCurves)
     verdict: VerdictThresholds = Field(default_factory=lambda: VerdictThresholds(go=70, maybe=40))

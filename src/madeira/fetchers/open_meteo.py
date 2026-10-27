@@ -20,7 +20,7 @@ from madeira.domain.models import (
 URL = "https://api.open-meteo.com/v1/forecast"
 HISTORICAL_URL = "https://historical-forecast-api.open-meteo.com/v1/forecast"
 HISTORICAL_MODEL = "historical_forecast"
-LEVELS = (925, 850, 800, 700)  # 800 hPa ≈ 2050 m: těsně nad vrcholem Arieira (1818 m)
+LEVELS = (925, 900, 850, 800, 700)  # 900 hPa ≈ 1000 m a 850 hPa ≈ 1450 m obklopují Fanal (1150 m); 800 hPa ≈ 2050 m: těsně nad vrcholem Arieira (1818 m)
 SURFACE_VARS = [
     "temperature_2m",
     "apparent_temperature",

@@ -204,14 +204,16 @@ fanal:
   verdict:
     go: 70                    # MYSTIC
     maybe: 40                 # PARTIAL; pod tím CLEAR
-  dew:
-    spread_extreme: 2.0       # T − Td ≤ 2,0 °C nebo RH ≥ 85 % → +50
-    spread_likely: 3.0        # T − Td ≤ 3,0 °C nebo RH ≥ 78 % → +30
-    spread_dry: 4.0           # nad tímto sucho; mezi 3,0 a 4,0 °C body lineárně klesají k 0
-    rh_extreme: 85            # kalibrováno na orografickou kondenzaci na hřebeni (17.–18. 10. 2026)
-    rh_likely: 78
+  dew:                        # primárně vlhkost ve výšce lesa (900/850 hPa), ne 2 m: ta ráno padá k nasycení každý den
+    rh_extreme: 95            # RH ≥ 95 % → +50
+    rh_likely: 90             # RH ≥ 90 % → +30
+    rh_dry: 80                # pod 80 % nic; mezi 80 a 90 % body lineárně rostou
     points_extreme: 50
     points_likely: 30
+    dawn_until_hour: 10       # před 10:00 místního času se vlhkost počítá jen s potvrzenou nízkou oblačností
+    dawn_min_low_cloud_pct: 50
+  layer:
+    mystic_rh_min: 80         # MYSTIC jen při RH ≥ 80 % v 900 i 850 hPa (850 < 60 % = inverze pod lesem)
   wind:
     windward_from: 320        # sektor 320°–070° (přes sever): pasát tlačí vlhkost na plošinu
     windward_to: 70
@@ -219,6 +221,9 @@ fanal:
     lee_to: 220
     speed_min: 8              # bonus jen při 8–30 km/h a vlhkém vzduchu
     speed_max: 30
+    calm_from: 290            # slabý vítr (< speed_min) z 290°–020° dostane bonus taky, je-li 900 hPa nasycená (RH ≥ 95 %)
+    calm_to: 20
+    calm_rh_min: 95
     bonus: 25
     lee_penalty: 30
   curves:                     # [vstup, násobek 0–1]

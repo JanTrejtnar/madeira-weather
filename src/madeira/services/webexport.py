@@ -616,7 +616,7 @@ def _fanal_summary(verdict: str, f: dict, cfg: FanalConfig) -> str:
 
 
 def _fanal_history_summary(verdict: str, e: dict, cfg: FanalConfig) -> str:
-    """Např. "Vlhkost 95 %, pasát ze severu – hustá mlha" (z denních průměrů)."""
+    """Např. "Vlhkost v lese 95 %, pasát ze severu – hustá mlha" (z hodnot nejlepšího slotu)."""
     w = cfg.wind
     deg = e["metrics"]["wind_dir"]
     if deg is None:
@@ -628,8 +628,8 @@ def _fanal_history_summary(verdict: str, e: dict, cfg: FanalConfig) -> str:
     else:
         wind = f"vítr z {_compass_cs(deg)}"
     tail = {"MYSTIC": "hustá mlha", "PARTIAL": "cáry mlhy", "CLEAR": "bez mlhy"}[verdict]
-    humidity = "?" if e["metrics"]["humidity"] is None else e["metrics"]["humidity"]
-    return f"Vlhkost {humidity} %, {wind} – {tail}"
+    humidity = e["metrics"]["forest_humidity"]
+    return f"Vlhkost v lese {'?' if humidity is None else humidity} %, {wind} – {tail}"
 
 
 def _fanal_day(cfg: FanalConfig, points, day, from_hour: int = 0) -> dict | None:
@@ -648,6 +648,9 @@ def _fanal_day(cfg: FanalConfig, points, day, from_hour: int = 0) -> dict | None
         "peak_score": score,
         "peak_hour": peak["hour"],
         "humidity": rnd(f.surface_rh_pct if f.surface_rh_pct is not None else f.humidity_pct),
+        "forest_humidity": rnd(f.rh_forest_pct if f.rh_forest_pct is not None else f.surface_rh_pct),
+        "rh_900": rnd(f.rh900_pct),
+        "rh_850": rnd(f.rh850_pct),
         "cloud_coverage_local": rnd(f.cloud_cover_pct),
         "cloud_base_m": rnd(f.cloud_base_m),
         "visibility_m": rnd(f.visibility_m),
@@ -688,6 +691,7 @@ def fanal_history(cfg: FanalConfig, points, today, days: int = 7) -> list[dict]:
         metrics = {
             "temp": temp,
             "humidity": d["humidity"],
+            "forest_humidity": d["forest_humidity"],
             "dew_point": None if spread is None or temp is None else round(temp - spread, 1),
             "dew_point_spread": spread,
             "wind_speed": d["wind_speed"],

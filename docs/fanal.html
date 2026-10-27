@@ -80,9 +80,6 @@
         <div class="mist pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-zinc-200/10 to-transparent" aria-hidden="true"></div>
         <p id="kicker" class="relative text-xs uppercase tracking-widest text-emerald-200/80"></p>
         <h2 id="status" class="relative mt-1 text-3xl font-bold text-emerald-100 sm:text-4xl"></h2>
-        <div class="relative mt-4 h-2 overflow-hidden rounded-full bg-white/10" role="presentation">
-          <div id="bar" class="h-full rounded-full bg-emerald-400 transition-all"></div>
-        </div>
         <p id="summary" class="relative mt-4 text-slate-200"></p>
         <p id="window" class="relative mt-4 text-xl font-semibold text-emerald-100"></p>
         <ul id="slots" class="relative mt-3 flex flex-wrap gap-2 text-sm"></ul>
@@ -95,9 +92,9 @@
           <p id="n-hum" class="mt-1 text-xs text-slate-500"></p>
         </div>
         <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
-          <dt id="h-base" class="text-xs uppercase tracking-wider text-slate-400"></dt>
-          <dd id="v-base" class="mt-1 text-2xl font-semibold"></dd>
-          <p id="n-base" class="mt-1 text-xs text-slate-500"></p>
+          <dt id="h-temp" class="text-xs uppercase tracking-wider text-slate-400"></dt>
+          <dd id="v-temp" class="mt-1 text-2xl font-semibold"></dd>
+          <p id="n-temp" class="mt-1 text-xs text-slate-500"></p>
         </div>
         <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
           <dt id="h-wind" class="text-xs uppercase tracking-wider text-slate-400"></dt>
@@ -149,12 +146,12 @@
       betaText: "Předpověď mlhy pro Fanal je zatím ve zkušebním provozu a nefunguje zcela správně. Neřiď se podle ní; bude se ještě ladit.",
       loading: "Načítám předpověď…",
       today: "Dnes", tomorrow: "Zítra", kicker: "Fanal Fog Index",
-      status: { MYSTIC: "🌫️ MYSTICAL FOG", PARTIAL: "🌤️ PARTIAL FOG", CLEAR: "☀️ CLEAR · NO FOG" },
+      status: { MYSTIC: "🌫️ MYSTIC · hustá mlha", PARTIAL: "⛅ PARTIAL · cáry mlhy, proměnlivo", CLEAR: "☀️ CLEAR · jasno, bez mlhy" },
       window: "Doporučený čas návštěvy", noWindow: "Bez výrazné mlhy",
       part: { morning: "Dopoledne", afternoon: "Odpoledne", evening: "Večer" },
-      hum: "Vlhkost", base: "Hladina mraků", wind: "Vítr (nárazy)", rain: "Dešťové srážky",
-      humNote: (v) => v >= 85 ? "ideální pro mlhu (85–100 %)" : "pod 85 % mlha řídne",
-      baseNote: (m, el) => m == null ? "" : m < 900 ? "pod lesem, v lese bude jasno" : m <= 1300 ? "les je přímo uvnitř mraku" : `${m - el} m nad lesem, jen cáry mlhy`,
+      hum: "Vlhkost v lese", temp: "Teplota", wind: "Vítr (nárazy)", rain: "Dešťové srážky",
+      humNote: (v) => v >= 95 ? "nasycený vzduch, mlha drží" : v >= 90 ? "velmi vlhko, mlha je možná" : v >= 80 ? "mlha spíš řídne" : "suchý vzduch, mlha nepravděpodobná",
+      tempNote: "ve výšce lesa (1 150 m)",
       windNote: (v) => v <= 50 ? "mlha drží" : "silný vítr mlhu trhá",
       rainNote: (v) => v < 0.2 ? "sucho" : v <= 1.5 ? "jemné mrholení nevadí" : v <= 3 ? "citelný déšť" : "liják, mlhu nečekejte",
       noData: "bez dat", mmh: (v) => `${v.toLocaleString("cs-CZ")} mm/h`,
@@ -166,34 +163,34 @@
       gearLight: "🔦 Čelovka, v mlze se rychle setmí",
       cam: "📹 Zkontrolovat živou kameru poblíž", camNote: "Nejbližší kamera: Rabaçal (NetMadeira)",
       history: "Historie mlhy (posledních 7 dní)",
-      historyNote: "Skóre z modelových hodnot za 9:00, 13:00 a 17:00; snímky z kamery Rabaçal pomáhají ověřit, jak to dopadlo.",
+      historyNote: "Verdikt z modelových hodnot za 9:00, 13:00 a 17:00; snímky z kamery Rabaçal pomáhají ověřit, jak to dopadlo.",
       photos: "Snímky z kamery", unavailable: "Snímek nedostupný", close: "Zavřít",
       caption: (d, tm) => `Rabaçal webcam · ${d} v ${tm}`,
-      mHum: "Relativní vlhkost", mDew: "Rosný bod", mWind: "Vítr", mTemp: "Teplota",
+      mHum: "Vlhkost v lese", mDew: "Rosný bod", mWind: "Vítr", mTemp: "Teplota",
       mSpread: (v) => `rozdíl ${v} °C`,
       dirs: ["S", "SV", "V", "JV", "J", "JZ", "Z", "SZ"],
       histSummary: (e, L) => {
         const m = e.metrics, deg = m.wind_dir;
         const wind = deg == null ? "vítr bez dat" : deg >= 140 && deg <= 220 ? "jižní vítr (föhn)"
           : (deg >= 320 || deg <= 70) ? `pasát (${L.dirs[Math.round(deg / 45) % 8]})` : `vítr ${L.dirs[Math.round(deg / 45) % 8]}`;
-        return `Vlhkost ${m.humidity == null ? "?" : m.humidity} %, ${wind} – ${{ MYSTIC: "hustá mlha", PARTIAL: "cáry mlhy", CLEAR: "bez mlhy" }[e.verdict]}`;
+        return `Vlhkost v lese ${hum(m)} %, ${wind} – ${{ MYSTIC: "hustá mlha", PARTIAL: "cáry mlhy", CLEAR: "bez mlhy" }[e.verdict]}`;
       },
       nodata: "Data pro Fanal zatím nejsou k dispozici.",
       error: "Předpověď se nepodařilo načíst", retry: "Zkus to prosím později.",
       updated: "Naposledy aktualizováno", stale: "data jsou starší než den!",
-      disclaimer: "Model: Open-Meteo. Základna mraků je odhad z teploty a rosného bodu. Orientační předpověď, ne záruka; zkontroluj kameru.",
+      disclaimer: "Model: Open-Meteo, vlhkost v lese z hladin 900/850 hPa. Orientační předpověď, ne záruka; zkontroluj kameru.",
     },
     en: {
       betaTitle: "Beta forecast",
       betaText: "The Fanal fog forecast is still in beta and does not work entirely correctly yet. Do not rely on it; it will be tuned further.",
       loading: "Loading forecast…",
       today: "Today", tomorrow: "Tomorrow", kicker: "Fanal Fog Index",
-      status: { MYSTIC: "🌫️ MYSTICAL FOG", PARTIAL: "🌤️ PARTIAL FOG", CLEAR: "☀️ CLEAR · NO FOG" },
+      status: { MYSTIC: "🌫️ MYSTIC · dense fog", PARTIAL: "⛅ PARTIAL · patchy fog, variable", CLEAR: "☀️ CLEAR · clear, no fog" },
       window: "Recommended time to visit", noWindow: "No pronounced fog",
       part: { morning: "Morning", afternoon: "Afternoon", evening: "Evening" },
-      hum: "Humidity", base: "Cloud base", wind: "Wind (gusts)", rain: "Rainfall",
-      humNote: (v) => v >= 85 ? "ideal for fog (85–100 %)" : "below 85 % the fog thins out",
-      baseNote: (m, el) => m == null ? "" : m < 900 ? "below the forest, it will be clear up there" : m <= 1300 ? "the forest sits right inside the cloud" : `${m - el} m above the forest, only wisps of fog`,
+      hum: "Humidity in the forest", temp: "Temperature", wind: "Wind (gusts)", rain: "Rainfall",
+      humNote: (v) => v >= 95 ? "saturated air, the fog stays" : v >= 90 ? "very humid, fog is possible" : v >= 80 ? "fog tends to thin out" : "dry air, fog is unlikely",
+      tempNote: "at forest height (1,150 m)",
       windNote: (v) => v <= 50 ? "the fog stays" : "strong wind tears the fog apart",
       rainNote: (v) => v < 0.2 ? "dry" : v <= 1.5 ? "light drizzle is fine" : v <= 3 ? "noticeable rain" : "downpour, forget the fog",
       noData: "no data", mmh: (v) => `${v.toLocaleString("en-GB")} mm/h`,
@@ -205,22 +202,22 @@
       gearLight: "🔦 Headlamp, it gets dark quickly in fog",
       cam: "📹 Check the live webcam nearby", camNote: "Nearest webcam: Rabaçal (NetMadeira)",
       history: "Fog history (last 7 days)",
-      historyNote: "Score from model values at 9:00, 13:00 and 17:00; Rabaçal webcam snapshots help check how it turned out.",
+      historyNote: "Verdict from model values at 9:00, 13:00 and 17:00; Rabaçal webcam snapshots help check how it turned out.",
       photos: "Webcam snapshots", unavailable: "Snapshot unavailable", close: "Close",
       caption: (d, tm) => `Rabaçal webcam · ${d} at ${tm}`,
-      mHum: "Relative humidity", mDew: "Dew point", mWind: "Wind", mTemp: "Temperature",
+      mHum: "Humidity in the forest", mDew: "Dew point", mWind: "Wind", mTemp: "Temperature",
       mSpread: (v) => `spread ${v} °C`,
       dirs: ["N", "NE", "E", "SE", "S", "SW", "W", "NW"],
       histSummary: (e, L) => {
         const m = e.metrics, deg = m.wind_dir;
         const wind = deg == null ? "no wind data" : deg >= 140 && deg <= 220 ? "southerly wind (foehn)"
           : (deg >= 320 || deg <= 70) ? `trade wind (${L.dirs[Math.round(deg / 45) % 8]})` : `${L.dirs[Math.round(deg / 45) % 8]} wind`;
-        return `Humidity ${m.humidity == null ? "?" : m.humidity} %, ${wind} – ${{ MYSTIC: "dense fog", PARTIAL: "patchy fog", CLEAR: "no fog" }[e.verdict]}`;
+        return `Humidity in the forest ${hum(m)} %, ${wind} – ${{ MYSTIC: "dense fog", PARTIAL: "patchy fog", CLEAR: "no fog" }[e.verdict]}`;
       },
       nodata: "Fanal data is not available yet.",
       error: "Could not load the forecast", retry: "Please try again later.",
       updated: "Last updated", stale: "data is more than a day old!",
-      disclaimer: "Model: Open-Meteo. Cloud base is estimated from temperature and dew point. Indicative forecast, not a guarantee; check the webcam.",
+      disclaimer: "Model: Open-Meteo, forest humidity from the 900/850 hPa levels. Indicative forecast, not a guarantee; check the webcam.",
     },
   };
   // české shrnutí posílá backend (d.summary), anglické se skládá ze stejných prahů
@@ -230,7 +227,7 @@
     : d.wind_dir_deg != null && d.wind_dir_deg >= 140 && d.wind_dir_deg <= 220 ? "Southerly (foehn) wind dries the air, don't expect fog."
     : d.wind_gusts > 50 ? "Strong wind blows the fog away, no atmosphere today."
     : "Clear or dry – just an ordinary green park without the atmosphere.";
-  const ICON = { MYSTIC: "🌫️", PARTIAL: "🌤️", CLEAR: "☀️" };
+  const ICON = { MYSTIC: "🌫️", PARTIAL: "⛅", CLEAR: "☀️" };
 
   let lang = "", data = null, day = null;
   try { lang = localStorage.getItem("lang") || ""; } catch (e) {}
@@ -242,6 +239,7 @@
   const locale = () => (lang === "cs" ? "cs-CZ" : "en-GB");
   const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
   const hh = (h) => `${String(h).padStart(2, "0")}:00`;
+  const hum = (m) => { const v = m.forest_humidity != null ? m.forest_humidity : m.humidity; return v == null ? "?" : v; };
 
   function current() {
     const f = data && data.fanal;
@@ -315,8 +313,7 @@
     head.setAttribute("aria-expanded", isOpen);
     head.append(
       el("span", "min-w-0 flex-1 font-semibold", dateLabel(e.date)),
-      el("span", "shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold " + (BADGE[e.verdict] || ""), `${ICON[e.verdict] || ""} ${e.verdict}`),
-      el("span", "w-12 shrink-0 text-right text-lg font-bold text-emerald-100", `${e.score} %`));
+      el("span", "shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold " + (BADGE[e.verdict] || ""), `${ICON[e.verdict] || ""} ${e.verdict}`));
     const body = el("div", "border-t border-white/10 p-4" + (isOpen ? "" : " hidden"));
     body.append(el("p", "text-sm text-slate-300", lang === "cs" ? e.summary : L.histSummary(e, L)));
     const grid = el("dl", "mt-3 grid grid-cols-2 gap-2 text-sm sm:grid-cols-4");
@@ -329,7 +326,7 @@
     const n = (v, u) => (v == null ? "–" : `${v.toLocaleString(locale())} ${u}`);
     const dir = m.wind_dir == null ? "" : ` ${L.dirs[Math.round(m.wind_dir / 45) % 8]}`;
     grid.append(
-      cell(L.mHum, n(m.humidity, "%")),
+      cell(L.mHum, n(m.forest_humidity != null ? m.forest_humidity : m.humidity, "%")),
       cell(L.mDew, n(m.dew_point, "°C"), m.dew_point_spread == null ? "" : L.mSpread(m.dew_point_spread.toLocaleString(locale()))),
       cell(L.mWind, m.wind_speed == null ? "–" : `${m.wind_speed} km/h${dir}`),
       cell(L.mTemp, n(m.temp, "°C")));
@@ -386,7 +383,7 @@
     $("state").classList.add("hidden");
     $("content").classList.remove("hidden");
 
-    const { f, d } = cur, elev = (f.location && f.location.elevation_m) || 1150;
+    const { f, d } = cur;
     const keys = ["today", "tomorrow"].filter((k) => f[k]);
     $("days").classList.toggle("hidden", keys.length < 2);
     $("days").classList.toggle("flex", keys.length >= 2);
@@ -399,21 +396,21 @@
     }));
 
     $("kicker").textContent = L.kicker;
-    $("status").textContent = `${L.status[d.verdict] || d.verdict} · ${d.score} %`;
-    $("bar").style.width = `${Math.max(0, Math.min(100, d.score))}%`;
+    $("status").textContent = L.status[d.verdict] || d.verdict;
     $("summary").textContent = lang === "cs" ? d.summary : summaryEn(d);
     $("window").textContent = d.best_window_hours ? `${L.window}: ${windowText(d)}` : windowText(d);
     $("slots").replaceChildren(...(d.slots || []).map((s) =>
       el("li", "rounded-full px-3 py-1 text-slate-200 " + (s.hour === d.peak_hour ? "bg-emerald-400/20 ring-1 ring-emerald-300/40" : "bg-black/25"),
-        `${hh(s.hour)} ${ICON[s.verdict] || ""} ${s.score} %`)));
+        `${hh(s.hour)} ${ICON[s.verdict] || ""} ${s.verdict}`)));
 
     const num = (v, unit) => (v == null ? L.noData : `${v.toLocaleString(locale())} ${unit}`);
     $("h-hum").textContent = L.hum;
-    $("v-hum").textContent = num(d.humidity, "%");
-    $("n-hum").textContent = d.humidity == null ? "" : L.humNote(d.humidity);
-    $("h-base").textContent = L.base;
-    $("v-base").textContent = num(d.cloud_base_m, "m");
-    $("n-base").textContent = L.baseNote(d.cloud_base_m, elev);
+    const hum = d.forest_humidity != null ? d.forest_humidity : d.humidity;  // starší data.json má jen přízemní RH
+    $("v-hum").textContent = num(hum, "%");
+    $("n-hum").textContent = hum == null ? "" : L.humNote(hum);
+    $("h-temp").textContent = L.temp;
+    $("v-temp").textContent = num(d.temp, "°C");
+    $("n-temp").textContent = d.temp == null ? "" : L.tempNote;
     $("h-wind").textContent = L.wind;
     $("v-wind").textContent = num(d.wind_gusts, "km/h");
     const dirTxt = d.wind_dir_deg == null || d.wind_speed == null ? "" : `${L.dirs[Math.round(d.wind_dir_deg / 45) % 8]} ${d.wind_speed} km/h · `;
