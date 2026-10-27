@@ -48,13 +48,23 @@ def get(day: date, spot: str, path: Path = LABELS_PATH) -> str | None:
     return entry["verdict"] if entry else None
 
 
-def record(day: date, spot: str, verdict: str, chat_id: int | None, path: Path = LABELS_PATH) -> None:
+def record(
+    day: date,
+    spot: str,
+    verdict: str,
+    chat_id: int | None,
+    path: Path = LABELS_PATH,
+    prediction: dict | None = None,
+) -> None:
+    """Uloží ruční verdikt; `prediction` (řádek z tabulky predictions) přidá tehdejší predikci modelu."""
     if verdict not in VERDICT_ICONS:
         raise ValueError(f"Neznámý verdikt: {verdict}")
     data = load(path)
     data["_doc"] = _DOC
     data["labels"].setdefault(day.isoformat(), {})[spot] = {
         "verdict": verdict,
+        "predicted_score": round(prediction["score"], 1) if prediction else None,
+        "predicted_verdict": prediction["verdict"] if prediction else None,
         "rated_at": datetime.now(TZ).isoformat(timespec="seconds"),
         "chat_id": chat_id,
     }

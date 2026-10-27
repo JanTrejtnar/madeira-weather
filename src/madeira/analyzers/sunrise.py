@@ -33,7 +33,7 @@ from madeira.domain.solar import sun_azimuth_deg
 
 CLEAR_SKY = [(0, 1.0), (10, 1.0), (60, 0.2), (100, 0.0)]
 # barvy dělají cirry: bez nich nic, 30–60 % ideální struktura, i slitý cirrostratus (70–100 %) drží plató 0,45
-COLOR = [(0, 0.0), (20, 0.8), (30, 1.0), (60, 1.0), (70, 0.45), (100, 0.45)]
+COLOR = [(0, 0.40), (20, 0.8), (30, 1.0), (60, 1.0), (70, 0.45), (100, 0.45)]
 VISIBILITY_KM = [(1, 0.0), (5, 0.4), (10, 0.8), (20, 1.0)]
 DEWPOINT_DEP = [(0.5, 0.0), (3, 1.0)]
 WIND_GUST = [(25, 1.0), (50, 0.5), (70, 0.1), (90, 0.0)]

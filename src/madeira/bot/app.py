@@ -270,8 +270,11 @@ async def cb_survey(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         return
     path = _labels_path(context)
     chat_id = update.effective_chat.id
-    await asyncio.to_thread(ground_truth.record, day, spot, verdict, chat_id, path)
-    await asyncio.to_thread(_store(context).set_outcome, day, verdict, chat_id, spot)
+    store = _store(context)
+    pred = await asyncio.to_thread(store.latest_prediction, day, spot)
+    await asyncio.to_thread(ground_truth.record, day, spot, verdict, chat_id, path, pred)
+    note = f"predicted {pred['score']:.0f} % {pred['verdict']}" if pred else None
+    await asyncio.to_thread(store.set_outcome, day, verdict, chat_id, spot, note)
     days = ground_truth.survey_days(forecast.today_local(), settings)
     labels = {s: ground_truth.get(d, s, path) for s, d in days.items()}
     await query.edit_message_reply_markup(survey_keyboard(days, settings, labels))

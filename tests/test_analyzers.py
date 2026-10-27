@@ -424,7 +424,7 @@ def test_oct18_summit_under_cloud_is_no_go():
     old = Settings()
     old.mountain_clouds.aloft_rh_fog_windy = 99
     old.mountain_clouds.spill_hard_rh = 999  # vlhký sloupec / přelévání je pozdější pravidlo
-    assert score_sunrise(features_oct18(), old).score_pct >= 60  # bez barev z jasné oblohy (cirry 0 % = 0)
+    assert score_sunrise(features_oct18(), old).score_pct >= 65  # bez nových pravidel stále o 30+ b. výš než s nimi
 
 
 def test_clean_inversion_days_stay_go():
@@ -579,7 +579,7 @@ def test_oct25_clean_inversion_stays_go():
         rh={925: 45.0, 850: 5.0, 800: 10.0, 700: 22.0},
     )
     a = score_sunrise(f, Settings())
-    assert a.verdict == "GO" and a.score_pct >= 80, a  # jasná obloha bez cirrů nedává barevné body
+    assert a.verdict == "GO" and a.score_pct >= 85, a
 
 
 def test_oct22_overcast_mid_cloud_is_no_go():
