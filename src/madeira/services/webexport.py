@@ -305,6 +305,7 @@ def _day_entry(analysis: SunriseAnalysis, features) -> dict:
         "precip_mm": round(features.precip_mm, 1),
         "alerts": _alerts(analysis, features),
         "canvas_cloud_pct": _canvas_pct(features),
+        **_sun_geometry(features),
     }
 
 
@@ -332,6 +333,7 @@ def _coastal_sunrise_entry(analysis: SunriseAnalysis, features) -> dict:
         "weakest": _weakest(analysis),
         "warnings": analysis.warnings,
         "alerts": _coastal_sunrise_alerts(analysis, features),
+        **_sun_geometry(features),
     }
 
 
@@ -343,15 +345,25 @@ def _coastal_sunrise_alerts(a: SunriseAnalysis, f) -> list[dict]:
         alerts.append({"code": "horizon_east", "value": round(f.east_low_cloud)})
     if f.gust_kmh is not None and f.gust_kmh > 40:
         alerts.append({"code": "gusts", "value": round(f.gust_kmh)})
+    if a.gates.get("terrain", 1.0) < 1:
+        alerts.append({"code": "terrain", "value": round(f.terrain_cutoff_deg, 1)})
     if f.east_low_cloud is None and f.mid_cloud is None and f.high_cloud is None:
         alerts.append({"code": "no_cloud_data"})
     return alerts
 
 
+def _sun_geometry(features) -> dict:
+    """Azimut slunce toho dne a výška terénu v jeho ose (°); terén 0 = otevřený obzor."""
+    az = getattr(features, "sun_azimuth_deg", None)
+    return {
+        "sun_azimuth_deg": None if az is None else round(az),
+        "terrain_cutoff_deg": getattr(features, "terrain_cutoff_deg", 0.0),
+    }
+
+
 def _canvas_pct(features) -> int | None:
-    """Střední + vysoká oblačnost (průměr) jako "plátno" pro barvy, stejně jako ve skóre."""
-    vals = [v for v in (features.mid_cloud, features.high_cloud) if v is not None]
-    return round(sum(vals) / len(vals)) if vals else None
+    """Plátno pro barvy stejně jako ve skóre: samotná vysoká oblačnost (cirry); střední jen blokuje."""
+    return None if features.high_cloud is None else round(features.high_cloud)
 
 
 def _sunset_entry(analysis: SunsetAnalysis, features) -> dict:
@@ -375,6 +387,7 @@ def _sunset_entry(analysis: SunsetAnalysis, features) -> dict:
         "weakest": _weakest(analysis),
         "warnings": analysis.warnings,
         "alerts": _sunset_alerts(analysis, features),
+        **_sun_geometry(features),
     }
 
 
@@ -400,6 +413,8 @@ def _sunset_alerts(a: SunsetAnalysis, f) -> list[dict]:
         alerts.append({"code": "horizon", "value": round(f.horizon_low_cloud)})
     if a.gates["visibility"] < 1 and f.visibility_m is not None:
         alerts.append({"code": "visibility", "value": round(f.visibility_m / 1000)})
+    if a.gates.get("terrain", 1.0) < 1:
+        alerts.append({"code": "terrain", "value": round(f.terrain_cutoff_deg, 1)})
     if f.horizon_low_cloud is None and f.canvas_cloud is None:
         alerts.append({"code": "no_cloud_data"})
     return alerts
@@ -459,6 +474,7 @@ def _spot_meta(settings: Settings, bundle: ForecastBundle, key: str) -> dict:
         "lon": loc.lon,
         "elevation_m": round(loc.elevation_m),
         "webcam_url": settings.spots[key].webcam_url,
+        "derived_from": settings.spots[key].derived_from,
     }
 
 
@@ -476,7 +492,7 @@ def _spot_entry(settings: Settings, bundle: ForecastBundle, key: str, day, now: 
         spot = settings.spots[key]
         features = extract_sunset_features(
             bundle, day, now, settings, spot_key=spot.location or key,
-            mountain=spot.type == "mountain_sunset",
+            mountain=spot.type == "mountain_sunset", config_key=key,
         )
         return _sunset_entry(score_sunset(features, settings), features)
     features, tuning = extract_spot_features(bundle, day, settings, now, key)
@@ -556,6 +572,8 @@ def _alerts(a: SunriseAnalysis, f) -> list[dict]:
         alerts.append({"code": "fog"})
     if a.gates["gale"] < 1 and f.gust_kmh is not None:
         alerts.append({"code": "gusts", "value": round(f.gust_kmh)})
+    if a.gates.get("terrain", 1.0) < 1:
+        alerts.append({"code": "terrain", "value": round(f.terrain_cutoff_deg, 1)})
     if f.low_cloud_summit is None and f.mid_cloud is None and f.high_cloud is None:
         alerts.append({"code": "no_cloud_data"})
     return alerts

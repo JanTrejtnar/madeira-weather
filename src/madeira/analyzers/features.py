@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import itertools
+import math
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
@@ -55,6 +56,28 @@ def _max(vals: list[float]) -> float | None:
     return max(vals) if vals else None
 
 
+def mean_wind_dir(points: list[HourlyPoint], start: datetime, end: datetime) -> float | None:
+    """Střední směr větru (° odkud vane) v okně: vážený průměr složek u, v, ne aritmetický průměr úhlů.
+
+    Aritmetický průměr 350° a 10° dá 180°. Složky se váží rychlostí (slabý vítr směr moc neurčuje)
+    a interpolují se po složkách, takže se nic nezlomí přes 0°/360°. Bez rychlosti se váží rovným dílem."""
+
+    def comp(fn):
+        def get(p: HourlyPoint) -> float | None:
+            if p.wind_direction_deg is None:
+                return None
+            w = 1.0 if p.wind_speed_kmh is None else p.wind_speed_kmh
+            return w * fn(math.radians(p.wind_direction_deg))
+
+        return get
+
+    east = _avg(window_values(points, comp(math.sin), start, end))
+    north = _avg(window_values(points, comp(math.cos), start, end))
+    if east is None or north is None or math.hypot(east, north) < 1e-6:
+        return None
+    return math.degrees(math.atan2(east, north)) % 360
+
+
 @dataclass
 class SunriseFeatures:
     target_date: date
@@ -81,6 +104,8 @@ class SunriseFeatures:
     summit_m: float = SUMMIT_M  # výška místa (Arieiro 1818, Bica da Cana 1560)
     aloft_hpa: int = 800  # hladina, jejíž RH říká, zda je nad vrcholem sucho
     coast_dd_c: float | None = None  # T − rosný bod na pobřeží (Funchal) pro základnu mraků od moře
+    sun_azimuth_deg: float | None = None  # azimut východu slunce ten den (° od severu)
+    terrain_cutoff_deg: float = 0.0  # výška terénu v ose slunce (°), 0 = otevřený obzor
 
 
 def extract_sunrise_features(
@@ -163,7 +188,7 @@ def extract_sunrise_features(
         precip_prob=max(prob_vals) if prob_vals else None,
         gust_kmh=_max(window_values(pts, lambda p: p.wind_gusts_kmh, start, end)),
         wind_kmh=avg(lambda p: p.wind_speed_kmh),
-        wind_dir_deg=avg(lambda p: p.wind_direction_deg),
+        wind_dir_deg=mean_wind_dir(pts, start, end),
         visibility_km=None if vis is None else vis / 1000,
         dewpoint_depression_c=None if temp is None or dew is None else temp - dew,
         temp_c=temp,

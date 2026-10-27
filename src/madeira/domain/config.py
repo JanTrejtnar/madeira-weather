@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from datetime import date
 from pathlib import Path
 from typing import Literal
 
@@ -91,13 +92,38 @@ class InversionConfig(BaseModel):
     weights: InversionWeights = Field(default_factory=InversionWeights)
 
 
+class TerrainSector(BaseModel):
+    """Terén v ose slunce: pro azimuty az_from–az_to (včetně) leží obzor `cutoff_elev_deg` nad rovinou."""
+
+    az_from: float
+    az_to: float
+    cutoff_elev_deg: float
+
+
+class TerrainGate(BaseModel):
+    """Brána stínění: slunce za terénem vysokým `cutoff_elev_deg` mizí/vychází o desítky minut jinak.
+
+    Lineární rampa: do `free_deg` bez trestu, od `blocked_deg` skóre ×0 (1° ≈ 5 min západu na Madeiře)."""
+
+    free_deg: float = 1.0
+    blocked_deg: float = 6.0
+    edge_deg: float = 3.0  # měkký okraj sektoru: výška terénu klesá lineárně k 0° během tohoto pásma za hranou
+    horizon_km: float = 55.0  # vzdálenost dynamického bodu obzoru v ose slunce (dávkový dotaz Open-Meteo)
+
+
 class SpotConfig(BaseModel):
     """Vyhlídkové místo: klíč odpovídá lokalitě v locations.yaml (souřadnice jsou tam)."""
+
+    # Obzor v ose slunce: dynamický bod `horizon_<klíč spotu>` místo pevného východního/západního bodu
+    dynamic_horizon: bool = False
+    terrain_cutoff: list[TerrainSector] = Field(default_factory=list)  # prázdné = otevřený obzor (0°)
 
     name: str
     type: Literal["mountain_inversion", "coastal_sunrise", "coastal_sunset", "mountain_sunset"]
     webcam_url: str | None = None  # živá webkamera (odkaz na webu)
     location: str | None = None  # klíč lokality v locations.yaml; None = klíč spotu (jeden vrchol, dva spoty)
+    # Spot leží ve stejné buňce modelu jako jiný (Ruivo ~ Arieiro, 1,8 km): data nejsou nezávislá předpověď
+    derived_from: str | None = None
 
 def _default_spots() -> dict[str, SpotConfig]:
     return {
@@ -109,19 +135,26 @@ def _default_spots() -> dict[str, SpotConfig]:
         "bica_da_cana": SpotConfig(
             name="Miradouro da Bica da Cana",
             type="mountain_inversion",
+            dynamic_horizon=True,
+            terrain_cutoff=[TerrainSector(az_from=90, az_to=105, cutoff_elev_deg=1.6)],
         ),
         "ponta_do_pargo": SpotConfig(
             name="Farol da Ponta do Pargo",
             type="coastal_sunset",
+            dynamic_horizon=True,
         ),
         "pico_ruivo": SpotConfig(
-            name="Pico Ruivo", type="mountain_inversion"
+            name="Pico Ruivo", type="mountain_inversion", derived_from="arieiro", dynamic_horizon=True
         ),
         "ponta_do_rosto": SpotConfig(
-            name="Miradouro da Ponta do Rosto", type="coastal_sunrise"
+            name="Miradouro da Ponta do Rosto", type="coastal_sunrise", dynamic_horizon=True
         ),
         "cristo_rei": SpotConfig(
-            name="Miradouro do Cristo Rei", type="coastal_sunset"
+            name="Miradouro do Cristo Rei", type="coastal_sunset", dynamic_horizon=True,
+            terrain_cutoff=[
+                TerrainSector(az_from=240, az_to=260, cutoff_elev_deg=1.5),
+                TerrainSector(az_from=275, az_to=300, cutoff_elev_deg=7.0),
+            ],
         ),
         "arieiro_sunset": SpotConfig(
             name="Pico do Arieiro", type="mountain_sunset",
@@ -130,7 +163,7 @@ def _default_spots() -> dict[str, SpotConfig]:
         ),
         "pico_ruivo_sunset": SpotConfig(
             name="Pico Ruivo", type="mountain_sunset",
-            location="pico_ruivo",
+            location="pico_ruivo", derived_from="arieiro", dynamic_horizon=True,
         ),
     }
 
@@ -174,6 +207,8 @@ class CoastalSunriseConfig(BaseModel):
 
     max_horizon_low_clouds: float = 20  # nad tímto (%) nízké mraky na východě zakrývají slunce
     max_gusts_kmh: float = 40  # nárazy nad tímto na útesu srážejí skóre
+    mid_block_from: float = 60  # střední oblačnost (%) od tohoto blokuje slunce (do barev nevstupuje)
+    mid_block_gate_min: float = 0.3  # při 100 % střední oblačnosti se skóre násobí tímto
     weights: dict[str, float] = {"horizon_clarity": 0.45, "cloud_canvas": 0.25, "visibility": 0.15, "wind": 0.15}
 
 
@@ -186,6 +221,7 @@ class SunsetGates(BaseModel):
     min_visibility_m: float = 15000
     overcast_from: float = 80  # nízká/střední oblačnost na západě od tohoto (%) = zataženo, slunce není vidět
     overcast_gate_min: float = 0.3  # při 100 % zatažení se skóre násobí tímto (→ pod 40 %, NO-GO)
+    mid_block_from: float = 60  # střední oblačnost (%) od tohoto jen blokuje slunce; do barev nevstupuje
 
 
 class MountainSunsetConfig(BaseModel):
@@ -210,7 +246,7 @@ class SunsetWeights(BaseModel):
 
 
 class SunsetCurves(BaseModel):
-    canvas_clouds: Curve = [(0, 50), (15, 80), (35, 100), (55, 90), (70, 40), (85, 0)]
+    canvas_clouds: Curve = [(0, 50), (15, 80), (35, 100), (55, 90), (70, 45), (100, 45)]
     horizon_low_clouds: Curve = [(0, 100), (15, 90), (25, 60), (40, 20), (60, 0)]
 
 
@@ -362,6 +398,7 @@ class Settings(BaseModel):
     inversion: InversionConfig = Field(default_factory=InversionConfig)
     bot: BotConfig = Field(default_factory=BotConfig)
     spots: dict[str, SpotConfig] = Field(default_factory=_default_spots)
+    terrain: TerrainGate = Field(default_factory=TerrainGate)
     bica_da_cana: BicaConfig = Field(default_factory=BicaConfig)
     sunset: SunsetConfig = Field(default_factory=SunsetConfig)
     mountain_clouds: MountainCloudConfig = Field(default_factory=MountainCloudConfig)
@@ -382,6 +419,65 @@ def load_settings() -> Settings:
     if not path.exists():
         return Settings()
     return Settings.model_validate(yaml.safe_load(path.read_text(encoding="utf-8")) or {})
+
+
+SUNSET_SPOT_TYPES = ("coastal_sunset", "mountain_sunset")
+
+
+def spot_event(spot: SpotConfig) -> Literal["sunrise", "sunset"]:
+    return "sunset" if spot.type in SUNSET_SPOT_TYPES else "sunrise"
+
+
+def horizon_key(spot_key: str) -> str:
+    """Klíč dynamického bodu obzoru spotu v bundlu Open-Meteo."""
+    return f"horizon_{spot_key}"
+
+
+def terrain_cutoff_deg(spot: SpotConfig, azimuth_deg: float, edge_deg: float = 3.0) -> float:
+    """Výška terénu v ose slunce (°) pro daný azimut; mimo popsané sektory 0° (otevřený obzor).
+
+    Uvnitř sektoru plná hodnota, za hranou lineárně klesá k 0° během `edge_deg` (bez skoku mezi sousedními dny)."""
+    from madeira.domain.solar import azimuth_gap
+
+    def at(s: TerrainSector) -> float:
+        gap = azimuth_gap(azimuth_deg, s.az_from, s.az_to)
+        return s.cutoff_elev_deg * max(0.0, 1.0 - gap / edge_deg) if edge_deg > 0 else float(gap == 0) * s.cutoff_elev_deg
+
+    return max((at(s) for s in spot.terrain_cutoff), default=0.0)
+
+
+def terrain_gate(cutoff_deg: float, cfg: TerrainGate) -> float:
+    """0..1: násobek skóre podle výšky terénu v ose slunce (lineárně od free_deg po blocked_deg)."""
+    if cutoff_deg <= cfg.free_deg:
+        return 1.0
+    return max(0.0, 1.0 - (cutoff_deg - cfg.free_deg) / (cfg.blocked_deg - cfg.free_deg))
+
+
+def with_sun_horizons(
+    locations: list[Location], settings: Settings, day: date
+) -> list[Location]:
+    """K lokalitám přidá pro spoty s `dynamic_horizon` bod 55 km v ose slunce (azimut východu/západu dne `day`).
+
+    Azimut se mění o ~0,2° za den, takže jeden bod platí pro celé týdenní okno předpovědi (posun ≪ rozlišení
+    modelu). Body jdou do téhož dávkového dotazu Open-Meteo jako ostatní lokality."""
+    from madeira.domain.solar import destination, sun_azimuth_deg
+
+    by_key = {loc.key: loc for loc in locations}
+    extra = []
+    for key, spot in settings.spots.items():
+        if not spot.dynamic_horizon:
+            continue
+        origin = by_key.get(spot.location or key)
+        if origin is None:
+            continue
+        event = spot_event(spot)
+        az = sun_azimuth_deg(origin.lat, day, event)
+        lat, lon = destination(origin.lat, origin.lon, az, settings.terrain.horizon_km)
+        extra.append(Location(
+            key=horizon_key(key), name=f"Obzor {spot.name} ({az:.0f}°)", lat=round(lat, 4), lon=round(lon, 4),
+            elevation_m=0, role="reference_east" if event == "sunrise" else "reference_west",
+        ))
+    return [*locations, *extra]
 
 
 class Webcam(BaseModel):

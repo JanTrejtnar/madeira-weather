@@ -6,6 +6,7 @@ import logging
 import os
 from datetime import date, datetime, time, timedelta
 from functools import wraps
+from pathlib import Path
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.constants import ParseMode
@@ -16,10 +17,10 @@ from telegram.ext import (
     ContextTypes,
 )
 
-from madeira.domain.config import Settings
+from madeira.domain.config import Settings, spot_event
 from madeira.domain.models import OUTCOME_LABELS
 from madeira.presenters import telegram as fmt
-from madeira.services import forecast, story_image, webexport
+from madeira.services import forecast, ground_truth, story_image, webexport
 from madeira.storage.db import Store
 
 log = logging.getLogger("madeira.bot")
@@ -45,6 +46,36 @@ def feedback_keyboard(day: date) -> InlineKeyboardMarkup:
         [InlineKeyboardButton("🤷 Nebyl jsem tam", callback_data=f"fb:{day.isoformat()}:skip")]
     )
     return InlineKeyboardMarkup(rows)
+
+
+def _labels_path(context) -> Path:
+    return context.application.bot_data.get("labels_path", ground_truth.LABELS_PATH)
+
+
+def _spot_label(settings: Settings, spot: str) -> str:
+    return settings.spots[spot].name.removeprefix("Miradouro da ").removeprefix("Miradouro do ")
+
+
+def survey_keyboard(days: dict[str, date], settings: Settings, labels: dict[str, str | None]) -> InlineKeyboardMarkup:
+    """Jedna zpráva, řádek na spot: [název] [🟢] [🟡] [🔴]; zvolený verdikt je označen ✅."""
+    rows = []
+    for spot, day in days.items():
+        row = [InlineKeyboardButton(_spot_label(settings, spot), callback_data="gt:noop")]
+        for code, verdict in ground_truth.VERDICT_CODES.items():
+            mark = "✅" if labels.get(spot) == verdict else ground_truth.VERDICT_ICONS[verdict]
+            row.append(InlineKeyboardButton(mark, callback_data=f"gt:{day.isoformat()}:{spot}:{code}"))
+        rows.append(row)
+    return InlineKeyboardMarkup(rows)
+
+
+def survey_text(days: dict[str, date], settings: Settings) -> str:
+    sunrise = next((d for k, d in days.items() if spot_event(settings.spots[k]) == "sunrise"), None)
+    sunset = next((d for k, d in days.items() if spot_event(settings.spots[k]) == "sunset"), None)
+    parts = ([f"východy {sunrise:%d.%m.}"] if sunrise else []) + ([f"západy {sunset:%d.%m.}"] if sunset else [])
+    return (
+        f"🌅 Jak to dopadlo? ({', '.join(parts)})\n"
+        "Jedním klikem 🟢 GO / 🟡 MAYBE / 🔴 NO-GO u míst, kde jsi byl nebo máš přehled. Zbytek přeskoč."
+    )
 
 
 def guarded(fn):
@@ -224,20 +255,41 @@ async def job_digest(context: ContextTypes.DEFAULT_TYPE) -> None:
             log.exception("Odeslání digestu do chatu %s selhalo", chat_id)
 
 
-async def job_feedback(context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Ráno se zeptá, jak dnešní východ dopadl (jen pokud existuje predikce a ještě není hodnocení)."""
-    store = _store(context)
-    today = forecast.today_local()
-    pred = store.latest_prediction(today)
-    if pred is None or store.get_outcome(today) is not None:
+@guarded
+async def cb_survey(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    query = update.callback_query
+    await query.answer()
+    settings = _settings(context)
+    try:
+        _, day_s, spot, code = query.data.split(":")
+        day = date.fromisoformat(day_s)
+        verdict = ground_truth.VERDICT_CODES[code]
+    except (ValueError, KeyError):
+        return  # "gt:noop" (klik na název místa) nebo cizí data
+    if spot not in ground_truth.SURVEY_SPOTS or spot not in settings.spots:
         return
-    text = (
-        f"🌅 Jak dopadl dnešní východ slunce na Arieiru?\n"
-        f"Predikce byla {pred['score']:.0f} % ({pred['verdict']})."
-    )
+    path = _labels_path(context)
+    chat_id = update.effective_chat.id
+    await asyncio.to_thread(ground_truth.record, day, spot, verdict, chat_id, path)
+    await asyncio.to_thread(_store(context).set_outcome, day, verdict, chat_id, spot)
+    days = ground_truth.survey_days(forecast.today_local(), settings)
+    labels = {s: ground_truth.get(d, s, path) for s, d in days.items()}
+    await query.edit_message_reply_markup(survey_keyboard(days, settings, labels))
+
+
+async def job_feedback(context: ContextTypes.DEFAULT_TYPE) -> None:
+    """V 10:00 pošle JEDNU souhrnnou zprávu s tlačítky pro všechna sledovaná místa (bez notifikačního spamu)."""
+    store, settings = _store(context), _settings(context)
+    path = _labels_path(context)
+    days = ground_truth.survey_days(forecast.today_local(), settings)
+    labels = {s: ground_truth.get(d, s, path) for s, d in days.items()}
+    if all(labels.values()):
+        return
+    text = survey_text(days, settings)
+    markup = survey_keyboard(days, settings, labels)
     for chat_id in store.subscribers():
         try:
-            await context.bot.send_message(chat_id, text, reply_markup=feedback_keyboard(today))
+            await context.bot.send_message(chat_id, text, reply_markup=markup)
         except Exception:
             log.exception("Odeslání dotazu do chatu %s selhalo", chat_id)
 
@@ -273,6 +325,7 @@ def build_application(token: str, store: Store, settings: Settings) -> Applicati
     ]:
         app.add_handler(CommandHandler(name, fn))
     app.add_handler(CallbackQueryHandler(cb_feedback, pattern=r"^fb:"))
+    app.add_handler(CallbackQueryHandler(cb_survey, pattern=r"^gt:"))
     app.add_error_handler(on_error)
 
     jq = app.job_queue

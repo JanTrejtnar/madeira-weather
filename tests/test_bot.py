@@ -139,7 +139,7 @@ def test_application_registers_handlers_and_jobs(store):
     application = bot.build_application("123456:TEST", store, Settings())
     names = {j.name for j in application.job_queue.jobs()}
     assert names == {"digest", "feedback"}
-    assert len(application.handlers[0]) == 9  # 8 příkazů + callback
+    assert len(application.handlers[0]) == 10  # 8 příkazů + 2 callbacky (fb, gt)
 
 
 # --- zpětné dopočítání predikce při hodnocení ---------------------------------
@@ -184,3 +184,63 @@ def test_future_day_cannot_be_rated(store, monkeypatch):
     with pytest.raises(ValueError):
         forecast.record_outcome(date(2026, 10, 13), "clear", Settings(), store)
     assert store.get_outcome(date(2026, 10, 13)) is None
+
+
+def _survey_context(store, tmp_path):
+    ctx = _context(store)
+    ctx.application.bot_data["labels_path"] = tmp_path / "labels.json"
+    return ctx
+
+
+def test_survey_is_one_message_with_a_row_per_spot(store, tmp_path, monkeypatch):
+    from madeira.services import forecast as fc
+
+    monkeypatch.setattr(fc, "today_local", lambda: date(2026, 10, 27))
+    store.subscribe(1)
+    store.subscribe(2)
+    bot_api = SimpleNamespace(send_message=AsyncMock())
+    ctx = _survey_context(store, tmp_path)
+    ctx.bot = bot_api
+    asyncio.run(bot.job_feedback(ctx))
+    assert bot_api.send_message.await_count == 2  # jedna zpráva na odběratele, ne na spot
+    kb = bot_api.send_message.await_args.kwargs["reply_markup"]
+    assert len(kb.inline_keyboard) == 5
+    data = [b.callback_data for row in kb.inline_keyboard for b in row]
+    assert all(len(d.encode()) <= 64 for d in data)
+    assert "gt:2026-10-27:arieiro:G" in data and "gt:2026-10-26:cristo_rei:N" in data  # západ = včera
+
+
+def test_survey_click_saves_label_json_and_db(store, tmp_path, monkeypatch):
+    from madeira.services import forecast as fc
+    from madeira.services import ground_truth as gt
+
+    monkeypatch.setattr(fc, "today_local", lambda: date(2026, 10, 27))
+    ctx = _survey_context(store, tmp_path)
+    update, query = _callback_update("gt:2026-10-27:bica_da_cana:M")
+    query.edit_message_reply_markup = AsyncMock()
+    asyncio.run(bot.cb_survey(update, ctx))
+    path = tmp_path / "labels.json"
+    entry = json.loads(path.read_text(encoding="utf-8"))["labels"]["2026-10-27"]["bica_da_cana"]
+    assert entry["verdict"] == "MAYBE" and entry["chat_id"] == 42 and "+0" in entry["rated_at"]
+    assert gt.get(date(2026, 10, 27), "bica_da_cana", path) == "MAYBE"
+    assert store.get_outcome(date(2026, 10, 27), "bica_da_cana") == "MAYBE"
+    kb = query.edit_message_reply_markup.await_args.args[0]
+    assert "✅" in [b.text for row in kb.inline_keyboard for b in row]
+
+    for junk in ("gt:noop", "gt:2026-10-27:evil:G", "gt:2026-10-27:arieiro:X"):
+        asyncio.run(bot.cb_survey(_callback_update(junk)[0], ctx))
+    assert list(json.loads(path.read_text(encoding="utf-8"))["labels"]["2026-10-27"]) == ["bica_da_cana"]
+
+
+def test_survey_skipped_when_everything_is_labelled(store, tmp_path, monkeypatch):
+    from madeira.services import forecast as fc
+    from madeira.services import ground_truth as gt
+
+    monkeypatch.setattr(fc, "today_local", lambda: date(2026, 10, 27))
+    store.subscribe(1)
+    ctx = _survey_context(store, tmp_path)
+    for spot, day in gt.survey_days(date(2026, 10, 27), Settings()).items():
+        gt.record(day, spot, "GO", 1, tmp_path / "labels.json")
+    ctx.bot = SimpleNamespace(send_message=AsyncMock())
+    asyncio.run(bot.job_feedback(ctx))
+    ctx.bot.send_message.assert_not_awaited()

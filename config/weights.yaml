@@ -60,21 +60,34 @@ spots:
     name: "Pico do Arieiro"
     type: mountain_inversion
     webcam_url: "https://www.netmadeira.com/webcams-madeira/pico-do-arieiro"
+  # dynamic_horizon: obzor se čte z bodu 55 km v ose slunce daného dne (viz terrain.horizon_km), ne z pevného bodu.
+  # terrain_cutoff: výška terénu v ose slunce pro sektor azimutů (° nad rovinou); mimo sektory 0°.
   bica_da_cana:
     name: "Miradouro da Bica da Cana"
     type: mountain_inversion
+    dynamic_horizon: true
+    terrain_cutoff:          # masiv Arieiro–Ruivo (1818–1862 m) 11 km východně: atan((1818−1560)/11000) ≈ 1,6°
+      - {az_from: 90, az_to: 105, cutoff_elev_deg: 1.6}
   ponta_do_pargo:
     name: "Farol da Ponta do Pargo"
     type: coastal_sunset
+    dynamic_horizon: true
   pico_ruivo:               # nejvyšší vrchol (1862 m), stejný model inverze jako Arieiro (800 hPa)
     name: "Pico Ruivo"
     type: mountain_inversion
+    derived_from: arieiro   # 1,8 km od Arieira = stejná buňka modelu (stejné hladiny 925–700 hPa), nejde o nezávislou předpověď
+    dynamic_horizon: true
   ponta_do_rosto:
     name: "Miradouro da Ponta do Rosto"
     type: coastal_sunrise
+    dynamic_horizon: true
   cristo_rei:
     name: "Miradouro do Cristo Rei"
     type: coastal_sunset
+    dynamic_horizon: true
+    terrain_cutoff:          # vyhlídka hledí na jih; odhad z geometrie, ověřit na místě / fotkami
+      - {az_from: 240, az_to: 260, cutoff_elev_deg: 1.5}   # zima: západ nad zálivem a Cabo Girão
+      - {az_from: 275, az_to: 300, cutoff_elev_deg: 7.0}   # léto: slunce zapadá za svahy nad Funchalem
   # Západ ze stejných vrcholů jako východ: vlastní klíč spotu (kvůli historii), data z lokality `location`.
   # Mraky pod vrcholem (moře mraků) západ neblokují; do skóre vstupují jen mraky nad ním.
   arieiro_sunset:
@@ -86,6 +99,15 @@ spots:
     name: "Pico Ruivo"
     type: mountain_sunset
     location: pico_ruivo
+    derived_from: arieiro
+    dynamic_horizon: true
+# Stínění terénem v ose slunce (spots.*.terrain_cutoff): brána skóre = 1 do free_deg, lineárně k 0 při blocked_deg.
+# 1° výšky obzoru ≈ 5 min západu/východu navíc; 7° ≈ 35 min = slunce zmizí za horou dávno před mořem.
+terrain:
+  free_deg: 1.0
+  blocked_deg: 6.0
+  edge_deg: 3.0           # měkký okraj sektoru: za hranou klesá výška terénu lineárně k 0° během 3° azimutu
+  horizon_km: 55          # dynamický bod obzoru: 55 km od spotu v azimutu východu/západu daného dne
 # Východ na útesu Ponta do Rosto: východní obzor nad mořem musí být čistý, vítr na útesu mírný.
 coastal_sunrise:
   max_horizon_low_clouds: 20   # nad tímto (%) nízké mraky na východě zakrývají slunce
@@ -143,8 +165,8 @@ sunset:
       - [15, 80]
       - [35, 100]
       - [55, 90]
-      - [70, 40]
-      - [85, 0]
+      - [70, 45]
+      - [100, 45]    # zatažený cirrostratus: slunce prosvítá, barvy zůstávají (plató 45), nepadá k nule
     # nízká oblačnost na západním obzoru [%, skóre 0–100]
     horizon_low_clouds:
       - [0, 100]

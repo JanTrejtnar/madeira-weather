@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import date, datetime
 
 from madeira.analyzers.features import SunriseFeatures, extract_sunrise_features
@@ -18,11 +19,21 @@ from madeira.analyzers.mountain import (
     wind_driven_fog,
 )
 from madeira.analyzers.scoring_utils import pw
-from madeira.domain.config import FogConfig, MountainCloudConfig, Settings, SpotTuning
+from madeira.domain.config import (
+    FogConfig,
+    MountainCloudConfig,
+    Settings,
+    SpotTuning,
+    horizon_key,
+    terrain_cutoff_deg,
+    terrain_gate,
+)
 from madeira.domain.models import ForecastBundle, ScoreComponent, SunriseAnalysis
+from madeira.domain.solar import sun_azimuth_deg
 
 CLEAR_SKY = [(0, 1.0), (10, 1.0), (60, 0.2), (100, 0.0)]
-COLOR = [(0, 0.6), (20, 1.0), (60, 1.0), (85, 0.5), (100, 0.2)]
+# barvy dělají cirry: bez nich nic, 30–60 % ideální struktura, i slitý cirrostratus (70–100 %) drží plató 0,45
+COLOR = [(0, 0.0), (20, 0.8), (30, 1.0), (60, 1.0), (70, 0.45), (100, 0.45)]
 VISIBILITY_KM = [(1, 0.0), (5, 0.4), (10, 0.8), (20, 1.0)]
 DEWPOINT_DEP = [(0.5, 0.0), (3, 1.0)]
 WIND_GUST = [(25, 1.0), (50, 0.5), (70, 0.1), (90, 0.0)]
@@ -150,10 +161,9 @@ def score_sunrise(
         warnings.append("Chybí data o oblačnosti.")
 
     # --- color ---
-    mc = [v for v in (f.mid_cloud, f.high_cloud) if v is not None]
-    if mc:
-        cc = sum(mc) / len(mc)
-        comps.append(("color", pw(cc, COLOR), f"střední/vysoká oblačnost {cc:.0f} %"))
+    # barvy dělá cirrus; střední oblačnost jen blokuje (brána overcast níže)
+    if f.high_cloud is not None:
+        comps.append(("color", pw(f.high_cloud, COLOR), f"vysoká oblačnost (cirry) {f.high_cloud:.0f} %"))
     else:
         comps.append(("color", NEUTRAL, "chybí data"))
 
@@ -242,6 +252,14 @@ def score_sunrise(
         warnings.append("Základna mraků je nad vrcholem – vrchol je pod mraky, ne nad nimi.")
     # brány mlhy a mraků nad vrcholem popisují stejný jev → platí přísnější, netrestá se dvakrát
     score = raw * gates["precip"] * min(gates["fog"], deck_gate) * gates["gale"] * gates.get("overcast", 1.0)
+    # terén v ose slunce (Bica da Cana: masiv Arieiro–Ruivo): slunce vyjde nad hřeben později
+    terrain = terrain_gate(f.terrain_cutoff_deg, settings.terrain)
+    if terrain < 1:
+        gates["terrain"] = round(terrain, 2)
+        score *= terrain
+        warnings.append(
+            f"Terén v ose východu slunce ({f.sun_azimuth_deg:.0f}°) sahá do {f.terrain_cutoff_deg:.1f}° nad obzor – slunce vyjde později."
+        )
 
     if spill is not None and score > spill:
         score = spill
@@ -323,12 +341,17 @@ def extract_spot_features(
 ) -> tuple[SunriseFeatures, SpotTuning | None]:
     """Features východu a ladění heuristiky pro dané místo."""
     tuning = settings.bica_da_cana.tuning() if spot == "bica_da_cana" else None
+    # obzor v ose slunce: dynamický bod spotu (je-li v bundlu), jinak pevný východní bod
+    east_key = horizon_key(spot) if horizon_key(spot) in bundle.forecasts else "east_horizon"
     f = extract_sunrise_features(
         bundle,
         target_date,
         now_utc,
         settings.sunrise.window,
         summit_key=spot,
+        east_key=east_key,
         aloft_hpa=tuning.dry_layer_hpa if tuning else 800,
     )
-    return f, tuning
+    az = sun_azimuth_deg(bundle.forecasts[spot].location.lat, target_date, "sunrise")
+    cutoff = terrain_cutoff_deg(settings.spots[spot], az, settings.terrain.edge_deg) if spot in settings.spots else 0.0
+    return replace(f, sun_azimuth_deg=az, terrain_cutoff_deg=cutoff), tuning

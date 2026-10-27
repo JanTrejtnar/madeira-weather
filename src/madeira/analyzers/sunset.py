@@ -6,7 +6,7 @@ from dataclasses import dataclass, replace
 from datetime import date, datetime, timedelta
 from types import SimpleNamespace
 
-from madeira.analyzers.features import _avg, _max, window_values
+from madeira.analyzers.features import _avg, _max, mean_wind_dir, window_values
 from madeira.analyzers.inversion import estimate_deck_top, summit_clear_factor, summit_rh
 from madeira.analyzers.mountain import (
     cloud_cover,
@@ -17,8 +17,9 @@ from madeira.analyzers.mountain import (
 )
 from madeira.analyzers.scoring_utils import pw
 from madeira.analyzers.sunrise import DEWPOINT_DEP, NEUTRAL, _confidence
-from madeira.domain.config import Settings
+from madeira.domain.config import Settings, horizon_key, terrain_cutoff_deg, terrain_gate
 from madeira.domain.models import ForecastBundle, ScoreComponent, SunsetAnalysis
+from madeira.domain.solar import sun_azimuth_deg
 
 WIND_GUST = [(25, 1.0), (45, 0.5), (70, 0.0)]  # na útesu nad mořem je nad 45 km/h nepříjemně
 LOCAL_LOW = [(10, 1.0), (30, 0.7), (70, 0.0)]  # mlha/mrak přímo na vyhlídce (312 m)
@@ -40,7 +41,7 @@ class SunsetFeatures:
     sunset_utc: datetime
     days_ahead: int
     horizon_low_cloud: float | None  # nízká oblačnost nad mořem na západě (blokuje slunce)
-    canvas_cloud: float | None  # průměr střední + vysoké oblačnosti na západě (barvy)
+    canvas_cloud: float | None  # vysoká oblačnost (cirrus) na západě = plátno pro barvy; střední blokuje (west_mid_cloud)
     local_low_cloud: float | None  # nízká oblačnost přímo na vyhlídce
     precip_mm: float
     gust_kmh: float | None
@@ -56,6 +57,8 @@ class SunsetFeatures:
     deck_top_m: float | None = None  # jen vrcholy: horní hranice vlhké vrstvy
     summit_elevation_m: float | None = None  # jen vrcholy: výška vyhlídky
     coast_dd_c: float | None = None  # jen vrcholy: T − rosný bod na pobřeží (základna mraků od moře)
+    sun_azimuth_deg: float | None = None  # azimut západu slunce ten den (° od severu)
+    terrain_cutoff_deg: float = 0.0  # výška terénu v ose slunce (°), 0 = otevřený obzor
 
 
 def extract_sunset_features(
@@ -66,8 +69,12 @@ def extract_sunset_features(
     spot_key: str = "ponta_do_pargo",
     west_key: str = "west_horizon",
     mountain: bool = False,
+    config_key: str | None = None,
 ) -> SunsetFeatures:
-    """`spot_key` je klíč lokality v bundlu; `mountain` zapne model mraků pod vrcholem."""
+    """`spot_key` je klíč lokality v bundlu; `mountain` zapne model mraků pod vrcholem.
+
+    `config_key` je klíč spotu v `settings.spots` (u `pico_ruivo_sunset` se liší od lokality): podle něj se čte
+    dynamický bod obzoru v ose západu a stínění terénem. Bez něj platí pevný `west_key`."""
     spot = bundle.forecasts[spot_key]
     day = next((d for d in spot.daily if d.date == target_date), None)
     if day is None:
@@ -82,11 +89,13 @@ def extract_sunset_features(
         return _avg(window_values(pts, getter, start, end))
 
     # Horizont a barevné plátno se čtou z bodu na moři západně od ostrova; bez něj z vyhlídky.
+    dyn = horizon_key(config_key) if config_key else None
+    if dyn and dyn in bundle.forecasts:
+        west_key = dyn  # bod 55 km v azimutu západu daného dne
     west = bundle.forecasts[west_key].hourly if west_key in bundle.forecasts else pts
     west_low = _avg(window_values(west, lambda p: p.cloud_cover_low_pct, start, end))
     west_mid = _avg(window_values(west, lambda p: p.cloud_cover_mid_pct, start, end))
     west_high = _avg(window_values(west, lambda p: p.cloud_cover_high_pct, start, end))
-    canvas = [v for v in (west_mid, west_high) if v is not None]
 
     precip = [p.precipitation_mm or 0.0 for p in pts if start <= p.time_utc <= end]
     temp = avg(lambda p: p.temperature_c)
@@ -111,17 +120,20 @@ def extract_sunset_features(
             ct = _avg(window_values(fp, lambda p: p.temperature_c, start, end))
             cd = _avg(window_values(fp, lambda p: p.dew_point_c, start, end))
             coast_dd = None if ct is None or cd is None else ct - cd
+    az = sun_azimuth_deg(spot.location.lat, target_date, "sunset")
+    cfg_spot = settings.spots.get(config_key) if config_key else None
+    cutoff = terrain_cutoff_deg(cfg_spot, az, settings.terrain.edge_deg) if cfg_spot else 0.0
     return SunsetFeatures(
         target_date=target_date,
         sunset_utc=sunset,
         days_ahead=(target_date - now_utc.date()).days,
         horizon_low_cloud=west_low,
-        canvas_cloud=_avg(canvas),
+        canvas_cloud=west_high,
         local_low_cloud=_max(window_values(pts, lambda p: p.cloud_cover_low_pct, start, end)),
         precip_mm=sum(precip),
         gust_kmh=_max(window_values(pts, lambda p: p.wind_gusts_kmh, start, end)),
         wind_kmh=avg(lambda p: p.wind_speed_kmh),
-        wind_dir_deg=avg(lambda p: p.wind_direction_deg),
+        wind_dir_deg=mean_wind_dir(pts, start, end),
         visibility_m=avg(lambda p: p.visibility_m),
         dewpoint_depression_c=None if temp is None or dew is None else temp - dew,
         temp_c=temp,
@@ -132,6 +144,8 @@ def extract_sunset_features(
         deck_top_m=deck_top,
         summit_elevation_m=spot.location.elevation_m if mountain else None,
         coast_dd_c=coast_dd,
+        sun_azimuth_deg=az,
+        terrain_cutoff_deg=cutoff,
     )
 
 
@@ -202,7 +216,7 @@ def score_sunset(f: SunsetFeatures, settings: Settings) -> SunsetAnalysis:
     # --- cloud_canvas: střední + vysoká oblačnost jako plátno pro barvy ---
     if f.canvas_cloud is not None:
         value = pw(f.canvas_cloud, curves.canvas_clouds) / 100
-        comps.append(("cloud_canvas", value, f"střední/vysoká oblačnost {f.canvas_cloud:.0f} %"))
+        comps.append(("cloud_canvas", value, f"vysoká oblačnost (cirry) {f.canvas_cloud:.0f} %"))
     else:
         comps.append(("cloud_canvas", NEUTRAL, "chybí data"))
 
@@ -261,6 +275,11 @@ def score_sunset(f: SunsetFeatures, settings: Settings) -> SunsetAnalysis:
     # zatažení: souvislá nízká/střední oblačnost na západě (100 % stratus) = slunce není vidět
     cover = max((v for v in (f.horizon_low_cloud, f.west_mid_cloud) if v is not None), default=0.0)
     overcast_gate = pw(cover, [(g.overcast_from, 1.0), (100, g.overcast_gate_min)])
+    # střední oblačnost už nevstupuje do barev, jen blokuje: brána začíná dřív než u nízké (mid_block_from)
+    if f.west_mid_cloud is not None:
+        overcast_gate = min(
+            overcast_gate, pw(f.west_mid_cloud, [(g.mid_block_from, 1.0), (100, g.overcast_gate_min)])
+        )
     gates = {
         "precip": 1.0 if f.precip_mm <= g.max_precipitation_mm else 0.0,
         "horizon": round(horizon_gate, 2),
@@ -270,6 +289,14 @@ def score_sunset(f: SunsetFeatures, settings: Settings) -> SunsetAnalysis:
     if fog is not None:  # mlha přímo na vrcholu
         gates["fog"] = round(1 - cfg.mountain.fog_gate_strength * fog, 2)
     score = raw * gates["precip"] * gates["horizon"] * gates["visibility"] * gates["overcast"]
+    # terén v ose západu (Cristo Rei v létě: slunce zapadne za svahy nad Funchalem desítky minut před mořem)
+    terrain = terrain_gate(f.terrain_cutoff_deg, settings.terrain)
+    if terrain < 1:
+        gates["terrain"] = round(terrain, 2)
+        score *= terrain
+        warnings.append(
+            f"Slunce zapadne za terén ({f.terrain_cutoff_deg:.1f}° nad obzorem) dřív než nad mořem."
+        )
     deck_gate = 1.0
     if f.summit_clear is not None and f.summit_elevation_m is not None:
         # základna mraků nad vrcholem + zakrytá obloha: vrchol je pod mraky, ne nad mořem mraků
@@ -363,5 +390,5 @@ def _summary_cs(score, verdict, components, gates) -> str:
 def analyze_sunset(
     bundle: ForecastBundle, target_date: date, settings: Settings, now_utc: datetime
 ) -> SunsetAnalysis:
-    f = extract_sunset_features(bundle, target_date, now_utc, settings)
+    f = extract_sunset_features(bundle, target_date, now_utc, settings, config_key="ponta_do_pargo")
     return score_sunset(f, settings)

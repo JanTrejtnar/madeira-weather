@@ -12,7 +12,7 @@ from madeira.analyzers.sunrise import (
     VISIBILITY_KM,
     _confidence,
 )
-from madeira.domain.config import Settings
+from madeira.domain.config import Settings, terrain_gate
 from madeira.domain.models import InversionAnalysis, ScoreComponent, SunriseAnalysis
 
 HORIZON_SPAN = 40  # o kolik % nad prahem skóre horizontu klesne na nulu
@@ -41,10 +41,8 @@ def score_coastal_sunrise(f: SunriseFeatures, settings: Settings) -> SunriseAnal
         warnings.append("Chybí data o oblačnosti.")
 
     # --- cloud_canvas: střední + vysoká oblačnost jako plátno pro barvy ---
-    mc = [v for v in (f.mid_cloud, f.high_cloud) if v is not None]
-    if mc:
-        cc = sum(mc) / len(mc)
-        comps.append(("cloud_canvas", pw(cc, COLOR), f"střední/vysoká oblačnost {cc:.0f} %"))
+    if f.high_cloud is not None:  # barvy dělá cirrus; střední oblačnost jen blokuje (brána "mid" níže)
+        comps.append(("cloud_canvas", pw(f.high_cloud, COLOR), f"vysoká oblačnost (cirry) {f.high_cloud:.0f} %"))
     else:
         comps.append(("cloud_canvas", NEUTRAL, "chybí data"))
 
@@ -88,7 +86,17 @@ def score_coastal_sunrise(f: SunriseFeatures, settings: Settings) -> SunriseAnal
             [(cfg.max_horizon_low_clouds, 1.0), (cfg.max_horizon_low_clouds + HORIZON_SPAN, HORIZON_GATE_MIN)],
         )
     gates = {"precip": round(pw(f.precip_mm, PRECIP_MM), 2), "horizon": round(horizon_gate, 2)}
-    score = raw * gates["precip"] * gates["horizon"]
+    mid = f.east_mid_cloud if f.east_mid_cloud is not None else f.mid_cloud
+    if mid is not None:
+        gates["mid"] = round(pw(mid, [(cfg.mid_block_from, 1.0), (100, cfg.mid_block_gate_min)]), 2)
+        if gates["mid"] < 1:
+            warnings.append(f"Střední oblačnost ({mid:.0f} %) může zakrýt slunce.")
+    score = raw * gates["precip"] * gates["horizon"] * gates.get("mid", 1.0)
+    terrain = terrain_gate(f.terrain_cutoff_deg, settings.terrain)
+    if terrain < 1:
+        gates["terrain"] = round(terrain, 2)
+        score *= terrain
+        warnings.append(f"Terén v ose východu slunce sahá do {f.terrain_cutoff_deg:.1f}° nad obzor.")
 
     if gates["precip"] < 1:
         warnings.append(f"Srážky kolem východu: {f.precip_mm:.1f} mm (gate ×{gates['precip']}).")

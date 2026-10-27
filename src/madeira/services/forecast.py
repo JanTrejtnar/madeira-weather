@@ -12,7 +12,7 @@ from madeira.analyzers.features import extract_sunrise_features
 from madeira.analyzers.microclimate import compare_microclimates
 from madeira.analyzers.sunrise import extract_spot_features, score_sunrise
 from madeira.analyzers.sunset import extract_sunset_features, score_sunset
-from madeira.domain.config import Settings, load_locations
+from madeira.domain.config import Settings, load_locations, load_settings, with_sun_horizons
 from madeira.domain.models import (
     ForecastBundle,
     MicroclimateComparison,
@@ -61,8 +61,13 @@ def parse_day(value: str) -> date:
         raise ValueError("Použij today, tomorrow nebo YYYY-MM-DD") from None
 
 
+def horizon_locations(day: date, settings: Settings | None = None) -> list:
+    """Lokality + dynamické body obzoru v ose slunce pro `day` (jedna dávka Open-Meteo)."""
+    return with_sun_horizons(load_locations(), settings or load_settings(), day)
+
+
 def load_bundle() -> ForecastBundle:
-    return OpenMeteoFetcher(cache_dir=CACHE_DIR).fetch(load_locations())
+    return OpenMeteoFetcher(cache_dir=CACHE_DIR).fetch(horizon_locations(today_local()))
 
 
 def predict(
@@ -101,7 +106,7 @@ def predict_spot(
         spot = settings.spots[key]
         features = extract_sunset_features(
             bundle, day, now, settings, spot_key=spot.location or key,
-            mountain=spot.type == "mountain_sunset",
+            mountain=spot.type == "mountain_sunset", config_key=key,
         )
         analysis = score_sunset(features, settings)
         weights = settings.sunset.weights.model_dump()
@@ -146,7 +151,7 @@ def backfill_prediction(
     """Stáhne archivované předpovědi modelů pro uplynulý den, spočítá skóre a zaloguje ho."""
     midnight = datetime.combine(day, time(), tzinfo=UTC)  # days_ahead = 0
     try:
-        bundle = OpenMeteoFetcher(cache_dir=CACHE_DIR).fetch_historical(load_locations(), day, day)
+        bundle = OpenMeteoFetcher(cache_dir=CACHE_DIR).fetch_historical(horizon_locations(day), day, day)
     except RuntimeError:
         if day != today_local():
             raise
@@ -159,7 +164,7 @@ def backfill_from_live(settings: Settings, store: Store, locations: list[str], d
     """Doplní historii pro `day`, který archiv ještě nemá: modelové hodnoty z aktuální předpovědi
     (`past_days`) se uloží jako zpětná predikce. Vrací počet uložených lokalit."""
     try:
-        bundle = OpenMeteoFetcher(cache_dir=CACHE_DIR).fetch(load_locations(), days=1, past_days=3)
+        bundle = OpenMeteoFetcher(cache_dir=CACHE_DIR).fetch(horizon_locations(day), days=1, past_days=3)
     except RuntimeError:
         return 0
     bundle = bundle.model_copy(update={"model": HISTORICAL_MODEL})
@@ -230,12 +235,12 @@ def fetch_history(
     end = end or today_local() - timedelta(days=1)  # dnešek v archivu často ještě není
     start = end - timedelta(days=days - 1)
     fetcher = fetcher or OpenMeteoFetcher(cache_dir=CACHE_DIR)
-    locs = load_locations()
     counts = dict.fromkeys(locations, 0)
     chunk_start = start
     while chunk_start <= end:
         chunk_end = min(chunk_start + timedelta(days=CHUNK_DAYS - 1), end)
-        bundle = fetcher.fetch_historical(locs, chunk_start, chunk_end)
+        mid = chunk_start + (chunk_end - chunk_start) / 2  # azimut slunce se za týdny mění jen pomalu
+        bundle = fetcher.fetch_historical(horizon_locations(mid), chunk_start, chunk_end)
         day = chunk_start
         while day <= chunk_end:
             midnight = datetime.combine(day, time(), tzinfo=UTC)

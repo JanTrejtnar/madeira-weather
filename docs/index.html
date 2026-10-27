@@ -135,6 +135,7 @@
           <div id="bar" class="h-full rounded-full"></div>
         </div>
         <p id="summary" class="mt-5 text-slate-200 leading-relaxed"></p>
+        <p id="derived" class="mt-2 hidden text-xs text-amber-300/80"></p>
         <ul id="warnings" class="mt-3 space-y-1 text-sm text-amber-300"></ul>
         <a id="webcam" href="#" target="_blank" rel="noopener noreferrer"
            class="mt-5 hidden items-center gap-2.5 rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-medium transition hover:bg-white/10">
@@ -226,6 +227,7 @@
       timeSunrise: "Východ slunce", timeSunset: "Západ slunce",
       horizon: "Nízké mraky na obzoru", canvas: "Mraky pro barvy",
       webcam: (name) => `Živá webkamera · ${name}`,
+      derived: (name, base) => `ℹ️ ${name} leží ve stejné buňce modelu jako ${base} (1,8 km): předpověď není nezávislá, liší se jen výškou.`,
       morningBtn: (when, tm) => `📷 ${when} v ${tm}`,
       sunsetBtn: (when, tm) => `📷 ${when} v ${tm}`,
       morningCap: (when, tm, p) => `${when} v ${tm} · Model předpovídal: ${p}`,
@@ -246,7 +248,7 @@
       ].filter(Boolean).join(" "),
       sunriseCoastalHead: { GO: "Východ slunce vypadá slibně.", MAYBE: "Hazard, výsledek je nejistý.", NO_GO: "Spíš zůstaň v posteli." },
       horizonEast: "Nízké mraky na východě",
-      sunsetAlert: (a) => ({ fog: "Vrchol bude pravděpodobně v mraku/mlze.", overcast: "Zataženo – slunce nebude vidět.", gusts: `Silné nárazy větru na útesu (${a.value} km/h).`, horizon_east: `Nízké mraky na východním obzoru (${a.value} %) mohou zakrýt slunce.`,
+      sunsetAlert: (a) => ({ terrain: `Slunce se schová za terén (${a.value}° nad obzorem) dřív, než dosáhne moře.`, fog: "Vrchol bude pravděpodobně v mraku/mlze.", overcast: "Zataženo – slunce nebude vidět.", gusts: `Silné nárazy větru na útesu (${a.value} km/h).`, horizon_east: `Nízké mraky na východním obzoru (${a.value} %) mohou zakrýt slunce.`,
                              precip: `Srážky kolem západu: ${a.value} mm.`, horizon: `Nízké mraky na západním obzoru (${a.value} %) mohou zakrýt slunce.`,
                              visibility: `Snížená dohlednost (${a.value} km).`, no_cloud_data: "Chybí data o oblačnosti." })[a.code] || a.code,
       score: "% skóre", deck: "Hladina mraků",
@@ -309,7 +311,7 @@
            edge: `Vrstva mraků sahá asi do ${d.cloud_deck_top_m} m – vrchol je na její hranici.`,
            inside: `Vlhká vrstva sahá až k ~${d.cloud_deck_top_m} m – vrchol bude pravděpodobně v mraku.` })[d.inversion_case] || "",
       ].filter(Boolean).join(" "),
-      alert: (a) => ({ precip: `Srážky kolem východu: ${a.value} mm.`, fog: "Vrchol bude pravděpodobně v mraku/mlze.",
+      alert: (a) => ({ terrain: `Slunce vyjde nad hřeben (${a.value}° nad obzorem) později než nad mořem.`, precip: `Srážky kolem východu: ${a.value} mm.`, fog: "Vrchol bude pravděpodobně v mraku/mlze.",
                        gusts: `Silné nárazy větru (${a.value} km/h).`, no_cloud_data: "Chybí data o oblačnosti." })[a.code] || a.code,
     },
     en: {
@@ -319,6 +321,7 @@
       timeSunrise: "Sunrise", timeSunset: "Sunset",
       horizon: "Low clouds on horizon", canvas: "Clouds for colour",
       webcam: (name) => `Live webcam · ${name}`,
+      derived: (name, base) => `ℹ️ ${name} sits in the same model cell as ${base} (1.8 km): the forecast is not independent, it differs only by elevation.`,
       morningBtn: (when, tm) => `📷 ${when} at ${tm}`,
       sunsetBtn: (when, tm) => `📷 ${when} at ${tm}`,
       morningCap: (when, tm, p) => `${when} at ${tm} · Model predicted: ${p}`,
@@ -339,7 +342,7 @@
       ].filter(Boolean).join(" "),
       sunriseCoastalHead: { GO: "The sunrise looks promising.", MAYBE: "A gamble, the outcome is uncertain.", NO_GO: "Better stay in bed." },
       horizonEast: "Low clouds in the east",
-      sunsetAlert: (a) => ({ fog: "The summit will probably be in cloud/fog.", overcast: "Overcast – the sun will not be visible.", gusts: `Strong gusts on the cliff (${a.value} km/h).`, horizon_east: `Low clouds on the eastern horizon (${a.value}%) may hide the sun.`,
+      sunsetAlert: (a) => ({ terrain: `The sun drops behind terrain (${a.value}° above the horizon) before it reaches the sea.`, fog: "The summit will probably be in cloud/fog.", overcast: "Overcast – the sun will not be visible.", gusts: `Strong gusts on the cliff (${a.value} km/h).`, horizon_east: `Low clouds on the eastern horizon (${a.value}%) may hide the sun.`,
                              precip: `Rain around sunset: ${a.value} mm.`, horizon: `Low clouds on the western horizon (${a.value}%) may hide the sun.`,
                              visibility: `Reduced visibility (${a.value} km).`, no_cloud_data: "Cloud cover data missing." })[a.code] || a.code,
       score: "% score", deck: "Cloud deck top",
@@ -402,7 +405,7 @@
            edge: `The cloud deck tops out around ${d.cloud_deck_top_m} m – the summit sits right at its edge.`,
            inside: `The moist layer reaches ~${d.cloud_deck_top_m} m – the summit will probably be in cloud.` })[d.inversion_case] || "",
       ].filter(Boolean).join(" "),
-      alert: (a) => ({ precip: `Rain around sunrise: ${a.value} mm.`, fog: "The summit will probably be in cloud/fog.",
+      alert: (a) => ({ terrain: `The sun clears the ridge (${a.value}° above the horizon) later than over the sea.`, precip: `Rain around sunrise: ${a.value} mm.`, fog: "The summit will probably be in cloud/fog.",
                        gusts: `Strong gusts (${a.value} km/h).`, no_cloud_data: "Cloud cover data missing." })[a.code] || a.code,
     },
   };
@@ -446,6 +449,12 @@
   const spotLabel = (s) => SPOT_LABEL[s.key] || s.name;
   const isCoastalSunrise = (s) => s && s.type === "coastal_sunrise";
   const curSpot = () => allSpots().find((s) => s.key === spotKey) || ARIEIRO;
+  // spot odvozený z jiného (Ruivo z Arieira): upozornění, že nejde o nezávislou předpověď
+  function renderDerived(sp) {
+    const d = $("derived"), base = sp.derived_from && (SPOT_LABEL[sp.derived_from] || sp.derived_from);
+    d.classList.toggle("hidden", !base);
+    d.textContent = base ? t().derived(spotLabel(sp), base) : "";
+  }
 
   function show(day) {
     const v = style(day.verdict), L = t(), sp = curSpot();
@@ -461,6 +470,7 @@
     $("bar").className = `h-full rounded-full ${v.bar}`;
     $("bar").style.width = `${Math.max(0, Math.min(100, day.score_pct))}%`;
     $("summary").textContent = L.summary(day, L, sp);
+    renderDerived(sp);
     $("warnings").replaceChildren(...(day.alerts || []).map((a) => el("li", null, "⚠ " + L.alert(a))));
     $("deck").textContent = m(day.cloud_deck_top_m);
     $("above").textContent = day.summit_above_deck_m == null ? "–" : `${day.summit_above_deck_m >= 0 ? "+" : ""}${num(day.summit_above_deck_m)} m`;
@@ -492,6 +502,7 @@
     $("bar").className = `h-full rounded-full ${v.bar}`;
     $("bar").style.width = `${Math.max(0, Math.min(100, s.score))}%`;
     $("summary").textContent = L.sunsetSummary(s, L, kind);
+    renderDerived(sp);
     $("warnings").replaceChildren(...(s.alerts || []).map((a) => el("li", null, "⚠ " + L.sunsetAlert(a))));
     const pct = (x) => (x == null ? "–" : `${x} %`);
     $("deck").textContent = pct(s.horizon_low_cloud_pct);

@@ -212,10 +212,10 @@ def test_sunset_perfect_evening_is_go():
 def test_sunset_canvas_curve_peaks_at_35_pct():
     s = Settings()
     score = {c: score_sunset(sunset_features(canvas_cloud=c), s).score_pct for c in (0, 35, 70, 90)}
-    # 0 % = obyčejný západ (plátno 50), 35 % = nejlepší, >85 % = zataženo (plátno 0)
-    assert score[35] > score[0] > score[70] > score[90]
+    # 0 % = obyčejný západ (plátno 50), 35 % = nejlepší, 70–100 % slitý cirrostratus = plató 45 (ne nula)
+    assert score[35] > score[0] > score[70] == score[90]
     assert score[0] == 100 - 0.35 * 100 * 0.5
-    assert score[90] == 100 - 0.35 * 100
+    assert abs(score[90] - (100 - 0.35 * 100 * 0.55)) < 0.1
 
 
 def test_sunset_rain_is_instant_no_go():
@@ -424,7 +424,7 @@ def test_oct18_summit_under_cloud_is_no_go():
     old = Settings()
     old.mountain_clouds.aloft_rh_fog_windy = 99
     old.mountain_clouds.spill_hard_rh = 999  # vlhký sloupec / přelévání je pozdější pravidlo
-    assert score_sunrise(features_oct18(), old).score_pct >= 70
+    assert score_sunrise(features_oct18(), old).score_pct >= 60  # bez barev z jasné oblohy (cirry 0 % = 0)
 
 
 def test_clean_inversion_days_stay_go():
@@ -579,7 +579,7 @@ def test_oct25_clean_inversion_stays_go():
         rh={925: 45.0, 850: 5.0, 800: 10.0, 700: 22.0},
     )
     a = score_sunrise(f, Settings())
-    assert a.verdict == "GO" and a.score_pct >= 85, a
+    assert a.verdict == "GO" and a.score_pct >= 80, a  # jasná obloha bez cirrů nedává barevné body
 
 
 def test_oct22_overcast_mid_cloud_is_no_go():
@@ -641,3 +641,65 @@ def test_mountain_sunset_low_cloud_with_moist_summit_is_no_go():
     # málo nízké oblačnosti: vlhko samo strop nespustí
     clearish = score_sunset(sunset_features(**{**day, "local_low_cloud": 30.0}, rh_aloft=67.0, summit_rh=70.0), s)
     assert "low_cloud" not in clearish.gates
+
+
+# --- A2/A3/A4: vektorový průměr větru, odvozený spot, high vs. mid oblačnost -----
+
+
+def _wind_points(*dirs_speeds):
+    t0 = datetime(2026, 10, 13, 6, 0, tzinfo=UTC)
+    return [
+        HourlyPoint(time_utc=t0 + timedelta(hours=i), wind_direction_deg=d, wind_speed_kmh=s)
+        for i, (d, s) in enumerate(dirs_speeds)
+    ]
+
+
+def test_mean_wind_dir_wraps_around_north():
+    from madeira.analyzers.features import mean_wind_dir
+
+    t0 = datetime(2026, 10, 13, 6, 0, tzinfo=UTC)
+    d = mean_wind_dir(_wind_points((350, 10), (10, 10)), t0, t0 + timedelta(hours=1))
+    assert d is not None and (d < 1 or d > 359)  # aritmetický průměr by dal 180°
+
+
+def test_mean_wind_dir_interpolates_across_north_and_weights_by_speed():
+    from madeira.analyzers.features import mean_wind_dir
+
+    t0 = datetime(2026, 10, 13, 6, 0, tzinfo=UTC)
+    # v půlce okna mezi 350° a 10° nesmí směr přeskočit na jih
+    mid = mean_wind_dir(_wind_points((350, 10), (10, 10)), t0 + timedelta(minutes=30), t0 + timedelta(minutes=30))
+    assert mid is not None and (mid < 1 or mid > 359)
+    # silný vítr ze 90° převáží slabý ze 270°
+    east = mean_wind_dir(_wind_points((90, 30), (270, 3)), t0, t0 + timedelta(hours=1))
+    assert 80 < east < 100
+    assert mean_wind_dir([], t0, t0 + timedelta(hours=1)) is None
+
+
+def test_pico_ruivo_is_marked_as_derived_from_arieiro():
+    s = Settings()
+    assert s.spots["pico_ruivo"].derived_from == "arieiro"
+    assert s.spots["pico_ruivo_sunset"].derived_from == "arieiro"
+    assert s.spots["arieiro"].derived_from is None and s.spots["bica_da_cana"].derived_from is None
+
+
+def test_sunrise_color_uses_only_high_cloud_for_every_spot():
+    s = Settings()
+    color = lambda a: next(c for c in a.components if c.name == "color")
+    # střední oblačnost barvy neovlivní (jen blokuje bránou overcast): stejné cirry = stejná barva
+    thin = score_sunrise(features(mid_cloud=0.0, high_cloud=40.0), s)
+    thick = score_sunrise(features(mid_cloud=100.0, high_cloud=40.0), s)
+    assert color(thin).value == color(thick).value == 1.0
+    assert "cirry" in color(thick).explanation
+    assert thick.gates["overcast"] < 1 and thick.score_pct < thin.score_pct
+
+
+def test_sunset_mid_cloud_blocks_but_does_not_paint():
+    s = Settings()
+    # barvy: vysoká oblačnost 35 % = nejlepší plátno, střední na ně nemá vliv
+    base = score_sunset(sunset_features(canvas_cloud=35.0, west_mid_cloud=0.0), s)
+    assert next(c for c in base.components if c.name == "cloud_canvas").value == 1.0
+    # střední oblačnost 90 % slunce zablokuje (brána), i když je cirry plátno ideální
+    blocked = score_sunset(sunset_features(canvas_cloud=35.0, west_mid_cloud=90.0), s)
+    assert blocked.gates["overcast"] < 0.6 and blocked.score_pct < base.score_pct * 0.6
+    # 40 % střední oblačnosti brána nespustí
+    assert score_sunset(sunset_features(canvas_cloud=35.0, west_mid_cloud=40.0), s).gates["overcast"] == 1.0
