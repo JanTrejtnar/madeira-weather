@@ -135,7 +135,6 @@
           <div id="bar" class="h-full rounded-full"></div>
         </div>
         <p id="summary" class="mt-5 text-slate-200 leading-relaxed"></p>
-        <p id="derived" class="mt-2 hidden text-xs text-amber-300/80"></p>
         <ul id="warnings" class="mt-3 space-y-1 text-sm text-amber-300"></ul>
         <a id="webcam" href="#" target="_blank" rel="noopener noreferrer"
            class="mt-5 hidden items-center gap-2.5 rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-medium transition hover:bg-white/10">
@@ -227,7 +226,6 @@
       timeSunrise: "Východ slunce", timeSunset: "Západ slunce",
       horizon: "Nízké mraky na obzoru", canvas: "Mraky pro barvy",
       webcam: (name) => `Živá webkamera · ${name}`,
-      derived: (name, base) => `ℹ️ ${name} leží ve stejné buňce modelu jako ${base} (1,8 km): předpověď není nezávislá, liší se jen výškou.`,
       morningBtn: (when, tm) => `📷 ${when} v ${tm}`,
       sunsetBtn: (when, tm) => `📷 ${when} v ${tm}`,
       morningCap: (when, tm, p) => `${when} v ${tm} · Model předpovídal: ${p}`,
@@ -321,7 +319,6 @@
       timeSunrise: "Sunrise", timeSunset: "Sunset",
       horizon: "Low clouds on horizon", canvas: "Clouds for colour",
       webcam: (name) => `Live webcam · ${name}`,
-      derived: (name, base) => `ℹ️ ${name} sits in the same model cell as ${base} (1.8 km): the forecast is not independent, it differs only by elevation.`,
       morningBtn: (when, tm) => `📷 ${when} at ${tm}`,
       sunsetBtn: (when, tm) => `📷 ${when} at ${tm}`,
       morningCap: (when, tm, p) => `${when} at ${tm} · Model predicted: ${p}`,
@@ -449,13 +446,6 @@
   const spotLabel = (s) => SPOT_LABEL[s.key] || s.name;
   const isCoastalSunrise = (s) => s && s.type === "coastal_sunrise";
   const curSpot = () => allSpots().find((s) => s.key === spotKey) || ARIEIRO;
-  // spot odvozený z jiného (Ruivo z Arieira): upozornění, že nejde o nezávislou předpověď
-  function renderDerived(sp) {
-    const d = $("derived"), base = sp.derived_from && (SPOT_LABEL[sp.derived_from] || sp.derived_from);
-    d.classList.toggle("hidden", !base);
-    d.textContent = base ? t().derived(spotLabel(sp), base) : "";
-  }
-
   function show(day) {
     const v = style(day.verdict), L = t(), sp = curSpot();
     $("day-label").textContent = `${relPrefix(day.date)}${L.days[parse(day.date).getDay()]} ${fmtDate(day.date)}`;
@@ -470,7 +460,6 @@
     $("bar").className = `h-full rounded-full ${v.bar}`;
     $("bar").style.width = `${Math.max(0, Math.min(100, day.score_pct))}%`;
     $("summary").textContent = L.summary(day, L, sp);
-    renderDerived(sp);
     $("warnings").replaceChildren(...(day.alerts || []).map((a) => el("li", null, "⚠ " + L.alert(a))));
     $("deck").textContent = m(day.cloud_deck_top_m);
     $("above").textContent = day.summit_above_deck_m == null ? "–" : `${day.summit_above_deck_m >= 0 ? "+" : ""}${num(day.summit_above_deck_m)} m`;
@@ -502,7 +491,6 @@
     $("bar").className = `h-full rounded-full ${v.bar}`;
     $("bar").style.width = `${Math.max(0, Math.min(100, s.score))}%`;
     $("summary").textContent = L.sunsetSummary(s, L, kind);
-    renderDerived(sp);
     $("warnings").replaceChildren(...(s.alerts || []).map((a) => el("li", null, "⚠ " + L.sunsetAlert(a))));
     const pct = (x) => (x == null ? "–" : `${x} %`);
     $("deck").textContent = pct(s.horizon_low_cloud_pct);
