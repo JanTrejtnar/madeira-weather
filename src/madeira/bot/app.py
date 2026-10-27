@@ -20,7 +20,7 @@ from telegram.ext import (
 from madeira.domain.config import Settings, spot_event
 from madeira.domain.models import OUTCOME_LABELS
 from madeira.presenters import telegram as fmt
-from madeira.services import forecast, ground_truth, story_image, webexport
+from madeira.services import forecast, ground_truth, story_renderer, webexport
 from madeira.storage.db import Store
 
 log = logging.getLogger("madeira.bot")
@@ -145,14 +145,44 @@ async def cmd_sunrise(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     await _reply(update, fmt.format_sunrise(analysis), reply_markup=markup)
 
 
+STORY_CAPTION = "📸 Tady je připravená předpověď na zítřek pro Instagram Stories."
+
+
+def _make_story(context) -> bytes:
+    payload = webexport.build_payload(_settings(context), 1, store=_store(context))
+    return story_renderer.story_bytes(payload)
+
+
+async def _send_story(bot, chat_id: int, data: bytes) -> None:
+    """Primárně fotka (velký náhled a rychlé sdílení do Instagramu), pod ní originál jako soubor bez komprese."""
+    await bot.send_photo(chat_id, io.BytesIO(data), caption=STORY_CAPTION)
+    try:
+        await bot.send_document(chat_id, io.BytesIO(data), filename="story.png")
+    except Exception:
+        log.exception("Odeslání story jako souboru do chatu %s selhalo", chat_id)
+
+
 @guarded
 async def cmd_story(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    def make() -> bytes:
-        payload = webexport.build_payload(_settings(context), 1, store=_store(context))
-        return story_image.story_bytes(payload)
+    data = await asyncio.to_thread(_make_story, context)
+    await _send_story(context.bot, update.effective_chat.id, data)
 
-    data = await asyncio.to_thread(make)
-    await update.effective_message.reply_photo(io.BytesIO(data), filename="story.png")
+
+async def job_story(context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Večer vygeneruje story na zítřek a pošle ji odběratelům (fotka + soubor)."""
+    chats = _store(context).subscribers()
+    if not chats:
+        return
+    try:
+        data = await asyncio.to_thread(_make_story, context)
+    except Exception:
+        log.exception("Generování story selhalo")
+        return
+    for chat_id in chats:
+        try:
+            await _send_story(context.bot, chat_id, data)
+        except Exception:
+            log.exception("Odeslání story do chatu %s selhalo", chat_id)
 
 
 @guarded
@@ -336,4 +366,6 @@ def build_application(token: str, store: Store, settings: Settings) -> Applicati
     feedback_t = time.fromisoformat(settings.bot.feedback_time).replace(tzinfo=TZ)
     jq.run_daily(job_digest, digest_t, name="digest")
     jq.run_daily(job_feedback, feedback_t, name="feedback")
+    story_t = time.fromisoformat(settings.bot.story_time).replace(tzinfo=TZ)
+    jq.run_daily(job_story, story_t, name="story")
     return app

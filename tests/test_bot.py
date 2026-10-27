@@ -138,7 +138,7 @@ def test_unauthorized_chat_is_ignored(store, no_network):
 def test_application_registers_handlers_and_jobs(store):
     application = bot.build_application("123456:TEST", store, Settings())
     names = {j.name for j in application.job_queue.jobs()}
-    assert names == {"digest", "feedback"}
+    assert names == {"digest", "feedback", "story"}
     assert len(application.handlers[0]) == 10  # 8 příkazů + 2 callbacky (fb, gt)
 
 
@@ -244,3 +244,14 @@ def test_survey_skipped_when_everything_is_labelled(store, tmp_path, monkeypatch
     ctx.bot = SimpleNamespace(send_message=AsyncMock())
     asyncio.run(bot.job_feedback(ctx))
     ctx.bot.send_message.assert_not_awaited()
+
+
+def test_job_story_sends_png_with_caption(store, monkeypatch):
+    store.subscribe(42)
+    monkeypatch.setattr(bot, "_make_story", lambda ctx: b"png")
+    context = _context(store)
+    context.bot = SimpleNamespace(send_photo=AsyncMock(), send_document=AsyncMock())
+    asyncio.run(bot.job_story(context))
+    args, kwargs = context.bot.send_photo.call_args
+    assert args[0] == 42 and kwargs["caption"] == "📸 Tady je připravená předpověď na zítřek pro Instagram Stories."
+    assert context.bot.send_document.call_args.args[0] == 42  # originál bez komprese pod fotkou

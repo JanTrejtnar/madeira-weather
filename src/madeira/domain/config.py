@@ -389,6 +389,7 @@ class FanalConfig(BaseModel):
 class BotConfig(BaseModel):
     digest_time: str = "20:00"  # místní čas Madeiry
     feedback_time: str = "10:00"
+    story_time: str = "20:00"  # večerní Instagram Story na zítřek (místní čas Madeiry)
     compare_from: str = "13:00"
     compare_to: str = "18:00"
 
