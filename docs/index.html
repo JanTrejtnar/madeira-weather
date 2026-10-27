@@ -269,7 +269,7 @@
       historyEmpty: "Historie pro toto místo se začíná zaznamenávat.", unknown: "❔ Nevíme, jak to dopadlo", backfillNote: "* zpětně dopočteno z archivovaných dat modelu",
       install: "📲 Nainstalovat aplikaci",
       disclaimer: "Model: Open-Meteo. Orientační předpověď, ne záruka; před odjezdem zkontroluj aktuální stav.",
-      updated: "Naposledy aktualizováno", stale: "data jsou starší než den!",
+      updated: "Naposledy aktualizováno", stale: "data jsou starší než 12 hodin!",
       error: "Předpověď se nepodařilo načíst", retry: "Zkus to prosím později.",
       verdict: { GO: "GO", MAYBE: "MOŽNÁ", NO_GO: "NO-GO" },
       days: ["neděle", "pondělí", "úterý", "středa", "čtvrtek", "pátek", "sobota"],
@@ -362,7 +362,7 @@
       historyEmpty: "History for this spot is only starting to be recorded.", unknown: "❔ We don't know how it turned out", backfillNote: "* back-computed from archived model data",
       install: "📲 Install app",
       disclaimer: "Model: Open-Meteo. Indicative forecast, not a guarantee; check current conditions before you leave.",
-      updated: "Last updated", stale: "data is more than a day old!",
+      updated: "Last updated", stale: "data is more than 12 hours old!",
       error: "Could not load the forecast", retry: "Please try again later.",
       verdict: { GO: "GO", MAYBE: "MAYBE", NO_GO: "NO-GO" },
       days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
@@ -426,8 +426,12 @@
     return { y, mo, d, getDay: () => new Date(Date.UTC(y, mo - 1, d)).getUTCDay() };
   };
   const fmtDate = (iso) => { const d = parse(iso); return lang === "cs" ? `${d.d}. ${d.mo}.` : `${d.d}/${d.mo}`; };
-  // relativní štítek (today/tomorrow) určuje server podle místního času Madeiry
-  const relPrefix = (rel) => (rel === "today" || rel === "tomorrow" ? t()[rel] + " · " : "");
+  // relativní štítek se počítá z data a aktuálního času Madeiry v prohlížeči, ne ze štítku v JSONu:
+  // zestárlý export (zpožděný cron) by jinak i další den ukazoval „Dnes“
+  const madeiraToday = () => new Intl.DateTimeFormat("sv-SE", { timeZone: "Atlantic/Madeira" }).format(new Date());
+  const dayDiff = (iso) => Math.round((Date.parse(iso.slice(0, 10)) - Date.parse(madeiraToday())) / 864e5);
+  const relOf = (iso) => ({ "-1": "yesterday", 0: "today", 1: "tomorrow" })[dayDiff(iso)] || null;
+  const relPrefix = (iso) => { const r = iso && relOf(iso); return r === "today" || r === "tomorrow" ? t()[r] + " · " : ""; };
   const num = (v) => v.toLocaleString(locale());
   const m = (v) => v == null ? "–" : `${num(v)} m`;
   const compass = (d) => d == null ? "" : t().compass[Math.round(d / 45) % 8];
@@ -445,7 +449,7 @@
 
   function show(day) {
     const v = style(day.verdict), L = t(), sp = curSpot();
-    $("day-label").textContent = `${relPrefix(day.relative)}${L.days[parse(day.date).getDay()]} ${fmtDate(day.date)}`;
+    $("day-label").textContent = `${relPrefix(day.date)}${L.days[parse(day.date).getDay()]} ${fmtDate(day.date)}`;
     $("time-label").textContent = L.timeSunrise;
     $("l-deck").textContent = L.deck;
     $("l-above").textContent = L.above(sp.name);
@@ -476,7 +480,7 @@
   // pobřežní vyhlídka (západ, nebo východ na útesu): karty horizont / mraky pro barvy místo hladiny mraků
   function showSunset(s, kind = "sunset", sp = curSpot()) {
     const v = style(s.verdict), L = t();
-    $("day-label").textContent = `${relPrefix(s.relative)}${L.days[parse(s.date).getDay()]} ${fmtDate(s.date)}`;
+    $("day-label").textContent = `${relPrefix(s.date)}${L.days[parse(s.date).getDay()]} ${fmtDate(s.date)}`;
     $("time-label").textContent = kind === "sunrise" ? L.timeSunrise : L.timeSunset;
     $("l-deck").textContent = kind === "sunrise" ? L.horizonEast : L.horizon;
     $("l-above").textContent = L.canvas;
@@ -514,8 +518,8 @@
   // „Dnes 20. 10.“ / „Včerejší ráno 19. 10.“ – den i štítek posílá server (místní čas Madeiry)
   function snapWhen(kind) {
     const L = t(), words = kind === "sunset" ? L.whenEvening : L.whenMorning;
-    const day = data[kind + "_webcam_day"] || "today", date = data[kind + "_webcam_date"];
-    return `${words[day] || words.today}${date ? " " + fmtDate(date) : ""}`;
+    const date = data[kind + "_webcam_date"], day = (date && relOf(date)) || data[kind + "_webcam_day"] || "today";
+    return `${date && !relOf(date) ? "" : (words[day] || words.today) + " "}${date ? fmtDate(date) : ""}`.trim();
   }
   function renderMorning() {
     const kind = snapKind(), url = kind && snapUrl(kind), btn = $("morning-btn"), probe = $("morning-probe");
@@ -904,7 +908,7 @@
 
   function renderUpdated() {
     if (!data) return;
-    const d = new Date(data.generated_at), stale = (Date.now() - d.getTime()) / 36e5 > 24;
+    const d = new Date(data.generated_at), stale = (Date.now() - d.getTime()) / 36e5 > 12;
     $("updated").textContent = `${t().updated}: ${d.toLocaleString(locale(), { dateStyle: "medium", timeStyle: "short", timeZone: "Atlantic/Madeira" })}` + (stale ? ` – ${t().stale}` : "");
     $("updated").className = stale ? "text-amber-400" : "";
   }
