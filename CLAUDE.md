@@ -6,8 +6,10 @@ Platí pro všechny relace a úpravy. Architektura: Fetchers → Analyzers → P
 
 - Před KAŽDÝM commitem nebo pushem MUSÍ proběhnout plná sada testů (`pytest`) a linter (`ruff check .`).
   Pokud cokoliv selže, commit je zakázán.
-- Po změnách v modelech, konfiguraci nebo servisech vždy lokálně ověřit a zaktualizovat exporty
-  (`madeira export-web` → `docs/data.json`, `madeira export-map` → `docs/map_data.json`).
+- Generované soubory (`docs/data.json`, `docs/map_data.json`, `docs/og-preview.png`, `docs/story-latest.png`)
+  NIKDY neupravovat ani necommitovat z lokálního počítače. Jediným zdrojem pravdy je pipeline
+  v GitHub Actions (bot). Lokální `madeira export-web` / `export-map` jen k ověření do dočasné
+  složky (`--out`), ne do `docs/`. Při konfliktu v těchto souborech při rebase vzít verzi bota.
 
 ## 2. Časové zóny a běhy (Atlantic/Madeira)
 
