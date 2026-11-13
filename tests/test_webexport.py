@@ -38,7 +38,7 @@ def test_payload_has_morning_webcam_url():
 
 
 def test_history_snapshot_links_limited_to_seven_days():
-    today = datetime(2026, 10, 18).date()
+    today = datetime(2026, 10, 18, tzinfo=ZoneInfo("Atlantic/Madeira")).date()
     rows = [{"date": "2026-10-11"}, {"date": "2026-10-10"}, {"date": "2026-10-18"}]
     out = webexport.with_snapshot_links(rows, today)
     assert out[0]["webcam_url"].endswith("/pico-do-arieiro/2026-10-11/08_00.jpg")

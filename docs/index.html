@@ -249,7 +249,7 @@
       sunsetAlert: (a) => ({ terrain: `Slunce se schová za terén (${a.value}° nad obzorem) dřív, než dosáhne moře.`, fog: "Vrchol bude pravděpodobně v mraku/mlze.", overcast: "Zataženo – slunce nebude vidět.", gusts: `Silné nárazy větru na útesu (${a.value} km/h).`, horizon_east: `Nízké mraky na východním obzoru (${a.value} %) mohou zakrýt slunce.`,
                              precip: `Srážky kolem západu: ${a.value} mm.`, horizon: `Nízké mraky na západním obzoru (${a.value} %) mohou zakrýt slunce.`,
                              visibility: `Snížená dohlednost (${a.value} km).`, no_cloud_data: "Chybí data o oblačnosti." })[a.code] || a.code,
-      score: "% skóre", deck: "Hladina mraků",
+      score: "% skóre", deck: "Hladina mraků", noDeck: "Bez mraků pod vrcholem",
       above: (n) => `${n} nad mraky`, wind: "Vítr", gust: "nárazy", outlook: "Výhled", today: "Dnes", tomorrow: "Zítra",
       history: "Historie predikcí", historyNote: "Predikce modelu vs. skutečnost podle ručního hodnocení (pokud je zadané).",
       hActual: "Skutečnost", hDetail: "Detail dne",
@@ -342,7 +342,7 @@
       sunsetAlert: (a) => ({ terrain: `The sun drops behind terrain (${a.value}° above the horizon) before it reaches the sea.`, fog: "The summit will probably be in cloud/fog.", overcast: "Overcast – the sun will not be visible.", gusts: `Strong gusts on the cliff (${a.value} km/h).`, horizon_east: `Low clouds on the eastern horizon (${a.value}%) may hide the sun.`,
                              precip: `Rain around sunset: ${a.value} mm.`, horizon: `Low clouds on the western horizon (${a.value}%) may hide the sun.`,
                              visibility: `Reduced visibility (${a.value} km).`, no_cloud_data: "Cloud cover data missing." })[a.code] || a.code,
-      score: "% score", deck: "Cloud deck top",
+      score: "% score", deck: "Cloud deck top", noDeck: "Clear below summit",
       above: (n) => `${n} above clouds`, wind: "Wind", gust: "gusts", outlook: "Outlook", today: "Today", tomorrow: "Tomorrow",
       history: "Prediction history", historyNote: "Model prediction vs. what actually happened (when rated by hand).",
       hActual: "Actual", hDetail: "Day details",
@@ -461,8 +461,10 @@
     $("bar").style.width = `${Math.max(0, Math.min(100, day.score_pct))}%`;
     $("summary").textContent = L.summary(day, L, sp);
     $("warnings").replaceChildren(...(day.alerts || []).map((a) => el("li", null, "⚠ " + L.alert(a))));
-    $("deck").textContent = m(day.cloud_deck_top_m);
-    $("above").textContent = day.summit_above_deck_m == null ? "–" : `${day.summit_above_deck_m >= 0 ? "+" : ""}${num(day.summit_above_deck_m)} m`;
+    // žádná vlhká vrstva pod vrcholem = žádné mraky, ne chybějící data
+    const clearBelow = day.inversion_case === "none" && day.cloud_deck_top_m == null;
+    $("deck").textContent = clearBelow ? L.noDeck : m(day.cloud_deck_top_m);
+    $("above").textContent = clearBelow ? L.noDeck : day.summit_above_deck_m == null ? "–" : `${day.summit_above_deck_m >= 0 ? "+" : ""}${num(day.summit_above_deck_m)} m`;
     $("wind").textContent = day.wind_kmh == null ? "–" : `${day.wind_kmh} km/h ${compass(day.wind_dir_deg)}`;
     $("gust").textContent = day.gust_kmh == null ? "" : `${L.gust} ${day.gust_kmh} km/h`;
     renderWeather(day);
