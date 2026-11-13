@@ -222,11 +222,19 @@ class OpenMeteoFetcher:
 
     def fetch_historical(self, locations: list[Location], start: date, end: date) -> ForecastBundle:
         """Archivované předpovědi modelů (Historical Forecast API, od r. 2022) pro zpětné dopočty."""
+        params = self._historical_params(locations, start, end)
+        # historická data se nemění → cache na 30 dní
+        return self._fetch(params, HISTORICAL_URL, 30 * 24 * 3600, locations, HISTORICAL_MODEL)
+
+    def fetch_historical_payload(self, locations: list[Location], start: date, end: date) -> dict | list:
+        """Syrová odpověď Historical Forecast API (pro uložení jako testovací fixture, viz backtest)."""
+        return self._get(self._historical_params(locations, start, end), HISTORICAL_URL)
+
+    def _historical_params(self, locations: list[Location], start: date, end: date) -> dict:
         params = self._params(locations, 0)
         del params["forecast_days"]
         params["start_date"], params["end_date"] = start.isoformat(), end.isoformat()
-        # historická data se nemění → cache na 30 dní
-        return self._fetch(params, HISTORICAL_URL, 30 * 24 * 3600, locations, HISTORICAL_MODEL)
+        return params
 
     def _fetch(
         self, params: dict, url: str, ttl_s: int, locations: list[Location], model: str

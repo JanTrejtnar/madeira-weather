@@ -1,0 +1,64 @@
+{
+  "_doc": "Skutečný výsledek východů/západů zapsaný adminem (ručně nebo přes `madeira rate`). Jediný zdroj pravdy o realitě: čte ho export webu (historie), backtest i vyhodnocení modelu. Klíč = datum → spot; verdict = GO / MAYBE / NO_GO (stálo to za cestu?), event = sunrise | sunset, note = volný text. Spoty bez modelu (např. bica_da_cana_sunset) jsou jen záznam a do porovnání s modelem nevstupují.",
+  "ratings": {
+    "2026-10-17": {
+      "bica_da_cana_sunset": {
+        "verdict": "GO",
+        "event": "sunset",
+        "note": "Bica da Cana, západ: moc pěkný."
+      }
+    },
+    "2026-11-05": {
+      "pico_ruivo_sunset": {
+        "verdict": "NO_GO",
+        "event": "sunset",
+        "note": "Pico Ruivo, západ v mlze: špatný."
+      }
+    },
+    "2026-11-06": {
+      "cristo_rei": {
+        "verdict": "MAYBE",
+        "event": "sunset",
+        "note": "Cristo Rei: hezké asi 2 minuty, pak slunce zapadlo za mraky a nebylo nic vidět."
+      }
+    },
+    "2026-11-08": {
+      "ponta_do_pargo": {
+        "verdict": "NO_GO",
+        "event": "sunset",
+        "note": "Ponta do Pargo: špatný západ, kvůli dešti a mrakům v pozadí nebylo slunce vidět."
+      }
+    },
+    "2026-11-09": {
+      "ponta_da_ladeira_sunset": {
+        "verdict": "NO_GO",
+        "event": "sunset",
+        "note": "Miradouro do Ponta da Ladeira (spot model nepokrývá): slunce zapadalo za mraky, nic moc. Verdikt NO_GO je odhad z popisu „nic moc“."
+      }
+    },
+    "2026-11-11": {
+      "bica_da_cana_sunset": {
+        "verdict": "GO",
+        "event": "sunset",
+        "note": "Bica da Cana, západ: dobrý."
+      }
+    },
+    "2026-11-12": {
+      "ponta_do_pargo": {
+        "verdict": "GO",
+        "event": "sunset",
+        "note": "Ponta do Pargo: velmi pěkný západ (fotka), ale o pár set metrů dál pršelo, tedy částečně štěstí. Predikce 12 % byla zjevně příliš nízká."
+      },
+      "bica_da_cana": {
+        "verdict": "GO",
+        "event": "sunrise",
+        "note": "Bica da Cana, východ: dobrý."
+      },
+      "arieiro": {
+        "verdict": "GO",
+        "event": "sunrise",
+        "note": "Pico do Arieiro, východ: dobrý."
+      }
+    }
+  }
+}

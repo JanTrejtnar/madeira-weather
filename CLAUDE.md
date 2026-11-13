@@ -25,6 +25,11 @@ Platí pro všechny relace a úpravy. Architektura: Fetchers → Analyzers → P
 - Přísný zákaz overfittingu: nikdy neohýbat globální váhy ani nevytvářet ad-hoc výjimky pro jediný den na
   úkor fyzikální konzistence ostatních dnů.
 - Při posuzování inverzí vždy kontrolovat vlhkostní profil (800 hPa a hladina vrcholu) a nárazy větru.
+- Změna skórování (křivky, váhy, brány, stropy) se přijme jen když (a) má fyzikální nebo logické odůvodnění,
+  (b) `python3 scripts/backtest.py` na zlaté sadě (`tests/fixtures/golden/`, štítky v
+  `ground_truth/ratings.json`) nezhorší žádný hodnocený den a (c) zlepšení potvrdí aspoň dva nezávislé
+  dny. Oprava logické chyby (např. stejná hladina čtená dvakrát) tímto omezená není, ale musí mít test.
+  Každý nový ručně hodnocený den přidej do zlaté sady (`python3 scripts/backtest.py --fetch`).
 
 ## 4. Architektura API a frontendu
 

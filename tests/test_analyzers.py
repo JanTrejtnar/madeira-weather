@@ -237,7 +237,12 @@ def test_sunset_gale_and_fog_lower_score():
     s = Settings()
     base = score_sunset(sunset_features(), s).score_pct
     assert score_sunset(sunset_features(gust_kmh=70.0), s).score_pct == base - 10
-    assert score_sunset(sunset_features(local_low_cloud=70.0), s).score_pct == base - 15
+    # mlha na vyhlídce: základna mraků těsně nad ní (T − rosný bod 1 °C)
+    foggy = score_sunset(sunset_features(local_low_cloud=70.0, dewpoint_depression_c=1.0), s).score_pct
+    dry = score_sunset(sunset_features(dewpoint_depression_c=1.0), s).score_pct
+    assert foggy < dry
+    # vysoká základna (8 °C): nízká oblačnost je strop nad vyhlídkou, skóre neklesá
+    assert score_sunset(sunset_features(local_low_cloud=70.0), s).score_pct == base
     assert score_sunset(sunset_features(visibility_m=5000.0), s).gates["visibility"] == 0.3
 
 
@@ -703,3 +708,63 @@ def test_sunset_mid_cloud_blocks_but_does_not_paint():
     assert blocked.gates["overcast"] < 0.6 and blocked.score_pct < base.score_pct * 0.6
     # 40 % střední oblačnosti brána nespustí
     assert score_sunset(sunset_features(canvas_cloud=35.0, west_mid_cloud=40.0), s).gates["overcast"] == 1.0
+
+
+def test_spillover_cap_is_reported_in_summary_and_alerts():
+    from madeira.analyzers.sunrise import score_sunrise
+    from madeira.domain.config import Settings
+    from madeira.services.webexport import _alerts
+
+    settings = Settings.load() if hasattr(Settings, "load") else Settings()
+    f = features(
+        low_cloud_summit=0.0, east_low_cloud=0.0, east_mid_cloud=0.0, mid_cloud=0.0,
+        high_cloud=0.0, visibility_km=30.0, dewpoint_depression_c=6.0, gust_kmh=10.0,
+        summit_m=1560.0, aloft_hpa=850,
+        rh={925: 60.0, 850: 62.0, 800: 65.0, 700: 20.0},  # vlhký sloupec: 850 i 800 hPa
+        z={925: 800.0, 850: 1580.0, 800: 2000.0, 700: 3100.0},
+    )
+    a = score_sunrise(f, settings, settings.bica_da_cana.tuning())
+    assert a.score_pct == 25.0
+    assert "přelévání" in a.summary_cs
+    assert {"code": "spillover"} in _alerts(a, f)
+
+
+def test_bica_single_moist_level_at_summit_does_not_cap_clear_sunrise():
+    """12. 11. 2026: RH 850 hPa (výška vrcholu Bica) 61 %, nad ním sucho, jasná obloha, východ byl dobrý.
+    aloft_hpa je u Bica 850, takže dřív jedna hodnota RH ≥ 60 % splnila oba testy vlhkého sloupce."""
+    from madeira.analyzers.sunrise import score_sunrise
+    from madeira.domain.config import Settings
+
+    settings = Settings.load() if hasattr(Settings, "load") else Settings()
+    f = features(
+        low_cloud_summit=0.0, east_low_cloud=0.0, east_mid_cloud=0.0, mid_cloud=0.0,
+        high_cloud=9.0, visibility_km=29.0, dewpoint_depression_c=6.0, gust_kmh=32.0,
+        summit_m=1560.0, aloft_hpa=850,
+        rh={925: 55.0, 850: 61.0, 800: 30.0, 700: 20.0},
+        z={925: 800.0, 850: 1520.0, 800: 2000.0, 700: 3100.0},
+    )
+    a = score_sunrise(f, settings, settings.bica_da_cana.tuning())
+    assert "spillover" not in a.gates
+    assert a.score_pct >= 70.0
+
+
+def test_sunset_low_cloud_above_coastal_spot_is_not_fog():
+    from datetime import UTC, date, datetime
+
+    from madeira.analyzers.sunset import SunsetFeatures, score_sunset
+    from madeira.domain.config import load_settings
+
+    def run(dd: float):
+        f = SunsetFeatures(
+            target_date=date(2026, 11, 12), sunset_utc=datetime(2026, 11, 12, 18, 0, tzinfo=UTC),
+            days_ahead=0, horizon_low_cloud=20, canvas_cloud=35, local_low_cloud=68, precip_mm=0.0,
+            gust_kmh=20, wind_kmh=9, wind_dir_deg=None, visibility_m=20000, dewpoint_depression_c=dd,
+            temp_c=18, west_mid_cloud=1,
+        )
+        a = score_sunset(f, load_settings())
+        return next(c for c in a.components if c.name == "low_cloud_penalty")
+
+    ceiling = run(3.0)  # základna ~375 m nad vyhlídkou
+    fog = run(0.5)  # základna ~60 m nad vyhlídkou: mlha reálná
+    assert ceiling.value == 1.0 and "nad vyhlídkou" in ceiling.explanation
+    assert fog.value < 0.3

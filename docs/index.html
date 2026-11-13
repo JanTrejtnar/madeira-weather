@@ -275,7 +275,8 @@
       days: ["neděle", "pondělí", "úterý", "středa", "čtvrtek", "pátek", "sobota"],
       short: ["Ne", "Po", "Út", "St", "Čt", "Pá", "So"],
       compass: ["S", "SV", "V", "JV", "J", "JZ", "Z", "SZ"],
-      outcome: { cloud_sea: "🌊 Nádherná inverze", clear: "☀️ Jasno bez mraků", mixed: "⛅ Částečně zataženo", fail: "🌫 V mlze / nepovedlo se" },
+      outcome: { cloud_sea: "🌊 Nádherná inverze", clear: "☀️ Jasno bez mraků", mixed: "⛅ Částečně zataženo", fail: "🌫 V mlze / nepovedlo se" }
+      actualVerdict: { GO: "🟢 Stálo to za cestu", MAYBE: "🟡 Průměrné", NO_GO: "🔴 Nestálo to za cestu" },
       head: { GO: "Vypadá to dobře.", MAYBE: "Hazard, výsledek je nejistý.", NO_GO: "Spíš zůstaň v posteli." },
       comp: { sky: "oblačnost", color: "barvy oblohy", visibility: "dohlednost", wind: "vítr", cloudsea: "moře mraků" },
       wxTitle: "Počasí během dne", wxNote: "Orientačně pro 7:00–20:00.",
@@ -309,7 +310,7 @@
            edge: `Vrstva mraků sahá asi do ${d.cloud_deck_top_m} m – vrchol je na její hranici.`,
            inside: `Vlhká vrstva sahá až k ~${d.cloud_deck_top_m} m – vrchol bude pravděpodobně v mraku.` })[d.inversion_case] || "",
       ].filter(Boolean).join(" "),
-      alert: (a) => ({ terrain: `Slunce vyjde nad hřeben (${a.value}° nad obzorem) později než nad mořem.`, precip: `Srážky kolem východu: ${a.value} mm.`, fog: "Vrchol bude pravděpodobně v mraku/mlze.",
+      alert: (a) => ({ spillover: "Mraky sahají těsně k hřebeni – hrozí přelévání, skóre je omezené.", terrain: `Slunce vyjde nad hřeben (${a.value}° nad obzorem) později než nad mořem.`, precip: `Srážky kolem východu: ${a.value} mm.`, fog: "Vrchol bude pravděpodobně v mraku/mlze.",
                        gusts: `Silné nárazy větru (${a.value} km/h).`, no_cloud_data: "Chybí data o oblačnosti." })[a.code] || a.code,
     },
     en: {
@@ -368,7 +369,8 @@
       days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
       short: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
       compass: ["N", "NE", "E", "SE", "S", "SW", "W", "NW"],
-      outcome: { cloud_sea: "🌊 Magnificent cloud sea", clear: "☀️ Clear, no clouds", mixed: "⛅ Partly cloudy", fail: "🌫 Fogged in / failed" },
+      outcome: { cloud_sea: "🌊 Magnificent cloud sea", clear: "☀️ Clear, no clouds", mixed: "⛅ Partly cloudy", fail: "🌫 Fogged in / failed" }
+      actualVerdict: { GO: "🟢 Worth the trip", MAYBE: "🟡 So-so", NO_GO: "🔴 Not worth the trip" },
       head: { GO: "Looks good.", MAYBE: "A gamble, the outcome is uncertain.", NO_GO: "Better stay in bed." },
       comp: { sky: "cloud cover", color: "sky colours", visibility: "visibility", wind: "wind", cloudsea: "cloud sea" },
       wxTitle: "Weather during the day", wxNote: "Rough guide for 7:00–20:00.",
@@ -402,7 +404,7 @@
            edge: `The cloud deck tops out around ${d.cloud_deck_top_m} m – the summit sits right at its edge.`,
            inside: `The moist layer reaches ~${d.cloud_deck_top_m} m – the summit will probably be in cloud.` })[d.inversion_case] || "",
       ].filter(Boolean).join(" "),
-      alert: (a) => ({ terrain: `The sun clears the ridge (${a.value}° above the horizon) later than over the sea.`, precip: `Rain around sunrise: ${a.value} mm.`, fog: "The summit will probably be in cloud/fog.",
+      alert: (a) => ({ spillover: "Clouds reach right up to the ridge – spill-over risk, the score is capped.", terrain: `The sun clears the ridge (${a.value}° above the horizon) later than over the sea.`, precip: `Rain around sunrise: ${a.value} mm.`, fog: "The summit will probably be in cloud/fog.",
                        gusts: `Strong gusts (${a.value} km/h).`, no_cloud_data: "Cloud cover data missing." })[a.code] || a.code,
     },
   };
@@ -846,7 +848,8 @@
     );
     const box = el("div", "mb-3 space-y-2 rounded-xl border border-white/10 bg-slate-900/80 p-3");
     box.append(grid, el("p", "text-sm leading-relaxed text-slate-300", diagnosis(h)),
-      h.outcome ? el("p", "text-sm text-slate-200", `${L.hActual}: ${L.outcome[h.outcome] || h.outcome}`)
+      h.outcome ? el("p", "text-sm text-slate-200",
+                      `${L.hActual}: ${L.outcome[h.outcome] || L.actualVerdict[h.outcome] || h.outcome}${h.note ? ` – ${h.note}` : ""}`)
                 : el("p", "text-sm italic text-slate-500", L.unknown));
     return box;
   }

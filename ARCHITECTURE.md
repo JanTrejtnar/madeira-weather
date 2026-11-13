@@ -1,5 +1,10 @@
 # Madeira Microclimate & Sunrise Predictor — Technická specifikace
 
+> **Aktualizace 2026-11-13:** Telegram bot se ruší, projekt je čistě webový (GitHub Pages + Actions). Zmínky o botu,
+> digestu a Telegramu níže jsou historické. Skutečnost zapisuje admin ručně do `ground_truth/ratings.json`
+> (`madeira rate`); `data/madeira.db` je jen přestavitelná cache predikcí. Viz README.
+
+
 > Stav: **schváleno, implementace Phase 1 zahájena**
 > Verze dokumentu: 0.2 · Datum: 2026-10-12
 

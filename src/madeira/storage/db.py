@@ -40,14 +40,9 @@ CREATE TABLE IF NOT EXISTS outcomes (
     target_date TEXT NOT NULL,
     outcome TEXT NOT NULL,
     rated_at TEXT NOT NULL,
-    chat_id INTEGER,
+    chat_id INTEGER,  -- nepoužívané (zůstalo po Telegram botovi), sloupec se nemigruje
     notes TEXT,
     PRIMARY KEY (location_id, target_date)
-);
-
-CREATE TABLE IF NOT EXISTS subscribers (
-    chat_id INTEGER PRIMARY KEY,
-    created_at TEXT NOT NULL
 );
 
 -- Kalibrační pohled: ke každému hodnocení poslední predikce vytvořená PŘED východem slunce;
@@ -208,7 +203,6 @@ class Store:
         self,
         target_date: date,
         outcome: str,
-        chat_id: int | None = None,
         location: str = DEFAULT_LOCATION,
         notes: str | None = None,
     ) -> None:
@@ -216,12 +210,11 @@ class Store:
             raise ValueError(f"Neznámý výsledek: {outcome}")
         with closing(self._conn()) as conn, conn:
             conn.execute(
-                """INSERT INTO outcomes (location_id, target_date, outcome, rated_at, chat_id, notes)
-                VALUES (?,?,?,?,?,?)
+                """INSERT INTO outcomes (location_id, target_date, outcome, rated_at, notes)
+                VALUES (?,?,?,?,?)
                 ON CONFLICT(location_id, target_date) DO UPDATE SET
-                    outcome = excluded.outcome, rated_at = excluded.rated_at,
-                    chat_id = excluded.chat_id, notes = excluded.notes""",
-                (location, target_date.isoformat(), outcome, _now(), chat_id, notes),
+                    outcome = excluded.outcome, rated_at = excluded.rated_at, notes = excluded.notes""",
+                (location, target_date.isoformat(), outcome, _now(), notes),
             )
 
     def get_outcome(self, target_date: date, location: str = DEFAULT_LOCATION) -> str | None:
@@ -249,7 +242,7 @@ class Store:
                 """WITH dates AS (
                        SELECT target_date FROM predictions WHERE location_id = :loc
                        UNION SELECT target_date FROM outcomes WHERE location_id = :loc)
-                   SELECT d.target_date, o.outcome, p.model, p.score, p.verdict, p.inversion_pct,
+                   SELECT d.target_date, o.outcome, o.notes AS note, p.model, p.score, p.verdict, p.inversion_pct,
                           p.deck_top_m, p.sunrise_utc, p.features_json, p.components_json,
                           p.gates_json
                    FROM dates d
@@ -264,19 +257,3 @@ class Store:
                 {"loc": location, "up_to": up_to.isoformat(), "limit": limit},
             ).fetchall()
         return [dict(r) for r in rows]
-
-    # --- odběratelé -------------------------------------------------------
-    def subscribe(self, chat_id: int) -> None:
-        with closing(self._conn()) as conn, conn:
-            conn.execute(
-                "INSERT OR IGNORE INTO subscribers (chat_id, created_at) VALUES (?,?)",
-                (chat_id, _now()),
-            )
-
-    def unsubscribe(self, chat_id: int) -> None:
-        with closing(self._conn()) as conn, conn:
-            conn.execute("DELETE FROM subscribers WHERE chat_id = ?", (chat_id,))
-
-    def subscribers(self) -> list[int]:
-        with closing(self._conn()) as conn:
-            return [r["chat_id"] for r in conn.execute("SELECT chat_id FROM subscribers")]

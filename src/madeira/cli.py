@@ -1,21 +1,29 @@
 from __future__ import annotations
 
-import csv
 import json
-import logging
-import os
 import sys
-from datetime import UTC, datetime, timedelta
+from datetime import timedelta
 from pathlib import Path
 
 import typer
 from rich.console import Console
 from rich.table import Table
 
-from madeira.domain.config import load_env, load_settings
+from madeira.domain.config import load_settings
 from madeira.domain.models import OUTCOME_LABELS
+from madeira.fetchers.open_meteo import OpenMeteoFetcher
 from madeira.presenters.cli import render_comparison, render_sunrise, render_week
-from madeira.services import evaluation, forecast, mapdata, story_image, story_renderer, webexport
+from madeira.services import (
+    backtest,
+    evaluation,
+    forecast,
+    forecast_log,
+    mapdata,
+    ratings,
+    story_image,
+    story_renderer,
+    webexport,
+)
 from madeira.storage.db import Store
 
 app = typer.Typer(help="Madeira Microclimate & Sunrise Predictor", no_args_is_help=True)
@@ -58,28 +66,6 @@ def compare(
     render_comparison(forecast.compare(_day(day), from_, to), console)
 
 
-@app.command()
-def rate(
-    day: str = typer.Argument(..., help="today | tomorrow | YYYY-MM-DD"),
-    outcome: str = typer.Argument(..., help="/".join(OUTCOME_LABELS)),
-) -> None:
-    """Zapíše, jak východ dopadl. Chybí-li k dni predikce, dopočítá ji z historických dat."""
-    if outcome not in OUTCOME_LABELS:
-        raise typer.BadParameter(f"Možnosti: {', '.join(OUTCOME_LABELS)}")
-    try:
-        result = forecast.record_outcome(_day(day), outcome, load_settings(), Store())
-    except ValueError as exc:
-        raise typer.BadParameter(str(exc)) from None
-    if result.backfilled:
-        console.print(
-            f"Predikce chyběla, dopočítána z historických dat: {result.analysis.score_pct:.0f} % "
-            f"({result.analysis.verdict})"
-        )
-    if result.warning:
-        console.print(f"[yellow]{result.warning}[/]")
-    console.print(f"Zapsáno: {OUTCOME_LABELS[outcome]}")
-
-
 LOCATION_HELP = "pico_arieiro | pico_ruivo | bica_da_cana | ponta_do_rosto | ponta_do_pargo | cristo_rei | arieiro_sunset | pico_ruivo_sunset"
 
 
@@ -97,17 +83,43 @@ def _one_location(value: str) -> str:
     return keys[0]
 
 
-def _normalize_result(value: str) -> str:
-    """GO / MAYBE / NO_GO (i NO-GO, malými písmeny) nebo klíč z OUTCOME_LABELS."""
-    v = value.strip()
-    up = v.upper().replace("-", "_").replace(" ", "_")
-    if up in ("GO", "MAYBE", "NO_GO"):
-        return up
-    if v.lower() in OUTCOME_LABELS:
-        return v.lower()
-    raise ValueError(
-        f"Neplatný výsledek '{value}'. Možnosti: GO, MAYBE, NO_GO, {', '.join(OUTCOME_LABELS)}"
-    )
+@app.command()
+def rate(
+    spot: str = typer.Argument(..., help=LOCATION_HELP),
+    day: str = typer.Argument(..., help="today | yesterday | YYYY-MM-DD"),
+    verdict: str = typer.Argument(..., help="GO | MAYBE | NO_GO (stálo to za cestu?)"),
+    note: str = typer.Option("", "--note", "-n", help="Poznámka (co bylo vidět)"),
+    event: str = typer.Option(
+        "", "--event", "-e", help="sunrise | sunset; jen u spotů, které model nezná"
+    ),
+    fetch: bool = typer.Option(True, help="Uložit archivní data dne do zlaté sady (tests/fixtures/golden)"),
+) -> None:
+    """Admin: zapíše skutečný výsledek do ground_truth/ratings.json (a přidá den do zlaté sady).
+
+    Soubor pak commitni; export webu z něj plní historii („Skutečnost“) a backtest z něj měří model."""
+    settings = load_settings()
+    d = _day(day)
+    try:
+        try:
+            key = _one_location(spot)
+        except typer.BadParameter:  # spot bez modelu (např. bica_da_cana_sunset): jen záznam, vyžaduje --event
+            key = spot
+        entry = ratings.rate(
+            d, key, verdict, note, event or None, settings, today=forecast.today_local()
+        )
+    except ValueError as exc:
+        raise typer.BadParameter(str(exc)) from None
+    console.print(f"Zapsáno: {key} {d} → {entry['verdict']} ({entry['event']})")
+    if fetch and ratings.modeled(key, entry, settings) and not backtest.fixture_path(d).exists():
+        try:
+            fetcher = OpenMeteoFetcher()
+            backtest.save_fixture(
+                d, fetcher.fetch_historical_payload(forecast.horizon_locations(d), d, d)
+            )
+            console.print(f"Archivní data dne uložena: {backtest.fixture_path(d)}")
+        except RuntimeError as exc:
+            console.print(f"[yellow]Archivní data se nepodařilo stáhnout ({exc}); doplň je `python3 scripts/backtest.py --fetch`.[/]")
+    console.print("Commitni ground_truth/ratings.json (a nový soubor v tests/fixtures/golden/).")
 
 
 @app.command()
@@ -117,7 +129,7 @@ def history(
 ) -> None:
     """Hodnocená období: predikce vs. skutečnost (podklad pro kalibraci vah)."""
     key = _one_location(location)
-    rows = Store().calibration_rows(limit, location=key)
+    rows = _rated_store().calibration_rows(limit, location=key)
     t = Table(
         "Datum",
         "Predikce",
@@ -146,7 +158,7 @@ def recompute(
     location: str = typer.Option("all", "--location", "-l", help=LOCATION_HELP + " | all"),
 ) -> None:
     """Po úpravě vah/heuristiky přepočítá zpětné predikce všech hodnocených dnů."""
-    settings, store = load_settings(), Store()
+    settings, store = load_settings(), _rated_store()
     for key in _locations(location):
         results = forecast.recompute_backfilled(settings, store, key)
         console.print(f"{key}: přepočítáno dnů: {len(results)}")
@@ -171,69 +183,11 @@ def fetch_history(
         console.print(f"{key}: uloženo {n} dní")
 
 
-@app.command()
-def label(
-    location: str = typer.Option(..., "--location", "-l", help=LOCATION_HELP),
-    day: str = typer.Option(..., "--date", "-d", help="YYYY-MM-DD (nebo today)"),
-    result: str = typer.Option(
-        ..., "--result", "-r", help="GO | MAYBE | NO_GO (nebo " + "/".join(OUTCOME_LABELS) + ")"
-    ),
-    notes: str = typer.Option("", "--notes", "-n", help="Poznámka"),
-) -> None:
-    """Rychlé zadání ground truth pro lokalitu a den. Chybí-li predikce, dopočítá se z historie."""
-    key = _one_location(location)
-    try:
-        outcome = _normalize_result(result)
-        res = forecast.record_outcome(
-            _day(day), outcome, load_settings(), Store(), location=key, notes=notes or None
-        )
-    except ValueError as exc:
-        raise typer.BadParameter(str(exc)) from None
-    if res.backfilled:
-        console.print(
-            f"Predikce chyběla, dopočítána z historických dat: {res.analysis.score_pct:.0f} % "
-            f"({res.analysis.verdict})"
-        )
-    if res.warning:
-        console.print(f"[yellow]{res.warning}[/]")
-    console.print(f"Zapsáno: {key} {day} → {outcome}")
-
-
-@app.command("import-labels")
-def import_labels(
-    file: Path = typer.Argument(  # noqa: B008
-        ..., exists=True, dir_okay=False, help="CSV: date,location,actual_verdict,notes"
-    ),
-) -> None:
-    """Hromadný import ground truth z CSV (hlavička: date,location,actual_verdict,notes)."""
-    store, ok, errors = Store(), 0, []
-    with file.open(encoding="utf-8-sig", newline="") as fh:
-        reader = csv.DictReader(fh)
-        missing = {"date", "location", "actual_verdict"} - set(reader.fieldnames or [])
-        if missing:
-            raise typer.BadParameter(f"V CSV chybí sloupce: {', '.join(sorted(missing))}")
-        for n, row in enumerate(reader, start=2):
-            try:
-                key = _one_location((row["location"] or "").strip())
-                day = forecast.parse_day((row["date"] or "").strip())
-                if day > forecast.today_local():
-                    raise ValueError("datum v budoucnosti")
-                store.set_outcome(
-                    day,
-                    _normalize_result(row["actual_verdict"] or ""),
-                    location=key,
-                    notes=(row.get("notes") or "").strip() or None,
-                )
-                ok += 1
-            except (ValueError, typer.BadParameter) as exc:
-                errors.append(f"řádek {n}: {exc}")
-    console.print(f"Importováno: {ok}")
-    for e in errors:
-        console.print(f"[yellow]{e}[/]")
-    if ok:
-        console.print("Chybějící predikce doplní `madeira fetch-history`.")
-    if errors:
-        raise typer.Exit(1)
+def _rated_store() -> Store:
+    """Cache predikcí s hodnoceními z ground_truth/ratings.json (jediný zdroj pravdy o realitě)."""
+    store = Store()
+    ratings.sync_to_store(store)
+    return store
 
 
 def _pct(v: float | None) -> str:
@@ -249,7 +203,7 @@ def evaluate(
     settings = load_settings()
     kind = "sunset" if key in forecast.SUNSET_SPOTS else "sunrise"
     go_thr = (settings.sunset if kind == "sunset" else settings.sunrise).verdict.go
-    rows = Store().calibration_rows(100_000, location=key)
+    rows = _rated_store().calibration_rows(100_000, location=key)
     ev = evaluation.evaluate(rows, key, kind, go_thr)
     console.print(
         f"[bold]{key}[/] ({'západ' if kind == 'sunset' else 'východ'}): "
@@ -294,7 +248,7 @@ def evaluate(
 @app.command("export-calibration")
 def export_calibration() -> None:
     """Vypíše kalibrační data (predikce + features + realita) jako JSON na stdout."""
-    rows = Store().calibration_rows(limit=100_000)
+    rows = _rated_store().calibration_rows(limit=100_000)
     for r in rows:
         for key in ("features_json", "components_json", "gates_json", "weights_json"):
             if r.get(key):
@@ -308,10 +262,13 @@ def export_web(
         Path("docs/data.json"), "--out", "-o", help="Cílový JSON"),
     days: int = typer.Option(3, min=1, max=7, help="Počet dní výhledu (od zítřka)"),
     history: int = typer.Option(60, min=0, help="Kolik hodnocených dní historie přibalit"),
+    log_forecast: bool = typer.Option(
+        False, "--log-forecast", help="Zapsat předpovědi do ground_truth/forecast_log.jsonl (jen pipeline v Actions)"
+    ),
 ) -> None:
     """Uloží zítřek a krátký výhled do statického JSONu pro GitHub Pages."""
-    store = Store()
     settings = load_settings()
+    store = _rated_store()  # hodnocení z ground_truth/ratings.json (v Actions je DB prázdná)
     spot_history = webexport.collect_spot_history(settings, store, forecast.today_local(), previous=out)
     payload = webexport.build_payload(settings, days, store=store, spot_history=spot_history)
     # Historie z lokální DB; bez ní (např. GitHub Actions) zůstane z předchozího exportu.
@@ -320,6 +277,8 @@ def export_web(
     payload["history"] = webexport.history_entries(rows, 1818) if rows else webexport.read_history(out)
     payload["history"] = webexport.with_snapshot_links(payload["history"], today)
     webexport.write_payload(payload, out)
+    if log_forecast:
+        console.print(f"Log předpovědí: {forecast_log.record(payload)} řádků")
     t = payload["tomorrow"]
     console.print(f"Zapsáno {out}: {t['date']} {t['verdict']} {t['score_pct']} %")
     story = story_renderer.write_story(payload, out.parent / "story-latest.png")
@@ -341,29 +300,6 @@ def export_map(
     payload = mapdata.build_map_data()
     mapdata.write_map_data(payload, out)
     console.print(f"Zapsáno {out}: {len(payload['spots'])} bodů × {len(payload['timestamps'])} hodin")
-
-
-@app.command()
-def bot() -> None:
-    """Spustí Telegram bota (long polling + denní digest)."""
-    from madeira.bot.app import build_application
-
-    load_env()
-    token = os.environ.get("TELEGRAM_BOT_TOKEN")
-    if not token:
-        console.print("[red]Chybí TELEGRAM_BOT_TOKEN (proměnná prostředí nebo .env).[/]")
-        raise typer.Exit(1)
-    if not os.environ.get("MADEIRA_ALLOWED_CHATS"):
-        console.print(
-            "[yellow]MADEIRA_ALLOWED_CHATS není nastaveno: bot odpoví komukoli, kdo ho najde.[/]"
-        )
-    logging.basicConfig(
-        format="%(asctime)s %(levelname)s %(name)s: %(message)s", level=logging.INFO
-    )
-    logging.getLogger("httpx").setLevel(logging.WARNING)  # URL s tokenem nepatří do logu
-    application = build_application(token, Store(), load_settings())
-    console.print(f"Bot běží ({datetime.now(UTC):%H:%M} UTC), Ctrl+C ukončí.")
-    application.run_polling()
 
 
 if __name__ == "__main__":

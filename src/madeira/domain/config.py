@@ -386,18 +386,9 @@ class FanalConfig(BaseModel):
                         elevation_m=self.elevation_m, role=self.type)
 
 
-class BotConfig(BaseModel):
-    digest_time: str = "20:00"  # místní čas Madeiry
-    feedback_time: str = "10:00"
-    story_time: str = "20:00"  # večerní Instagram Story na zítřek (místní čas Madeiry)
-    compare_from: str = "13:00"
-    compare_to: str = "18:00"
-
-
 class Settings(BaseModel):
     sunrise: SunriseConfig = Field(default_factory=SunriseConfig)
     inversion: InversionConfig = Field(default_factory=InversionConfig)
-    bot: BotConfig = Field(default_factory=BotConfig)
     spots: dict[str, SpotConfig] = Field(default_factory=_default_spots)
     terrain: TerrainGate = Field(default_factory=TerrainGate)
     bica_da_cana: BicaConfig = Field(default_factory=BicaConfig)
@@ -523,15 +514,3 @@ def load_locations() -> list[Location]:
     path = config_dir() / "locations.yaml"
     data = yaml.safe_load(path.read_text(encoding="utf-8"))
     return [Location.model_validate(item) for item in data["locations"]]
-
-
-def load_env() -> None:
-    """Načte KEY=VALUE z .env v kořeni repa (existující proměnné prostředí nepřepisuje)."""
-    path = config_dir().parent / ".env"
-    if not path.exists():
-        return
-    for line in path.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if line and not line.startswith("#") and "=" in line:
-            key, value = line.split("=", 1)
-            os.environ.setdefault(key.strip(), value.strip().strip("\"'"))

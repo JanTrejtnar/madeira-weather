@@ -20,24 +20,20 @@ Odpovědi Open-Meteo se cachují 45 min v `.cache/`.
 
     .venv\Scripts\python -m pytest
 
-## Telegram bot + sběr zpětné vazby
+## Skutečné výsledky (ground truth) a backtest
 
-1. V Telegramu vytvoř bota přes @BotFather, token ulož do `.env` (je v `.gitignore`):
+Projekt je webový, žádný Telegram bot. Jak východ nebo západ skutečně dopadl, zapisuje **admin** ručně
+do jediného souboru v repu, `ground_truth/ratings.json`:
 
-       TELEGRAM_BOT_TOKEN=123456:ABC...
-       MADEIRA_ALLOWED_CHATS=111222333     # tvoje chat ID (zjistíš např. přes @userinfobot); bez něj bot odpoví komukoli
+    .venv\Scripts\madeira rate ponta_do_pargo 2026-11-12 GO --note "Velmi pěkný západ, o kus dál pršelo"
+    git add ground_truth tests/fixtures/golden && git commit -m "Hodnocení 12. 11." && git push
 
-2. Spusť: `.venv\Scripts\madeira bot` a v chatu pošli `/start`.
-
-Příkazy: `/sunrise [today|tomorrow|YYYY-MM-DD]`, `/week`, `/compare [den] [od] [do]`, `/rate [den]`, `/start`, `/stop`.
-Časy v `config/weights.yaml` (sekce `bot`, čas Madeiry): digest 20:00, dotaz „jak dopadl východ?“ 10:00.
-Odpovědi na tlačítka se zapisují do `data/madeira.db` (tabulky `predictions`, `outcomes`, `subscribers`, pohled `calibration`).
-
-Bot musí běžet nepřetržitě. Na Windows: Plánovač úloh → nová úloha „Při přihlášení“ → program
-`C:\Users\honza\dev-projects\madeira-weather-forecast\.venv\Scripts\madeira.exe`, argument `bot`,
-začít v `C:\Users\honza\dev-projects\madeira-weather-forecast`.
-
-Kontrola dat: `madeira history` (predikce vs. realita), `madeira export-calibration` (JSON), `madeira rate 2026-10-13 cloud_sea` (ruční zápis).
+- Verdikt je `GO` / `MAYBE` / `NO_GO` (stálo to za cestu?); spoty, které model nezná, vyžadují `--event sunrise|sunset`.
+- `rate` k modelovaným spotům stáhne i archivní data dne do zlaté sady `tests/fixtures/golden/`.
+- Export webu (`madeira export-web`, i v GitHub Actions) hodnocení z tohoto souboru přidá do historie
+  („Skutečnost“ + poznámka); dny bez hodnocení ukazují „Nevíme, jak to dopadlo“.
+- `python3 scripts/backtest.py` porovná model s hodnocením (viz `CLAUDE.md`, sekce 3). `madeira history` a
+  `madeira evaluate` ukážou predikci vs. realitu; `data/madeira.db` je jen přestavitelná cache predikcí.
 
 ## Veřejný web (GitHub Pages)
 
@@ -49,7 +45,7 @@ Statická stránka `docs/index.html` čte `docs/data.json` (Tailwind přes CDN, 
        .venvScriptsmadeira export-map            # zapíše docs/map_data.json (mapa, 48 h po hodinách)
        git add docs/data.json && git commit -m "Update forecast" && git push
 
-   Volby: `--days N` (1–7), `--history N` (počet hodnocených dní historie z `data/madeira.db`), `--out cesta.json`.
+   Volby: `--days N` (1–7), `--history N` (počet dní historie z cache predikcí), `--out cesta.json`.
    Web má přepínač CZ/EN (volba se pamatuje) a rozklikávací historii predikcí vs. skutečnosti.
 
 2. Zapnutí hostingu: na GitHubu **Settings → Pages → Build and deployment → Source: Deploy from a branch**,
@@ -70,13 +66,4 @@ Bez toho push z workflow selže (chyba 403).
 
 Poznámky:
 - GitHub spouští cron s odchylkou i desítek minut a po 60 dnech bez aktivity v repozitáři plánované běhy vypíná (stačí je znovu zapnout v záložce Actions).
-- V Actions není lokální databáze `data/madeira.db`, proto se historie predikcí přebírá z předchozího `data.json`. Aktualizuješ ji lokálním `madeira export-web` + commit + push.
-
-## Jak doplnit historii predikcí
-
-    .venv\Scripts\madeira rate 2026-10-15 cloud_sea    # cloud_sea | clear | mixed | fail
-    .venv\Scripts\madeira export-web
-    git add docs/data.json && git commit -m "Update history" && git pull --rebase && git push
-
-Hodnocení se ukládá do lokální `data/madeira.db`. V historii na webu jsou i dny bez hodnocení (zobrazí se „Nevíme, jak to dopadlo“),
-pokud pro ně existuje predikce; `madeira export-web` ji sám zapíše do databáze, takže stačí ho spouštět lokálně alespoň jednou za den.
+- V Actions není lokální cache `data/madeira.db`, proto se historie predikcí přebírá z předchozího `data.json`; hodnocení se čtou přímo z `ground_truth/ratings.json` (v repu).

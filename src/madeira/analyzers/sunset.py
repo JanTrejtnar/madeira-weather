@@ -9,6 +9,7 @@ from types import SimpleNamespace
 from madeira.analyzers.features import _avg, _max, mean_wind_dir, window_values
 from madeira.analyzers.inversion import estimate_deck_top, summit_clear_factor, summit_rh
 from madeira.analyzers.mountain import (
+    CLOUD_BASE_M_PER_C,
     cloud_cover,
     high_deck_gate,
     low_cloud_moist_cap,
@@ -23,6 +24,7 @@ from madeira.domain.solar import sun_azimuth_deg
 
 WIND_GUST = [(25, 1.0), (45, 0.5), (70, 0.0)]  # na útesu nad mořem je nad 45 km/h nepříjemně
 LOCAL_LOW = [(10, 1.0), (30, 0.7), (70, 0.0)]  # mlha/mrak přímo na vyhlídce (312 m)
+LOCAL_BASE_CLEARANCE_M = 150  # základna mraků alespoň tolik nad vyhlídkou = spot není v mlze, mraky jsou „strop“
 HORIZON_GATE_SPAN = 30  # o kolik % nad prahem brána klesne na minimum
 HORIZON_GATE_MIN = 0.4
 VISIBILITY_GATE_MIN = 0.3
@@ -222,9 +224,21 @@ def score_sunset(f: SunsetFeatures, settings: Settings) -> SunsetAnalysis:
 
     # --- low_cloud_penalty: mlha/mrak přímo na vyhlídce ---
     fog_parts, fog_txt = [], []
-    if f.local_low_cloud is not None:
+    # pobřežní vyhlídka: když je odhadnutá základna mraků (125 m za °C T − rosný bod) dost nad ní, nízká oblačnost
+    # nad hlavou vyhlídku nezamlžuje – procento mraků pak mlhu nevyjadřuje (horské spoty řeší _above_deck)
+    base_above = (
+        None
+        if f.dewpoint_depression_c is None
+        else CLOUD_BASE_M_PER_C * max(f.dewpoint_depression_c, 0.0)
+    )
+    ceiling_only = f.summit_clear is None and base_above is not None and base_above >= LOCAL_BASE_CLEARANCE_M
+    if f.local_low_cloud is not None and not ceiling_only:
         fog_parts.append(pw(f.local_low_cloud, LOCAL_LOW))
         fog_txt.append(f"nízká oblačnost na vyhlídce {f.local_low_cloud:.0f} %")
+    elif f.local_low_cloud is not None:
+        fog_txt.append(
+            f"nízká oblačnost {f.local_low_cloud:.0f} % je nad vyhlídkou (základna ~{base_above:.0f} m nad ní)"
+        )
     if f.dewpoint_depression_c is not None:
         fog_parts.append(pw(f.dewpoint_depression_c, DEWPOINT_DEP))
         fog_txt.append(f"rozdíl T − rosný bod {f.dewpoint_depression_c:.1f} °C")

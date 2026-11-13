@@ -572,6 +572,8 @@ def _alerts(a: SunriseAnalysis, f) -> list[dict]:
         alerts.append({"code": "fog"})
     if a.gates["gale"] < 1 and f.gust_kmh is not None:
         alerts.append({"code": "gusts", "value": round(f.gust_kmh)})
+    if a.gates.get("spillover", 1.0) < 0.6:
+        alerts.append({"code": "spillover"})
     if a.gates.get("terrain", 1.0) < 1:
         alerts.append({"code": "terrain", "value": round(f.terrain_cutoff_deg, 1)})
     if f.low_cloud_summit is None and f.mid_cloud is None and f.high_cloud is None:
@@ -961,6 +963,7 @@ def history_entries(rows: list[dict], elevation_m: float | None = None) -> list[
             "inversion_pct": None if r["inversion_pct"] is None else round(r["inversion_pct"]),
             "outcome": r["outcome"],
             "actual_verdict": OUTCOME_TO_VERDICT.get(r["outcome"]) if r["outcome"] else None,
+            "note": r.get("note"),
             "source": "backfill" if r["model"] == "historical_forecast" else (
                 "forecast" if r["model"] else None
             ),

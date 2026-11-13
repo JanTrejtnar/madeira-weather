@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from dataclasses import replace
 from datetime import date, datetime
 
@@ -31,6 +32,8 @@ from madeira.domain.config import (
 from madeira.domain.models import ForecastBundle, ScoreComponent, SunriseAnalysis
 from madeira.domain.solar import sun_azimuth_deg
 
+log = logging.getLogger(__name__)
+
 CLEAR_SKY = [(0, 1.0), (10, 1.0), (60, 0.2), (100, 0.0)]
 # barvy dělají cirry: bez nich nic, 30–60 % ideální struktura, i slitý cirrostratus (70–100 %) drží plató 0,45
 COLOR = [(0, 0.40), (20, 0.8), (30, 1.0), (60, 1.0), (70, 0.45), (100, 0.45)]
@@ -41,6 +44,7 @@ PRECIP_MM = [(0.0, 1.0), (0.2, 0.6), (0.5, 0.0)]
 PRECIP_PROB = [(20, 1.0), (60, 0.6), (90, 0.3)]
 GALE = [(70, 1.0), (90, 0.3)]
 FOG_DEP = [(0.5, 1.0), (3, 0.0)]
+WET_COLUMN_UPPER_HPA = 800  # hladina nad oběma vrcholy pro test vlhkého sloupce
 NEUTRAL = 0.5  # hodnota komponenty při chybějících datech
 
 
@@ -118,11 +122,14 @@ def score_sunrise(
     mcfg = settings.mountain_clouds
     spill, spill_deck = None, inv.cloud_deck_top_m
     # vlhký sloupec: 850 i 800 hPa vlhké (≥ práh) = žádný suchý strop nad vrcholem (nejde o
-    # inverzi), i když RH nepřekročí 85 % a horní hranice mraků se nenajde → mrak sahá výš
+    # inverzi), i když RH nepřekročí 85 % a horní hranice mraků se nenajde → mrak sahá výš.
+    # Obě hladiny jsou pevné (800 hPa ≈ 2 km leží nad Arieirem i Bica da Cana): u Bica da Cana je
+    # `aloft_hpa` 850, takže test přes rh_aloft by dvakrát četl tutéž hladinu ve výšce vrcholu
+    # a jediná hodnota RH ≥ 60 % by ořízla jasný východ (12. 11. 2026: RH 850 hPa 61 %).
     if (
         f.rh.get(850) is not None
         and f.rh[850] >= mcfg.spill_hard_rh
-        and (rh_aloft(f) or 0) >= mcfg.spill_hard_rh
+        and (f.rh.get(WET_COLUMN_UPPER_HPA) or 0) >= mcfg.spill_hard_rh
         and f.z.get(f.aloft_hpa) is not None
     ):
         spill_deck = max(spill_deck or 0, f.z[f.aloft_hpa])
@@ -264,6 +271,11 @@ def score_sunrise(
     if spill is not None and score > spill:
         score = spill
         gates["spillover"] = round(spill / 100, 2)
+        log.info(
+            "spillover cap %.0f: deck %.0f m, summit %.0f m, RH(%d hPa) %s, z(%d hPa) %s, gusts %s",
+            spill, spill_deck, f.summit_m, f.aloft_hpa, rh_aloft(f), f.aloft_hpa,
+            f.z.get(f.aloft_hpa), f.gust_kmh,
+        )
         warnings.append(
             f"Mraky sahají k ~{spill_deck:.0f} m, tedy těsně pod hřeben – hrozí přelévání."
         )
@@ -318,6 +330,8 @@ def _summary_cs(score, verdict, inv_text, components, gates) -> str:
         parts.append("Největší problém je mlha/mrak na vrcholu.")
     elif gates.get("overcast", 1.0) < 0.6:
         parts.append("Největší problém je zatažení střední oblačností.")
+    elif gates.get("spillover", 1.0) < 0.6:
+        parts.append("Největší problém jsou mraky u hřebene (hrozí přelévání přes hřeben).")
     elif weakest.value < 0.6:
         parts.append(f"Nejslabší stránka: {_NAMES_CS[weakest.name]} ({weakest.explanation}).")
     parts.append(inv_text)
