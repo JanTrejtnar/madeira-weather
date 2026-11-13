@@ -963,6 +963,7 @@ def history_entries(rows: list[dict], elevation_m: float | None = None) -> list[
             "inversion_pct": None if r["inversion_pct"] is None else round(r["inversion_pct"]),
             "outcome": r["outcome"],
             "actual_verdict": OUTCOME_TO_VERDICT.get(r["outcome"]) if r["outcome"] else None,
+            "note": r.get("note"),
             "source": "backfill" if r["model"] == "historical_forecast" else (
                 "forecast" if r["model"] else None
             ),

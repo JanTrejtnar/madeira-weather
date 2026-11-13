@@ -11,7 +11,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from madeira.fetchers.open_meteo import OpenMeteoFetcher
-from madeira.services import backtest
+from madeira.services import backtest, ratings
 from madeira.services.forecast import horizon_locations
 
 
@@ -19,7 +19,7 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--fetch", action="store_true", help="stáhnout chybějící fixtury z Open-Meteo")
     args = ap.parse_args()
-    labels = backtest.load_labels()
+    labels = ratings.load()
     if args.fetch:
         fetcher = OpenMeteoFetcher()
         for day in sorted({d for d, _ in labels}):

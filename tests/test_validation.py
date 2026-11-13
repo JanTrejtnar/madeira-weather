@@ -6,9 +6,9 @@ from typer.testing import CliRunner
 
 from madeira.cli import app
 from madeira.domain.config import Settings
-from madeira.services import evaluation, forecast
+from madeira.services import evaluation, forecast, ratings
 from madeira.storage.db import Store
-from tests.test_bot import FETCHED
+from tests.test_storage import FETCHED
 from tests.test_webexport import NOW, _bundle
 
 DAY = date(2026, 10, 13)
@@ -99,22 +99,17 @@ def test_evaluate_skips_rows_without_prediction():
     assert ev.skipped_no_prediction == 1 and not ev.cases
 
 
-def test_label_and_import_cli(tmp_path, monkeypatch):
+def test_rate_cli_writes_ratings_file_and_evaluate_reads_it(tmp_path, monkeypatch):
     monkeypatch.setenv("MADEIRA_DB", str(tmp_path / "cli.db"))
+    path = tmp_path / "ratings.json"
+    monkeypatch.setattr(ratings, "RATINGS_PATH", path)
     runner = CliRunner()
-    csv_file = tmp_path / "l.csv"
-    csv_file.write_text(
-        "date,location,actual_verdict,notes\n"
-        "2026-09-20,ponta_do_pargo,NO-GO,zataženo\n"
-        "2026-09-21,ponta_do_pargo,bad,\n",
-        encoding="utf-8",
-    )
-    res = runner.invoke(app, ["import-labels", str(csv_file)])
-    assert res.exit_code == 1 and "Importováno: 1" in res.output
-    store = Store(tmp_path / "cli.db")
-    assert store.get_outcome(date(2026, 9, 20), "ponta_do_pargo") == "NO_GO"
-    res = runner.invoke(app, ["evaluate", "--location", "ponta_do_pargo"])
-    assert res.exit_code == 0 and "bez predikce" in res.output
+    res = runner.invoke(app, ["rate", "ponta_do_pargo", "2026-09-20", "NO-GO", "--note", "zataženo", "--no-fetch"])
+    assert res.exit_code == 0, res.output
+    entry = ratings.load(path)[(date(2026, 9, 20), "ponta_do_pargo")]
+    assert entry == {"verdict": "NO_GO", "event": "sunset", "note": "zataženo"}
+    bad = runner.invoke(app, ["rate", "ponta_do_pargo", "2026-09-20", "bad", "--no-fetch"])
+    assert bad.exit_code != 0
 
 
 def test_log_sunset_prediction(store):

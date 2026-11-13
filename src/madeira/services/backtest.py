@@ -1,7 +1,6 @@
 """Zpětné ověření modelu na ručně hodnocených dnech (zlatá sada).
 
-Štítky: `scripts/ground_truth_manual.json` (ručně zapsané z terénu, v gitu) a `scripts/ground_truth_labels.json`
-(zapisuje je bot na domácím stroji, v gitu být nemusí). Vstupy modelu: archivní odpověď Open-Meteo uložená jako
+Štítky: `ground_truth/ratings.json` (zapisuje admin přes `madeira rate`, v gitu). Vstupy modelu: archivní odpověď Open-Meteo uložená jako
 `tests/fixtures/golden/<YYYY-MM-DD>.json.gz` – dny se tak počítají vždy ze stejných dat, i bez sítě."""
 
 from __future__ import annotations
@@ -12,12 +11,12 @@ from dataclasses import dataclass
 from datetime import UTC, date, datetime, time
 from pathlib import Path
 
-from madeira.domain.config import Settings, load_settings, spot_event
+from madeira.domain.config import Settings, load_settings
 from madeira.fetchers.open_meteo import HISTORICAL_MODEL, parse_response
+from madeira.services import ratings
 from madeira.services.forecast import horizon_locations, predict_spot
 
 ROOT = Path(__file__).resolve().parents[3]
-LABEL_FILES = (ROOT / "scripts" / "ground_truth_manual.json", ROOT / "scripts" / "ground_truth_labels.json")
 FIXTURES = ROOT / "tests" / "fixtures" / "golden"
 ORDER = {"NO_GO": 0, "MAYBE": 1, "GO": 2}
 
@@ -35,18 +34,6 @@ class Result:
     def error(self) -> int:
         """Řadová chyba: + model přeceňuje, − podceňuje (NO_GO < MAYBE < GO)."""
         return ORDER[self.predicted] - ORDER[self.actual]
-
-
-def load_labels(paths: tuple[Path, ...] = LABEL_FILES) -> dict[tuple[date, str], dict]:
-    """Sloučí štítky ze všech souborů; při shodě klíče vyhrává pozdější soubor (bot)."""
-    merged: dict[tuple[date, str], dict] = {}
-    for path in paths:
-        if not path.exists():
-            continue
-        for day, spots in json.loads(path.read_text(encoding="utf-8")).get("labels", {}).items():
-            for spot, entry in spots.items():
-                merged[(date.fromisoformat(day), spot)] = entry
-    return merged
 
 
 def fixture_path(day: date, directory: Path = FIXTURES) -> Path:
@@ -69,20 +56,14 @@ def load_bundle(day: date, directory: Path = FIXTURES):
     return parse_response(payload, horizon_locations(day), HISTORICAL_MODEL, midnight)
 
 
-def modeled(spot: str, entry: dict, settings: Settings) -> bool:
-    """Štítek jde porovnat jen s lokalitou, kterou model skóruje, a ve stejné události (východ/západ)."""
-    cfg = settings.spots.get(spot)
-    return cfg is not None and spot_event(cfg) == entry.get("event", spot_event(cfg))
-
-
 def run(settings: Settings | None = None, directory: Path = FIXTURES, labels=None) -> tuple[list[Result], list[str]]:
     settings = settings or load_settings()
-    labels = labels if labels is not None else load_labels()
+    labels = labels if labels is not None else ratings.load()
     results: list[Result] = []
     skipped: list[str] = []
     bundles: dict[date, object] = {}
     for (day, spot), entry in sorted(labels.items()):
-        if not modeled(spot, entry, settings):
+        if not ratings.modeled(spot, entry, settings):
             skipped.append(f"{day} {spot}: model tento spot/událost neskóruje")
             continue
         if day not in bundles:

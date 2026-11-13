@@ -27,7 +27,7 @@ Platí pro všechny relace a úpravy. Architektura: Fetchers → Analyzers → P
 - Při posuzování inverzí vždy kontrolovat vlhkostní profil (800 hPa a hladina vrcholu) a nárazy větru.
 - Změna skórování (křivky, váhy, brány, stropy) se přijme jen když (a) má fyzikální nebo logické odůvodnění,
   (b) `python3 scripts/backtest.py` na zlaté sadě (`tests/fixtures/golden/`, štítky v
-  `scripts/ground_truth_manual.json`) nezhorší žádný hodnocený den a (c) zlepšení potvrdí aspoň dva nezávislé
+  `ground_truth/ratings.json`) nezhorší žádný hodnocený den a (c) zlepšení potvrdí aspoň dva nezávislé
   dny. Oprava logické chyby (např. stejná hladina čtená dvakrát) tímto omezená není, ale musí mít test.
   Každý nový ručně hodnocený den přidej do zlaté sady (`python3 scripts/backtest.py --fetch`).
 

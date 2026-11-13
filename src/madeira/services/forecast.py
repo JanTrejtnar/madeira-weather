@@ -1,8 +1,7 @@
-"""Orchestrace use-case funkcí sdílená CLI a botem (fetch → analýza → log)."""
+"""Orchestrace use-case funkcí pro CLI a export (fetch → analýza → log)."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from datetime import UTC, date, datetime, time, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -138,13 +137,6 @@ def compare(day: date, from_: str, to: str) -> MicroclimateComparison:
     return compare_microclimates(load_bundle(), start, end)
 
 
-@dataclass
-class RateResult:
-    backfilled: bool = False  # predikce byla dopočítána ze stažených historických dat
-    analysis: SunriseAnalysis | None = None
-    warning: str | None = None
-
-
 def backfill_prediction(
     day: date, settings: Settings, store: Store, location: str = "arieiro"
 ) -> SunriseAnalysis | SunsetAnalysis:
@@ -178,30 +170,6 @@ def backfill_from_live(settings: Settings, store: Store, locations: list[str], d
             continue
         saved += 1
     return saved
-
-
-def record_outcome(
-    day: date,
-    outcome: str,
-    settings: Settings,
-    store: Store,
-    chat_id: int | None = None,
-    location: str = "arieiro",
-    notes: str | None = None,
-) -> RateResult:
-    """Zapíše hodnocení; pokud k danému dni chybí predikce, nejdřív ji dopočítá a uloží."""
-    if day > today_local():
-        raise ValueError("Východ slunce v budoucnosti ještě nejde hodnotit.")
-    result = RateResult()
-    if store.latest_prediction(day, location) is None:
-        try:
-            extra = {} if location == "arieiro" else {"location": location}
-            result.analysis = backfill_prediction(day, settings, store, **extra)
-            result.backfilled = True
-        except Exception as exc:  # noqa: BLE001 - hodnocení se uloží i bez predikce, ať o něj nepřijdeš
-            result.warning = f"Predikci se nepodařilo dopočítat ({exc}); hodnocení uloženo bez ní."
-    store.set_outcome(day, outcome, chat_id, location=location, notes=notes)
-    return result
 
 
 def recompute_backfilled(
