@@ -17,6 +17,7 @@ from madeira.services import (
     backtest,
     evaluation,
     forecast,
+    forecast_log,
     mapdata,
     ratings,
     story_image,
@@ -261,6 +262,9 @@ def export_web(
         Path("docs/data.json"), "--out", "-o", help="Cílový JSON"),
     days: int = typer.Option(3, min=1, max=7, help="Počet dní výhledu (od zítřka)"),
     history: int = typer.Option(60, min=0, help="Kolik hodnocených dní historie přibalit"),
+    log_forecast: bool = typer.Option(
+        False, "--log-forecast", help="Zapsat předpovědi do ground_truth/forecast_log.jsonl (jen pipeline v Actions)"
+    ),
 ) -> None:
     """Uloží zítřek a krátký výhled do statického JSONu pro GitHub Pages."""
     settings = load_settings()
@@ -273,6 +277,8 @@ def export_web(
     payload["history"] = webexport.history_entries(rows, 1818) if rows else webexport.read_history(out)
     payload["history"] = webexport.with_snapshot_links(payload["history"], today)
     webexport.write_payload(payload, out)
+    if log_forecast:
+        console.print(f"Log předpovědí: {forecast_log.record(payload)} řádků")
     t = payload["tomorrow"]
     console.print(f"Zapsáno {out}: {t['date']} {t['verdict']} {t['score_pct']} %")
     story = story_renderer.write_story(payload, out.parent / "story-latest.png")

@@ -11,7 +11,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from madeira.fetchers.open_meteo import OpenMeteoFetcher
-from madeira.services import backtest, ratings
+from madeira.services import backtest, forecast_log, ratings
 from madeira.services.forecast import horizon_locations
 
 
@@ -28,9 +28,12 @@ def main() -> None:
                 payload = fetcher.fetch_historical_payload(horizon_locations(day), day, day)
                 backtest.save_fixture(day, payload)
     results, skipped = backtest.run(labels=labels)
-    print(f"{'den':<11}{'spot':<20}{'skutečnost':<12}{'model':<8}{'skóre':>6}  chyba")
+    log = forecast_log.load()
+    print(f"{'den':<11}{'spot':<20}{'skutečnost':<12}{'model':<8}{'skóre':>6}  chyba  předpověď den předem")
     for r in results:
-        print(f"{r.day!s:<11}{r.spot:<20}{r.actual:<12}{r.predicted:<8}{r.score:>6.1f}  {r.error:+d}")
+        rec = log.get((r.spot, r.day.isoformat(), 1))
+        ahead = f"{rec['score']} % {rec['verdict']}" if rec else "–"
+        print(f"{r.day!s:<11}{r.spot:<20}{r.actual:<12}{r.predicted:<8}{r.score:>6.1f}  {r.error:+d}     {ahead}")
     print("\n", backtest.summary(results))
     for s in skipped:
         print("přeskočeno:", s)
