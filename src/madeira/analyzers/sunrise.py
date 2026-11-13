@@ -44,6 +44,7 @@ PRECIP_MM = [(0.0, 1.0), (0.2, 0.6), (0.5, 0.0)]
 PRECIP_PROB = [(20, 1.0), (60, 0.6), (90, 0.3)]
 GALE = [(70, 1.0), (90, 0.3)]
 FOG_DEP = [(0.5, 1.0), (3, 0.0)]
+WET_COLUMN_UPPER_HPA = 800  # hladina nad oběma vrcholy pro test vlhkého sloupce
 NEUTRAL = 0.5  # hodnota komponenty při chybějících datech
 
 
@@ -121,11 +122,14 @@ def score_sunrise(
     mcfg = settings.mountain_clouds
     spill, spill_deck = None, inv.cloud_deck_top_m
     # vlhký sloupec: 850 i 800 hPa vlhké (≥ práh) = žádný suchý strop nad vrcholem (nejde o
-    # inverzi), i když RH nepřekročí 85 % a horní hranice mraků se nenajde → mrak sahá výš
+    # inverzi), i když RH nepřekročí 85 % a horní hranice mraků se nenajde → mrak sahá výš.
+    # Obě hladiny jsou pevné (800 hPa ≈ 2 km leží nad Arieirem i Bica da Cana): u Bica da Cana je
+    # `aloft_hpa` 850, takže test přes rh_aloft by dvakrát četl tutéž hladinu ve výšce vrcholu
+    # a jediná hodnota RH ≥ 60 % by ořízla jasný východ (12. 11. 2026: RH 850 hPa 61 %).
     if (
         f.rh.get(850) is not None
         and f.rh[850] >= mcfg.spill_hard_rh
-        and (rh_aloft(f) or 0) >= mcfg.spill_hard_rh
+        and (f.rh.get(WET_COLUMN_UPPER_HPA) or 0) >= mcfg.spill_hard_rh
         and f.z.get(f.aloft_hpa) is not None
     ):
         spill_deck = max(spill_deck or 0, f.z[f.aloft_hpa])

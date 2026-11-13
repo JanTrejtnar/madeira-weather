@@ -720,13 +720,32 @@ def test_spillover_cap_is_reported_in_summary_and_alerts():
         low_cloud_summit=0.0, east_low_cloud=0.0, east_mid_cloud=0.0, mid_cloud=0.0,
         high_cloud=0.0, visibility_km=30.0, dewpoint_depression_c=6.0, gust_kmh=10.0,
         summit_m=1560.0, aloft_hpa=850,
-        rh={925: 60.0, 850: 62.0, 800: 30.0, 700: 20.0},
+        rh={925: 60.0, 850: 62.0, 800: 65.0, 700: 20.0},  # vlhký sloupec: 850 i 800 hPa
         z={925: 800.0, 850: 1580.0, 800: 2000.0, 700: 3100.0},
     )
     a = score_sunrise(f, settings, settings.bica_da_cana.tuning())
     assert a.score_pct == 25.0
     assert "přelévání" in a.summary_cs
     assert {"code": "spillover"} in _alerts(a, f)
+
+
+def test_bica_single_moist_level_at_summit_does_not_cap_clear_sunrise():
+    """12. 11. 2026: RH 850 hPa (výška vrcholu Bica) 61 %, nad ním sucho, jasná obloha, východ byl dobrý.
+    aloft_hpa je u Bica 850, takže dřív jedna hodnota RH ≥ 60 % splnila oba testy vlhkého sloupce."""
+    from madeira.analyzers.sunrise import score_sunrise
+    from madeira.domain.config import Settings
+
+    settings = Settings.load() if hasattr(Settings, "load") else Settings()
+    f = features(
+        low_cloud_summit=0.0, east_low_cloud=0.0, east_mid_cloud=0.0, mid_cloud=0.0,
+        high_cloud=9.0, visibility_km=29.0, dewpoint_depression_c=6.0, gust_kmh=32.0,
+        summit_m=1560.0, aloft_hpa=850,
+        rh={925: 55.0, 850: 61.0, 800: 30.0, 700: 20.0},
+        z={925: 800.0, 850: 1520.0, 800: 2000.0, 700: 3100.0},
+    )
+    a = score_sunrise(f, settings, settings.bica_da_cana.tuning())
+    assert "spillover" not in a.gates
+    assert a.score_pct >= 70.0
 
 
 def test_sunset_low_cloud_above_coastal_spot_is_not_fog():
