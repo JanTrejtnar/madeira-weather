@@ -237,7 +237,12 @@ def test_sunset_gale_and_fog_lower_score():
     s = Settings()
     base = score_sunset(sunset_features(), s).score_pct
     assert score_sunset(sunset_features(gust_kmh=70.0), s).score_pct == base - 10
-    assert score_sunset(sunset_features(local_low_cloud=70.0), s).score_pct == base - 15
+    # mlha na vyhlídce: základna mraků těsně nad ní (T − rosný bod 1 °C)
+    foggy = score_sunset(sunset_features(local_low_cloud=70.0, dewpoint_depression_c=1.0), s).score_pct
+    dry = score_sunset(sunset_features(dewpoint_depression_c=1.0), s).score_pct
+    assert foggy < dry
+    # vysoká základna (8 °C): nízká oblačnost je strop nad vyhlídkou, skóre neklesá
+    assert score_sunset(sunset_features(local_low_cloud=70.0), s).score_pct == base
     assert score_sunset(sunset_features(visibility_m=5000.0), s).gates["visibility"] == 0.3
 
 
@@ -722,3 +727,25 @@ def test_spillover_cap_is_reported_in_summary_and_alerts():
     assert a.score_pct == 25.0
     assert "přelévání" in a.summary_cs
     assert {"code": "spillover"} in _alerts(a, f)
+
+
+def test_sunset_low_cloud_above_coastal_spot_is_not_fog():
+    from datetime import UTC, date, datetime
+
+    from madeira.analyzers.sunset import SunsetFeatures, score_sunset
+    from madeira.domain.config import load_settings
+
+    def run(dd: float):
+        f = SunsetFeatures(
+            target_date=date(2026, 11, 12), sunset_utc=datetime(2026, 11, 12, 18, 0, tzinfo=UTC),
+            days_ahead=0, horizon_low_cloud=20, canvas_cloud=35, local_low_cloud=68, precip_mm=0.0,
+            gust_kmh=20, wind_kmh=9, wind_dir_deg=None, visibility_m=20000, dewpoint_depression_c=dd,
+            temp_c=18, west_mid_cloud=1,
+        )
+        a = score_sunset(f, load_settings())
+        return next(c for c in a.components if c.name == "low_cloud_penalty")
+
+    ceiling = run(3.0)  # základna ~375 m nad vyhlídkou
+    fog = run(0.5)  # základna ~60 m nad vyhlídkou: mlha reálná
+    assert ceiling.value == 1.0 and "nad vyhlídkou" in ceiling.explanation
+    assert fog.value < 0.3
