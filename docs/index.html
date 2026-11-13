@@ -309,7 +309,7 @@
            edge: `Vrstva mraků sahá asi do ${d.cloud_deck_top_m} m – vrchol je na její hranici.`,
            inside: `Vlhká vrstva sahá až k ~${d.cloud_deck_top_m} m – vrchol bude pravděpodobně v mraku.` })[d.inversion_case] || "",
       ].filter(Boolean).join(" "),
-      alert: (a) => ({ terrain: `Slunce vyjde nad hřeben (${a.value}° nad obzorem) později než nad mořem.`, precip: `Srážky kolem východu: ${a.value} mm.`, fog: "Vrchol bude pravděpodobně v mraku/mlze.",
+      alert: (a) => ({ spillover: "Mraky sahají těsně k hřebeni – hrozí přelévání, skóre je omezené.", terrain: `Slunce vyjde nad hřeben (${a.value}° nad obzorem) později než nad mořem.`, precip: `Srážky kolem východu: ${a.value} mm.`, fog: "Vrchol bude pravděpodobně v mraku/mlze.",
                        gusts: `Silné nárazy větru (${a.value} km/h).`, no_cloud_data: "Chybí data o oblačnosti." })[a.code] || a.code,
     },
     en: {
@@ -402,7 +402,7 @@
            edge: `The cloud deck tops out around ${d.cloud_deck_top_m} m – the summit sits right at its edge.`,
            inside: `The moist layer reaches ~${d.cloud_deck_top_m} m – the summit will probably be in cloud.` })[d.inversion_case] || "",
       ].filter(Boolean).join(" "),
-      alert: (a) => ({ terrain: `The sun clears the ridge (${a.value}° above the horizon) later than over the sea.`, precip: `Rain around sunrise: ${a.value} mm.`, fog: "The summit will probably be in cloud/fog.",
+      alert: (a) => ({ spillover: "Clouds reach right up to the ridge – spill-over risk, the score is capped.", terrain: `The sun clears the ridge (${a.value}° above the horizon) later than over the sea.`, precip: `Rain around sunrise: ${a.value} mm.`, fog: "The summit will probably be in cloud/fog.",
                        gusts: `Strong gusts (${a.value} km/h).`, no_cloud_data: "Cloud cover data missing." })[a.code] || a.code,
     },
   };

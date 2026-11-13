@@ -572,6 +572,8 @@ def _alerts(a: SunriseAnalysis, f) -> list[dict]:
         alerts.append({"code": "fog"})
     if a.gates["gale"] < 1 and f.gust_kmh is not None:
         alerts.append({"code": "gusts", "value": round(f.gust_kmh)})
+    if a.gates.get("spillover", 1.0) < 0.6:
+        alerts.append({"code": "spillover"})
     if a.gates.get("terrain", 1.0) < 1:
         alerts.append({"code": "terrain", "value": round(f.terrain_cutoff_deg, 1)})
     if f.low_cloud_summit is None and f.mid_cloud is None and f.high_cloud is None:

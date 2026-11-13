@@ -703,3 +703,22 @@ def test_sunset_mid_cloud_blocks_but_does_not_paint():
     assert blocked.gates["overcast"] < 0.6 and blocked.score_pct < base.score_pct * 0.6
     # 40 % střední oblačnosti brána nespustí
     assert score_sunset(sunset_features(canvas_cloud=35.0, west_mid_cloud=40.0), s).gates["overcast"] == 1.0
+
+
+def test_spillover_cap_is_reported_in_summary_and_alerts():
+    from madeira.analyzers.sunrise import score_sunrise
+    from madeira.domain.config import Settings
+    from madeira.services.webexport import _alerts
+
+    settings = Settings.load() if hasattr(Settings, "load") else Settings()
+    f = features(
+        low_cloud_summit=0.0, east_low_cloud=0.0, east_mid_cloud=0.0, mid_cloud=0.0,
+        high_cloud=0.0, visibility_km=30.0, dewpoint_depression_c=6.0, gust_kmh=10.0,
+        summit_m=1560.0, aloft_hpa=850,
+        rh={925: 60.0, 850: 62.0, 800: 30.0, 700: 20.0},
+        z={925: 800.0, 850: 1580.0, 800: 2000.0, 700: 3100.0},
+    )
+    a = score_sunrise(f, settings, settings.bica_da_cana.tuning())
+    assert a.score_pct == 25.0
+    assert "přelévání" in a.summary_cs
+    assert {"code": "spillover"} in _alerts(a, f)

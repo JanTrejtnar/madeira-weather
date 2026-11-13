@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from dataclasses import replace
 from datetime import date, datetime
 
@@ -30,6 +31,8 @@ from madeira.domain.config import (
 )
 from madeira.domain.models import ForecastBundle, ScoreComponent, SunriseAnalysis
 from madeira.domain.solar import sun_azimuth_deg
+
+log = logging.getLogger(__name__)
 
 CLEAR_SKY = [(0, 1.0), (10, 1.0), (60, 0.2), (100, 0.0)]
 # barvy dělají cirry: bez nich nic, 30–60 % ideální struktura, i slitý cirrostratus (70–100 %) drží plató 0,45
@@ -264,6 +267,11 @@ def score_sunrise(
     if spill is not None and score > spill:
         score = spill
         gates["spillover"] = round(spill / 100, 2)
+        log.info(
+            "spillover cap %.0f: deck %.0f m, summit %.0f m, RH(%d hPa) %s, z(%d hPa) %s, gusts %s",
+            spill, spill_deck, f.summit_m, f.aloft_hpa, rh_aloft(f), f.aloft_hpa,
+            f.z.get(f.aloft_hpa), f.gust_kmh,
+        )
         warnings.append(
             f"Mraky sahají k ~{spill_deck:.0f} m, tedy těsně pod hřeben – hrozí přelévání."
         )
@@ -318,6 +326,8 @@ def _summary_cs(score, verdict, inv_text, components, gates) -> str:
         parts.append("Největší problém je mlha/mrak na vrcholu.")
     elif gates.get("overcast", 1.0) < 0.6:
         parts.append("Největší problém je zatažení střední oblačností.")
+    elif gates.get("spillover", 1.0) < 0.6:
+        parts.append("Největší problém jsou mraky u hřebene (hrozí přelévání přes hřeben).")
     elif weakest.value < 0.6:
         parts.append(f"Nejslabší stránka: {_NAMES_CS[weakest.name]} ({weakest.explanation}).")
     parts.append(inv_text)
