@@ -6,7 +6,7 @@ from madeira.services import forecast_log
 def _payload(today, run, score, lead_dates=("2026-11-14", "2026-11-15", "2026-11-17")):
     days = [
         {"date": d, "score_pct": score, "verdict": "GO", "score_range": [score - 5, score + 5],
-         "gust_kmh": 7, "inversion_case": "none", "problem": None}
+         "gust_kmh": 7, "inversion_case": "none", "problem": None, "alerts": [{"code": "spillover"}]}
         for d in lead_dates
     ]
     return {"today": today, "generated_at": run, "spot_days": {"arieiro": days}}
@@ -20,6 +20,7 @@ def test_only_today_and_tomorrow_are_logged(tmp_path):
     assert set(log) == {("arieiro", "2026-11-14", 0), ("arieiro", "2026-11-15", 1)}
     rec = log[("arieiro", "2026-11-15", 1)]
     assert rec["score"] == 80 and rec["gust_kmh"] == 7 and "problem" not in rec  # None se nezapisuje
+    assert rec["alerts"] == ["spillover"]  # kdy zasáhl strop přelévání, je z logu vidět
 
 
 def test_last_run_before_event_wins_and_other_days_are_kept(tmp_path):

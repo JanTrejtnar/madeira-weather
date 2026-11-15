@@ -51,6 +51,7 @@ def records_from_payload(payload: dict) -> list[dict]:
                 "score": entry["score_pct"], "verdict": entry["verdict"],
                 "range": entry.get("score_range"),
                 **{k: entry[k] for k in FIELDS if entry.get(k) is not None},
+                **({"alerts": codes} if (codes := [a["code"] for a in entry.get("alerts") or []]) else {}),
             })
     return rows
 
