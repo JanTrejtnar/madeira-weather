@@ -30,6 +30,8 @@ Platí pro všechny relace a úpravy. Architektura: Fetchers → Analyzers → P
   `ground_truth/ratings.json`) nezhorší žádný hodnocený den a (c) zlepšení potvrdí aspoň dva nezávislé
   dny. Oprava logické chyby (např. stejná hladina čtená dvakrát) tímto omezená není, ale musí mít test.
   Každý nový ručně hodnocený den přidej do zlaté sady (`python3 scripts/backtest.py --fetch`).
+- Otevřené pochybnosti o modelu a pipeline jsou v `OPEN_QUESTIONS.md`: před úpravou skórování je projdi, po
+  rozhodnutí (oprava / vyvráceno) položku neodstraňuj, ale uzavři ji a zapiš do „Logu rozhodnutí“.
 
 ## 4. Architektura API a frontendu
 
