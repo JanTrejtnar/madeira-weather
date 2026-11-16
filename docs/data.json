@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-15T22:07:34+00:00",
-  "generated_local": "2026-11-15T22:07:34+00:00",
+  "generated_at": "2026-11-16T06:50:50+00:00",
+  "generated_local": "2026-11-16T06:50:50+00:00",
   "timezone": "Atlantic/Madeira",
-  "today": "2026-11-15",
+  "today": "2026-11-16",
   "model": "best_match",
   "location": {
     "name": "Pico do Arieiro",
@@ -10,7 +10,7 @@
   },
   "morning_webcam_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-15/07_00.jpg",
   "morning_webcam_date": "2026-11-15",
-  "morning_webcam_day": "today",
+  "morning_webcam_day": "yesterday",
   "morning_webcam_time": "07:00",
   "morning_webcam_urls": [
     "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-15/07_00.jpg",
@@ -22,7 +22,7 @@
   ],
   "sunset_webcam_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-15/18_00.jpg",
   "sunset_webcam_date": "2026-11-15",
-  "sunset_webcam_day": "today",
+  "sunset_webcam_day": "yesterday",
   "sunset_webcam_time": "18:00",
   "sunset_webcam_urls": [
     "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-15/18_00.jpg",
@@ -35,58 +35,54 @@
   "tomorrow": {
     "date": "2026-11-16",
     "sunrise": "07:38",
-    "verdict": "NO_GO",
-    "score_pct": 7,
+    "verdict": "GO",
+    "score_pct": 86,
     "score_range": [
-      2,
-      12
+      81,
+      91
     ],
     "confidence": "HIGH",
-    "cloud_deck_top_m": 1482,
-    "summit_above_deck_m": 336,
-    "inversion_pct": 34,
+    "cloud_deck_top_m": null,
+    "summit_above_deck_m": null,
+    "inversion_pct": 6,
     "wind_kmh": 5,
-    "gust_kmh": 23,
-    "wind_dir_deg": 286,
-    "summary_cs": "Spíš zůstaň v posteli. Skóre 7 %. Největší problém je mlha/mrak na vrcholu. Vrstva mraků sahá asi do 1482 m, vrchol (1818 m) je nad ní o ~336 m.",
-    "inversion_case": "above",
-    "problem": "fog",
-    "weakest": "sky",
+    "gust_kmh": 29,
+    "wind_dir_deg": 282,
+    "summary_cs": "Vypadá to dobře. Skóre 86 %. Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné.",
+    "inversion_case": "none",
+    "problem": null,
+    "weakest": null,
     "precip_mm": 0.0,
-    "alerts": [
-      {
-        "code": "fog"
-      }
-    ],
-    "canvas_cloud_pct": 33,
+    "alerts": [],
+    "canvas_cloud_pct": 39,
     "sun_azimuth_deg": null,
     "terrain_cutoff_deg": 0.0,
     "weather": {
       "funchal": {
         "rain": "none",
         "rain_mm": 0.0,
-        "rain_prob_pct": 28,
+        "rain_prob_pct": 33,
         "rain_from": null,
         "rain_to": null,
         "sky": "cloudy",
         "temp_min_c": 20,
-        "temp_max_c": 23,
-        "gust_max_kmh": 47
+        "temp_max_c": 22,
+        "gust_max_kmh": 36
       },
       "arieiro": {
         "rain": "none",
-        "rain_mm": 0.0,
-        "rain_prob_pct": 30,
+        "rain_mm": 0.1,
+        "rain_prob_pct": 38,
         "rain_from": null,
         "rain_to": null,
         "sky": "cloudy",
         "temp_min_c": 7,
         "temp_max_c": 12,
-        "gust_max_kmh": 41
+        "gust_max_kmh": 34
       }
     },
     "target_date": "2026-11-16",
-    "relative": "tomorrow"
+    "relative": "today"
   },
   "tomorrow_spots": {
     "morning": [
@@ -101,34 +97,30 @@
         "derived_from": null,
         "date": "2026-11-16",
         "sunrise": "07:38",
-        "verdict": "NO_GO",
-        "score_pct": 7,
+        "verdict": "GO",
+        "score_pct": 86,
         "score_range": [
-          2,
-          12
+          81,
+          91
         ],
         "confidence": "HIGH",
-        "cloud_deck_top_m": 1482,
-        "summit_above_deck_m": 336,
-        "inversion_pct": 34,
+        "cloud_deck_top_m": null,
+        "summit_above_deck_m": null,
+        "inversion_pct": 6,
         "wind_kmh": 5,
-        "gust_kmh": 23,
-        "wind_dir_deg": 286,
-        "summary_cs": "Spíš zůstaň v posteli. Skóre 7 %. Největší problém je mlha/mrak na vrcholu. Vrstva mraků sahá asi do 1482 m, vrchol (1818 m) je nad ní o ~336 m.",
-        "inversion_case": "above",
-        "problem": "fog",
-        "weakest": "sky",
+        "gust_kmh": 29,
+        "wind_dir_deg": 282,
+        "summary_cs": "Vypadá to dobře. Skóre 86 %. Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné.",
+        "inversion_case": "none",
+        "problem": null,
+        "weakest": null,
         "precip_mm": 0.0,
-        "alerts": [
-          {
-            "code": "fog"
-          }
-        ],
-        "canvas_cloud_pct": 33,
+        "alerts": [],
+        "canvas_cloud_pct": 39,
         "sun_azimuth_deg": 112,
         "terrain_cutoff_deg": 0.0,
         "target_date": "2026-11-16",
-        "relative": "tomorrow"
+        "relative": "today"
       },
       {
         "key": "pico_ruivo",
@@ -141,34 +133,30 @@
         "derived_from": "arieiro",
         "date": "2026-11-16",
         "sunrise": "07:38",
-        "verdict": "NO_GO",
-        "score_pct": 7,
+        "verdict": "GO",
+        "score_pct": 95,
         "score_range": [
-          2,
-          12
+          90,
+          100
         ],
         "confidence": "HIGH",
-        "cloud_deck_top_m": 1482,
-        "summit_above_deck_m": 380,
-        "inversion_pct": 34,
+        "cloud_deck_top_m": null,
+        "summit_above_deck_m": null,
+        "inversion_pct": 6,
         "wind_kmh": 5,
-        "gust_kmh": 23,
-        "wind_dir_deg": 286,
-        "summary_cs": "Spíš zůstaň v posteli. Skóre 7 %. Největší problém je mlha/mrak na vrcholu. Vrstva mraků sahá asi do 1482 m, vrchol (1862 m) je nad ní o ~380 m.",
-        "inversion_case": "above",
-        "problem": "fog",
-        "weakest": "sky",
+        "gust_kmh": 29,
+        "wind_dir_deg": 282,
+        "summary_cs": "Vypadá to dobře. Skóre 95 %. Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné.",
+        "inversion_case": "none",
+        "problem": null,
+        "weakest": null,
         "precip_mm": 0.0,
-        "alerts": [
-          {
-            "code": "fog"
-          }
-        ],
-        "canvas_cloud_pct": 33,
+        "alerts": [],
+        "canvas_cloud_pct": 39,
         "sun_azimuth_deg": 112,
         "terrain_cutoff_deg": 0.0,
         "target_date": "2026-11-16",
-        "relative": "tomorrow"
+        "relative": "today"
       },
       {
         "key": "bica_da_cana",
@@ -181,34 +169,30 @@
         "derived_from": null,
         "date": "2026-11-16",
         "sunrise": "07:38",
-        "verdict": "NO_GO",
-        "score_pct": 6,
+        "verdict": "GO",
+        "score_pct": 82,
         "score_range": [
-          1,
-          11
+          77,
+          87
         ],
         "confidence": "HIGH",
-        "cloud_deck_top_m": 1482,
-        "summit_above_deck_m": 78,
-        "inversion_pct": 27,
+        "cloud_deck_top_m": null,
+        "summit_above_deck_m": null,
+        "inversion_pct": 11,
         "wind_kmh": 5,
-        "gust_kmh": 23,
-        "wind_dir_deg": 286,
-        "summary_cs": "Spíš zůstaň v posteli. Skóre 6 %. Největší problém je mlha/mrak na vrcholu. Vrstva mraků sahá asi do 1482 m — vrchol je na její hranici.",
-        "inversion_case": "edge",
-        "problem": "fog",
-        "weakest": "visibility",
+        "gust_kmh": 29,
+        "wind_dir_deg": 282,
+        "summary_cs": "Vypadá to dobře. Skóre 82 %. Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné.",
+        "inversion_case": "none",
+        "problem": null,
+        "weakest": null,
         "precip_mm": 0.0,
-        "alerts": [
-          {
-            "code": "fog"
-          }
-        ],
-        "canvas_cloud_pct": 33,
+        "alerts": [],
+        "canvas_cloud_pct": 39,
         "sun_azimuth_deg": 112,
         "terrain_cutoff_deg": 0.0,
         "target_date": "2026-11-16",
-        "relative": "tomorrow"
+        "relative": "today"
       },
       {
         "key": "ponta_do_rosto",
@@ -221,36 +205,36 @@
         "derived_from": null,
         "date": "2026-11-16",
         "sunrise": "07:38",
-        "verdict": "MAYBE",
-        "score_pct": 47,
+        "verdict": "NO_GO",
+        "score_pct": 42,
         "score_range": [
-          42,
-          52
+          37,
+          47
         ],
         "confidence": "HIGH",
-        "horizon_low_cloud_pct": 40,
-        "canvas_cloud_pct": 13,
-        "wind_kmh": 7,
-        "gust_kmh": 18,
+        "horizon_low_cloud_pct": 46,
+        "canvas_cloud_pct": 62,
+        "wind_kmh": 8,
+        "gust_kmh": 20,
         "wind_dir_deg": 290,
-        "visibility_km": 40,
+        "visibility_km": 39,
         "precip_mm": 0.0,
-        "summary_cs": "Hazard, výsledek je nejistý. Skóre 47 %. Nejslabší stránka: čistý východní obzor (nízká oblačnost na východním obzoru 40 %).",
+        "summary_cs": "Spíš zůstaň v posteli. Skóre 42 %. Nejslabší stránka: čistý východní obzor (nízká oblačnost na východním obzoru 46 %).",
         "problem": null,
         "weakest": "horizon_clarity",
         "warnings": [
-          "Nízké mraky na východním obzoru (40 %) mohou zakrýt slunce."
+          "Nízké mraky na východním obzoru (46 %) mohou zakrýt slunce."
         ],
         "alerts": [
           {
             "code": "horizon_east",
-            "value": 40
+            "value": 46
           }
         ],
         "sun_azimuth_deg": 112,
         "terrain_cutoff_deg": 0.0,
         "target_date": "2026-11-16",
-        "relative": "tomorrow"
+        "relative": "today"
       }
     ],
     "evening": [
@@ -266,41 +250,46 @@
         "date": "2026-11-16",
         "sunset": "18:07",
         "verdict": "NO_GO",
-        "score_pct": 2,
+        "score_pct": 0,
         "score_range": [
           0,
-          7
+          5
         ],
         "confidence": "HIGH",
-        "horizon_low_cloud_pct": 62,
-        "canvas_cloud_pct": 82,
+        "horizon_low_cloud_pct": 80,
+        "canvas_cloud_pct": 5,
         "wind_kmh": 14,
-        "gust_kmh": 40,
-        "wind_dir_deg": 236,
-        "visibility_km": 0,
-        "precip_mm": 0.0,
-        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 2 %. Největší problém jsou nízké mraky na obzoru.",
-        "problem": "horizon",
+        "gust_kmh": 42,
+        "wind_dir_deg": 231,
+        "visibility_km": 14,
+        "precip_mm": 0.2,
+        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 0 %. Největší problém jsou srážky.",
+        "problem": "precip",
         "weakest": "horizon_clarity",
         "warnings": [
-          "Nízké mraky na západním obzoru (62 %) mohou zakrýt slunce.",
-          "Snížená dohlednost (0 km).",
+          "Srážky kolem západu: 0.2 mm (NO-GO).",
+          "Nízké mraky na západním obzoru (80 %) mohou zakrýt slunce.",
+          "Snížená dohlednost (14 km).",
           "Zataženo nízkou/střední oblačností na západě – slunce nebude vidět."
         ],
         "alerts": [
           {
+            "code": "precip",
+            "value": 0.2
+          },
+          {
             "code": "horizon",
-            "value": 62
+            "value": 80
           },
           {
             "code": "visibility",
-            "value": 0
+            "value": 14
           }
         ],
         "sun_azimuth_deg": 248,
         "terrain_cutoff_deg": 0.0,
         "target_date": "2026-11-16",
-        "relative": "tomorrow"
+        "relative": "today"
       },
       {
         "key": "cristo_rei",
@@ -314,25 +303,25 @@
         "date": "2026-11-16",
         "sunset": "18:06",
         "verdict": "NO_GO",
-        "score_pct": 9,
+        "score_pct": 7,
         "score_range": [
-          4,
-          14
+          2,
+          12
         ],
         "confidence": "HIGH",
-        "horizon_low_cloud_pct": 72,
-        "canvas_cloud_pct": 50,
-        "wind_kmh": 12,
-        "gust_kmh": 44,
-        "wind_dir_deg": 244,
-        "visibility_km": 30,
+        "horizon_low_cloud_pct": 84,
+        "canvas_cloud_pct": 3,
+        "wind_kmh": 13,
+        "gust_kmh": 35,
+        "wind_dir_deg": 243,
+        "visibility_km": 32,
         "precip_mm": 0.0,
-        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 9 %. Největší problém je úplné zatažení.",
+        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 7 %. Největší problém je úplné zatažení.",
         "problem": "overcast",
         "weakest": "horizon_clarity",
         "warnings": [
           "Slunce zapadne za terén (1.5° nad obzorem) dřív než nad mořem.",
-          "Nízké mraky na západním obzoru (72 %) mohou zakrýt slunce.",
+          "Nízké mraky na západním obzoru (84 %) mohou zakrýt slunce.",
           "Zataženo nízkou/střední oblačností na západě – slunce nebude vidět."
         ],
         "alerts": [
@@ -341,7 +330,7 @@
           },
           {
             "code": "horizon",
-            "value": 72
+            "value": 84
           },
           {
             "code": "terrain",
@@ -351,7 +340,7 @@
         "sun_azimuth_deg": 248,
         "terrain_cutoff_deg": 1.5,
         "target_date": "2026-11-16",
-        "relative": "tomorrow"
+        "relative": "today"
       },
       {
         "key": "arieiro_sunset",
@@ -371,19 +360,19 @@
           5
         ],
         "confidence": "HIGH",
-        "horizon_low_cloud_pct": 58,
-        "canvas_cloud_pct": 93,
-        "wind_kmh": 5,
-        "gust_kmh": 41,
-        "wind_dir_deg": 303,
-        "visibility_km": 5,
+        "horizon_low_cloud_pct": 78,
+        "canvas_cloud_pct": 2,
+        "wind_kmh": 6,
+        "gust_kmh": 33,
+        "wind_dir_deg": 282,
+        "visibility_km": 6,
         "precip_mm": 0.0,
         "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 0 %. Největší problém je mlha/mrak na vrcholu.",
         "problem": "fog",
-        "weakest": "low_cloud_penalty",
+        "weakest": "horizon_clarity",
         "warnings": [
-          "Nízké mraky na západním obzoru (58 %) mohou zakrýt slunce.",
-          "Snížená dohlednost (5 km).",
+          "Nízké mraky na západním obzoru (78 %) mohou zakrýt slunce.",
+          "Snížená dohlednost (6 km).",
           "Zataženo nízkou/střední oblačností na západě – slunce nebude vidět.",
           "Vrchol bude pravděpodobně v mraku/mlze."
         ],
@@ -392,18 +381,21 @@
             "code": "fog"
           },
           {
+            "code": "overcast"
+          },
+          {
             "code": "horizon",
-            "value": 58
+            "value": 78
           },
           {
             "code": "visibility",
-            "value": 5
+            "value": 6
           }
         ],
         "sun_azimuth_deg": 248,
         "terrain_cutoff_deg": 0.0,
         "target_date": "2026-11-16",
-        "relative": "tomorrow"
+        "relative": "today"
       },
       {
         "key": "pico_ruivo_sunset",
@@ -423,19 +415,19 @@
           5
         ],
         "confidence": "HIGH",
-        "horizon_low_cloud_pct": 63,
-        "canvas_cloud_pct": 70,
-        "wind_kmh": 5,
-        "gust_kmh": 41,
-        "wind_dir_deg": 303,
-        "visibility_km": 5,
+        "horizon_low_cloud_pct": 72,
+        "canvas_cloud_pct": 0,
+        "wind_kmh": 6,
+        "gust_kmh": 33,
+        "wind_dir_deg": 282,
+        "visibility_km": 6,
         "precip_mm": 0.0,
         "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 0 %. Největší problém je mlha/mrak na vrcholu.",
         "problem": "fog",
         "weakest": "horizon_clarity",
         "warnings": [
-          "Nízké mraky na západním obzoru (63 %) mohou zakrýt slunce.",
-          "Snížená dohlednost (5 km).",
+          "Nízké mraky na západním obzoru (72 %) mohou zakrýt slunce.",
+          "Snížená dohlednost (6 km).",
           "Zataženo nízkou/střední oblačností na západě – slunce nebude vidět.",
           "Vrchol bude pravděpodobně v mraku/mlze."
         ],
@@ -448,17 +440,17 @@
           },
           {
             "code": "horizon",
-            "value": 63
+            "value": 72
           },
           {
             "code": "visibility",
-            "value": 5
+            "value": 6
           }
         ],
         "sun_azimuth_deg": 248,
         "terrain_cutoff_deg": 0.0,
         "target_date": "2026-11-16",
-        "relative": "tomorrow"
+        "relative": "today"
       }
     ]
   },
@@ -474,40 +466,76 @@
     "webcam_url": "https://www.netmadeira.com/webcams-madeira/pico-do-arieiro",
     "date": "2026-11-16",
     "target_date": "2026-11-16",
-    "relative": "tomorrow",
+    "relative": "today",
     "time": "07:38",
-    "verdict": "NO_GO",
-    "score": 7,
+    "verdict": "GO",
+    "score": 86,
     "score_range": [
-      2,
-      12
+      81,
+      91
     ],
     "confidence": "HIGH",
     "cloud_sea": {
-      "probability_pct": 34,
-      "deck_top_m": 1482,
-      "above_deck_m": 336,
-      "case": "above"
+      "probability_pct": 6,
+      "deck_top_m": null,
+      "above_deck_m": null,
+      "case": "none"
     },
     "wind": {
       "kmh": 5,
-      "gust_kmh": 23,
-      "dir_deg": 286
+      "gust_kmh": 29,
+      "dir_deg": 282
     },
     "clouds_canvas": {
-      "pct": 33
+      "pct": 39
     },
     "horizon_low_cloud_pct": null,
     "visibility_km": null,
-    "summary": "Spíš zůstaň v posteli. Skóre 7 %. Největší problém je mlha/mrak na vrcholu. Vrstva mraků sahá asi do 1482 m, vrchol (1818 m) je nad ní o ~336 m.",
-    "problem": "fog",
-    "weakest": "sky",
-    "alerts": [
-      {
-        "code": "fog"
-      }
-    ],
+    "summary": "Vypadá to dobře. Skóre 86 %. Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné.",
+    "problem": null,
+    "weakest": null,
+    "alerts": [],
     "history": [
+      {
+        "date": "2026-11-15",
+        "score": 25,
+        "score_pct": 25,
+        "verdict": "NO_GO",
+        "summary": "Bez výraznějšího problému",
+        "reason": {
+          "problem": null,
+          "weakest": null
+        },
+        "inversion_pct": 7,
+        "outcome": null,
+        "actual_verdict": null,
+        "note": null,
+        "source": "backfill",
+        "time": "07:37",
+        "cloud_base": 2190,
+        "cloud_top": null,
+        "above_deck_m": null,
+        "inversion_case": "none",
+        "cloud_cover_low": 0,
+        "cloud_cover_high": 60,
+        "canvas_cloud": 65,
+        "horizon_low_cloud": 31,
+        "humidity_peak": 68,
+        "wind_speed": 3,
+        "wind_gusts": 15,
+        "temp": 6.5,
+        "visibility_km": 37,
+        "webcam_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-15/07_00.jpg",
+        "webcam_time": "07:00",
+        "webcam_urls": [
+          "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-15/07_00.jpg",
+          "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-15/07_30.jpg"
+        ],
+        "webcam_times": [
+          "07:00",
+          "07:30"
+        ]
+      },
       {
         "date": "2026-11-14",
         "score": 91,
@@ -747,46 +775,6 @@
           "07:00",
           "07:30"
         ]
-      },
-      {
-        "date": "2026-11-08",
-        "score": 1,
-        "score_pct": 1,
-        "verdict": "NO_GO",
-        "summary": "Vrchol v mraku/mlze · hladina mraků ~2184 m",
-        "reason": {
-          "problem": "fog",
-          "weakest": "wind"
-        },
-        "inversion_pct": 8,
-        "outcome": null,
-        "actual_verdict": null,
-        "note": null,
-        "source": "backfill",
-        "time": "07:31",
-        "cloud_base": null,
-        "cloud_top": 2184,
-        "above_deck_m": -366,
-        "inversion_case": "inside",
-        "cloud_cover_low": 98,
-        "cloud_cover_high": 0,
-        "canvas_cloud": 0,
-        "horizon_low_cloud": 3,
-        "humidity_peak": 96,
-        "wind_speed": 20,
-        "wind_gusts": 97,
-        "temp": 9.1,
-        "visibility_km": 33,
-        "webcam_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-08/07_00.jpg",
-        "webcam_time": "07:00",
-        "webcam_urls": [
-          "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-08/07_00.jpg",
-          "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-08/07_30.jpg"
-        ],
-        "webcam_times": [
-          "07:00",
-          "07:30"
-        ]
       }
     ],
     "spots": {
@@ -802,40 +790,76 @@
         "webcam_url": "https://www.netmadeira.com/webcams-madeira/pico-do-arieiro",
         "date": "2026-11-16",
         "target_date": "2026-11-16",
-        "relative": "tomorrow",
+        "relative": "today",
         "time": "07:38",
-        "verdict": "NO_GO",
-        "score": 7,
+        "verdict": "GO",
+        "score": 86,
         "score_range": [
-          2,
-          12
+          81,
+          91
         ],
         "confidence": "HIGH",
         "cloud_sea": {
-          "probability_pct": 34,
-          "deck_top_m": 1482,
-          "above_deck_m": 336,
-          "case": "above"
+          "probability_pct": 6,
+          "deck_top_m": null,
+          "above_deck_m": null,
+          "case": "none"
         },
         "wind": {
           "kmh": 5,
-          "gust_kmh": 23,
-          "dir_deg": 286
+          "gust_kmh": 29,
+          "dir_deg": 282
         },
         "clouds_canvas": {
-          "pct": 33
+          "pct": 39
         },
         "horizon_low_cloud_pct": null,
         "visibility_km": null,
-        "summary": "Spíš zůstaň v posteli. Skóre 7 %. Největší problém je mlha/mrak na vrcholu. Vrstva mraků sahá asi do 1482 m, vrchol (1818 m) je nad ní o ~336 m.",
-        "problem": "fog",
-        "weakest": "sky",
-        "alerts": [
-          {
-            "code": "fog"
-          }
-        ],
+        "summary": "Vypadá to dobře. Skóre 86 %. Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné.",
+        "problem": null,
+        "weakest": null,
+        "alerts": [],
         "history": [
+          {
+            "date": "2026-11-15",
+            "score": 25,
+            "score_pct": 25,
+            "verdict": "NO_GO",
+            "summary": "Bez výraznějšího problému",
+            "reason": {
+              "problem": null,
+              "weakest": null
+            },
+            "inversion_pct": 7,
+            "outcome": null,
+            "actual_verdict": null,
+            "note": null,
+            "source": "backfill",
+            "time": "07:37",
+            "cloud_base": 2190,
+            "cloud_top": null,
+            "above_deck_m": null,
+            "inversion_case": "none",
+            "cloud_cover_low": 0,
+            "cloud_cover_high": 60,
+            "canvas_cloud": 65,
+            "horizon_low_cloud": 31,
+            "humidity_peak": 68,
+            "wind_speed": 3,
+            "wind_gusts": 15,
+            "temp": 6.5,
+            "visibility_km": 37,
+            "webcam_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-15/07_00.jpg",
+            "webcam_time": "07:00",
+            "webcam_urls": [
+              "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-15/07_00.jpg",
+              "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-15/07_30.jpg"
+            ],
+            "webcam_times": [
+              "07:00",
+              "07:30"
+            ]
+          },
           {
             "date": "2026-11-14",
             "score": 91,
@@ -1075,46 +1099,6 @@
               "07:00",
               "07:30"
             ]
-          },
-          {
-            "date": "2026-11-08",
-            "score": 1,
-            "score_pct": 1,
-            "verdict": "NO_GO",
-            "summary": "Vrchol v mraku/mlze · hladina mraků ~2184 m",
-            "reason": {
-              "problem": "fog",
-              "weakest": "wind"
-            },
-            "inversion_pct": 8,
-            "outcome": null,
-            "actual_verdict": null,
-            "note": null,
-            "source": "backfill",
-            "time": "07:31",
-            "cloud_base": null,
-            "cloud_top": 2184,
-            "above_deck_m": -366,
-            "inversion_case": "inside",
-            "cloud_cover_low": 98,
-            "cloud_cover_high": 0,
-            "canvas_cloud": 0,
-            "horizon_low_cloud": 3,
-            "humidity_peak": 96,
-            "wind_speed": 20,
-            "wind_gusts": 97,
-            "temp": 9.1,
-            "visibility_km": 33,
-            "webcam_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-08/07_00.jpg",
-            "webcam_time": "07:00",
-            "webcam_urls": [
-              "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-08/07_00.jpg",
-              "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-08/07_30.jpg"
-            ],
-            "webcam_times": [
-              "07:00",
-              "07:30"
-            ]
           }
         ]
       },
@@ -1130,40 +1114,66 @@
         "webcam_url": null,
         "date": "2026-11-16",
         "target_date": "2026-11-16",
-        "relative": "tomorrow",
+        "relative": "today",
         "time": "07:38",
-        "verdict": "NO_GO",
-        "score": 7,
+        "verdict": "GO",
+        "score": 95,
         "score_range": [
-          2,
-          12
+          90,
+          100
         ],
         "confidence": "HIGH",
         "cloud_sea": {
-          "probability_pct": 34,
-          "deck_top_m": 1482,
-          "above_deck_m": 380,
-          "case": "above"
+          "probability_pct": 6,
+          "deck_top_m": null,
+          "above_deck_m": null,
+          "case": "none"
         },
         "wind": {
           "kmh": 5,
-          "gust_kmh": 23,
-          "dir_deg": 286
+          "gust_kmh": 29,
+          "dir_deg": 282
         },
         "clouds_canvas": {
-          "pct": 33
+          "pct": 39
         },
         "horizon_low_cloud_pct": null,
         "visibility_km": null,
-        "summary": "Spíš zůstaň v posteli. Skóre 7 %. Největší problém je mlha/mrak na vrcholu. Vrstva mraků sahá asi do 1482 m, vrchol (1862 m) je nad ní o ~380 m.",
-        "problem": "fog",
-        "weakest": "sky",
-        "alerts": [
-          {
-            "code": "fog"
-          }
-        ],
+        "summary": "Vypadá to dobře. Skóre 95 %. Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné.",
+        "problem": null,
+        "weakest": null,
+        "alerts": [],
         "history": [
+          {
+            "date": "2026-11-15",
+            "score": 25,
+            "score_pct": 25,
+            "verdict": "NO_GO",
+            "summary": "Bez výraznějšího problému",
+            "reason": {
+              "problem": null,
+              "weakest": null
+            },
+            "inversion_pct": 7,
+            "outcome": null,
+            "actual_verdict": null,
+            "note": null,
+            "source": "backfill",
+            "time": "07:37",
+            "cloud_base": 2230,
+            "cloud_top": null,
+            "above_deck_m": null,
+            "inversion_case": "none",
+            "cloud_cover_low": 0,
+            "cloud_cover_high": 60,
+            "canvas_cloud": 65,
+            "horizon_low_cloud": 28,
+            "humidity_peak": 68,
+            "wind_speed": 3,
+            "wind_gusts": 15,
+            "temp": 6.2,
+            "visibility_km": 37
+          },
           {
             "date": "2026-11-14",
             "score": 91,
@@ -1343,36 +1353,6 @@
             "wind_gusts": 88,
             "temp": 7.6,
             "visibility_km": 31
-          },
-          {
-            "date": "2026-11-08",
-            "score": 1,
-            "score_pct": 1,
-            "verdict": "NO_GO",
-            "summary": "Vrchol v mraku/mlze · hladina mraků ~2184 m",
-            "reason": {
-              "problem": "fog",
-              "weakest": "wind"
-            },
-            "inversion_pct": 8,
-            "outcome": null,
-            "actual_verdict": null,
-            "note": null,
-            "source": "backfill",
-            "time": "07:31",
-            "cloud_base": null,
-            "cloud_top": 2184,
-            "above_deck_m": -322,
-            "inversion_case": "inside",
-            "cloud_cover_low": 98,
-            "cloud_cover_high": 0,
-            "canvas_cloud": 0,
-            "horizon_low_cloud": 62,
-            "humidity_peak": 96,
-            "wind_speed": 20,
-            "wind_gusts": 97,
-            "temp": 8.8,
-            "visibility_km": 33
           }
         ]
       },
@@ -1388,40 +1368,66 @@
         "webcam_url": null,
         "date": "2026-11-16",
         "target_date": "2026-11-16",
-        "relative": "tomorrow",
+        "relative": "today",
         "time": "07:38",
-        "verdict": "NO_GO",
-        "score": 6,
+        "verdict": "GO",
+        "score": 82,
         "score_range": [
-          1,
-          11
+          77,
+          87
         ],
         "confidence": "HIGH",
         "cloud_sea": {
-          "probability_pct": 27,
-          "deck_top_m": 1482,
-          "above_deck_m": 78,
-          "case": "edge"
+          "probability_pct": 11,
+          "deck_top_m": null,
+          "above_deck_m": null,
+          "case": "none"
         },
         "wind": {
           "kmh": 5,
-          "gust_kmh": 23,
-          "dir_deg": 286
+          "gust_kmh": 29,
+          "dir_deg": 282
         },
         "clouds_canvas": {
-          "pct": 33
+          "pct": 39
         },
         "horizon_low_cloud_pct": null,
         "visibility_km": null,
-        "summary": "Spíš zůstaň v posteli. Skóre 6 %. Největší problém je mlha/mrak na vrcholu. Vrstva mraků sahá asi do 1482 m — vrchol je na její hranici.",
-        "problem": "fog",
-        "weakest": "visibility",
-        "alerts": [
-          {
-            "code": "fog"
-          }
-        ],
+        "summary": "Vypadá to dobře. Skóre 82 %. Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné.",
+        "problem": null,
+        "weakest": null,
+        "alerts": [],
         "history": [
+          {
+            "date": "2026-11-15",
+            "score": 35,
+            "score_pct": 35,
+            "verdict": "NO_GO",
+            "summary": "Nejslabší stránka: oblačnost",
+            "reason": {
+              "problem": null,
+              "weakest": "sky"
+            },
+            "inversion_pct": 6,
+            "outcome": null,
+            "actual_verdict": null,
+            "note": null,
+            "source": "backfill",
+            "time": "07:37",
+            "cloud_base": 1940,
+            "cloud_top": null,
+            "above_deck_m": null,
+            "inversion_case": "none",
+            "cloud_cover_low": 0,
+            "cloud_cover_high": 60,
+            "canvas_cloud": 65,
+            "horizon_low_cloud": 38,
+            "humidity_peak": 69,
+            "wind_speed": 3,
+            "wind_gusts": 15,
+            "temp": 8.2,
+            "visibility_km": 8
+          },
           {
             "date": "2026-11-14",
             "score": 91,
@@ -1601,36 +1607,6 @@
             "wind_gusts": 88,
             "temp": 9.6,
             "visibility_km": 8
-          },
-          {
-            "date": "2026-11-08",
-            "score": 0,
-            "score_pct": 0,
-            "verdict": "NO_GO",
-            "summary": "Srážky kolem události · hladina mraků ~2184 m",
-            "reason": {
-              "problem": "precip",
-              "weakest": "wind"
-            },
-            "inversion_pct": 8,
-            "outcome": null,
-            "actual_verdict": null,
-            "note": null,
-            "source": "backfill",
-            "time": "07:31",
-            "cloud_base": null,
-            "cloud_top": 2184,
-            "above_deck_m": -624,
-            "inversion_case": "inside",
-            "cloud_cover_low": 98,
-            "cloud_cover_high": 0,
-            "canvas_cloud": 0,
-            "horizon_low_cloud": 51,
-            "humidity_peak": 94,
-            "wind_speed": 20,
-            "wind_gusts": 97,
-            "temp": 10.8,
-            "visibility_km": 1
           }
         ]
       },
@@ -1646,36 +1622,66 @@
         "webcam_url": null,
         "date": "2026-11-16",
         "target_date": "2026-11-16",
-        "relative": "tomorrow",
+        "relative": "today",
         "time": "07:38",
-        "verdict": "MAYBE",
-        "score": 47,
+        "verdict": "NO_GO",
+        "score": 42,
         "score_range": [
-          42,
-          52
+          37,
+          47
         ],
         "confidence": "HIGH",
         "cloud_sea": null,
         "wind": {
-          "kmh": 7,
-          "gust_kmh": 18,
+          "kmh": 8,
+          "gust_kmh": 20,
           "dir_deg": 290
         },
         "clouds_canvas": {
-          "pct": 13
+          "pct": 62
         },
-        "horizon_low_cloud_pct": 40,
-        "visibility_km": 40,
-        "summary": "Hazard, výsledek je nejistý. Skóre 47 %. Nejslabší stránka: čistý východní obzor (nízká oblačnost na východním obzoru 40 %).",
+        "horizon_low_cloud_pct": 46,
+        "visibility_km": 39,
+        "summary": "Spíš zůstaň v posteli. Skóre 42 %. Nejslabší stránka: čistý východní obzor (nízká oblačnost na východním obzoru 46 %).",
         "problem": null,
         "weakest": "horizon_clarity",
         "alerts": [
           {
             "code": "horizon_east",
-            "value": 40
+            "value": 46
           }
         ],
         "history": [
+          {
+            "date": "2026-11-15",
+            "score": 33,
+            "score_pct": 33,
+            "verdict": "NO_GO",
+            "summary": "Nízké mraky na obzoru",
+            "reason": {
+              "problem": "horizon",
+              "weakest": "horizon_clarity"
+            },
+            "inversion_pct": 0,
+            "outcome": null,
+            "actual_verdict": null,
+            "note": null,
+            "source": "backfill",
+            "time": "07:37",
+            "cloud_base": 640,
+            "cloud_top": null,
+            "above_deck_m": null,
+            "inversion_case": null,
+            "cloud_cover_low": 5,
+            "cloud_cover_high": 64,
+            "canvas_cloud": 51,
+            "horizon_low_cloud": 50,
+            "humidity_peak": null,
+            "wind_speed": 6,
+            "wind_gusts": 14,
+            "temp": 15.7,
+            "visibility_km": 37
+          },
           {
             "date": "2026-11-14",
             "score": 82,
@@ -1855,36 +1861,6 @@
             "wind_gusts": 28,
             "temp": 17.6,
             "visibility_km": 37
-          },
-          {
-            "date": "2026-11-08",
-            "score": 28,
-            "score_pct": 28,
-            "verdict": "NO_GO",
-            "summary": "Nejslabší stránka: vítr",
-            "reason": {
-              "problem": null,
-              "weakest": "wind"
-            },
-            "inversion_pct": 0,
-            "outcome": null,
-            "actual_verdict": null,
-            "note": null,
-            "source": "backfill",
-            "time": "07:30",
-            "cloud_base": 640,
-            "cloud_top": null,
-            "above_deck_m": null,
-            "inversion_case": null,
-            "cloud_cover_low": 51,
-            "cloud_cover_high": 0,
-            "canvas_cloud": 0,
-            "horizon_low_cloud": 44,
-            "humidity_peak": null,
-            "wind_speed": 16,
-            "wind_gusts": 64,
-            "temp": 20.4,
-            "visibility_km": 34
           }
         ]
       }
@@ -1902,40 +1878,74 @@
     "webcam_url": null,
     "date": "2026-11-16",
     "target_date": "2026-11-16",
-    "relative": "tomorrow",
+    "relative": "today",
     "time": "18:07",
     "verdict": "NO_GO",
-    "score": 2,
+    "score": 0,
     "score_range": [
       0,
-      7
+      5
     ],
     "confidence": "HIGH",
     "cloud_sea": null,
     "wind": {
       "kmh": 14,
-      "gust_kmh": 40,
-      "dir_deg": 236
+      "gust_kmh": 42,
+      "dir_deg": 231
     },
     "clouds_canvas": {
-      "pct": 82
+      "pct": 5
     },
-    "horizon_low_cloud_pct": 62,
-    "visibility_km": 0,
-    "summary": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 2 %. Největší problém jsou nízké mraky na obzoru.",
-    "problem": "horizon",
+    "horizon_low_cloud_pct": 80,
+    "visibility_km": 14,
+    "summary": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 0 %. Největší problém jsou srážky.",
+    "problem": "precip",
     "weakest": "horizon_clarity",
     "alerts": [
       {
+        "code": "precip",
+        "value": 0.2
+      },
+      {
         "code": "horizon",
-        "value": 62
+        "value": 80
       },
       {
         "code": "visibility",
-        "value": 0
+        "value": 14
       }
     ],
     "history": [
+      {
+        "date": "2026-11-15",
+        "score": 61,
+        "score_pct": 61,
+        "verdict": "MAYBE",
+        "summary": "Nejslabší stránka: čistý východní obzor",
+        "reason": {
+          "problem": null,
+          "weakest": "horizon_clarity"
+        },
+        "inversion_pct": null,
+        "outcome": null,
+        "actual_verdict": null,
+        "note": null,
+        "source": "backfill",
+        "time": "18:07",
+        "cloud_base": 690,
+        "cloud_top": null,
+        "above_deck_m": null,
+        "inversion_case": null,
+        "cloud_cover_low": 63,
+        "cloud_cover_high": null,
+        "canvas_cloud": 7,
+        "horizon_low_cloud": 32,
+        "humidity_peak": null,
+        "wind_speed": 10,
+        "wind_gusts": 27,
+        "temp": 18.4,
+        "visibility_km": 26
+      },
       {
         "date": "2026-11-14",
         "score": 33,
@@ -2115,36 +2125,6 @@
         "wind_gusts": 80,
         "temp": 18.9,
         "visibility_km": 18
-      },
-      {
-        "date": "2026-11-08",
-        "score": 0,
-        "score_pct": 0,
-        "verdict": "NO_GO",
-        "summary": "Srážky kolem události",
-        "reason": {
-          "problem": "precip",
-          "weakest": "wind_comfort"
-        },
-        "inversion_pct": null,
-        "outcome": "NO_GO",
-        "actual_verdict": "NO_GO",
-        "note": "Ponta do Pargo: špatný západ, kvůli dešti a mrakům v pozadí nebylo slunce vidět.",
-        "source": "backfill",
-        "time": "18:12",
-        "cloud_base": 520,
-        "cloud_top": null,
-        "above_deck_m": null,
-        "inversion_case": null,
-        "cloud_cover_low": 77,
-        "cloud_cover_high": null,
-        "canvas_cloud": 0,
-        "horizon_low_cloud": 46,
-        "humidity_peak": null,
-        "wind_speed": 28,
-        "wind_gusts": 111,
-        "temp": 18.1,
-        "visibility_km": 17
       }
     ],
     "spots": {
@@ -2160,40 +2140,74 @@
         "webcam_url": null,
         "date": "2026-11-16",
         "target_date": "2026-11-16",
-        "relative": "tomorrow",
+        "relative": "today",
         "time": "18:07",
         "verdict": "NO_GO",
-        "score": 2,
+        "score": 0,
         "score_range": [
           0,
-          7
+          5
         ],
         "confidence": "HIGH",
         "cloud_sea": null,
         "wind": {
           "kmh": 14,
-          "gust_kmh": 40,
-          "dir_deg": 236
+          "gust_kmh": 42,
+          "dir_deg": 231
         },
         "clouds_canvas": {
-          "pct": 82
+          "pct": 5
         },
-        "horizon_low_cloud_pct": 62,
-        "visibility_km": 0,
-        "summary": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 2 %. Největší problém jsou nízké mraky na obzoru.",
-        "problem": "horizon",
+        "horizon_low_cloud_pct": 80,
+        "visibility_km": 14,
+        "summary": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 0 %. Největší problém jsou srážky.",
+        "problem": "precip",
         "weakest": "horizon_clarity",
         "alerts": [
           {
+            "code": "precip",
+            "value": 0.2
+          },
+          {
             "code": "horizon",
-            "value": 62
+            "value": 80
           },
           {
             "code": "visibility",
-            "value": 0
+            "value": 14
           }
         ],
         "history": [
+          {
+            "date": "2026-11-15",
+            "score": 61,
+            "score_pct": 61,
+            "verdict": "MAYBE",
+            "summary": "Nejslabší stránka: čistý východní obzor",
+            "reason": {
+              "problem": null,
+              "weakest": "horizon_clarity"
+            },
+            "inversion_pct": null,
+            "outcome": null,
+            "actual_verdict": null,
+            "note": null,
+            "source": "backfill",
+            "time": "18:07",
+            "cloud_base": 690,
+            "cloud_top": null,
+            "above_deck_m": null,
+            "inversion_case": null,
+            "cloud_cover_low": 63,
+            "cloud_cover_high": null,
+            "canvas_cloud": 7,
+            "horizon_low_cloud": 32,
+            "humidity_peak": null,
+            "wind_speed": 10,
+            "wind_gusts": 27,
+            "temp": 18.4,
+            "visibility_km": 26
+          },
           {
             "date": "2026-11-14",
             "score": 33,
@@ -2373,36 +2387,6 @@
             "wind_gusts": 80,
             "temp": 18.9,
             "visibility_km": 18
-          },
-          {
-            "date": "2026-11-08",
-            "score": 0,
-            "score_pct": 0,
-            "verdict": "NO_GO",
-            "summary": "Srážky kolem události",
-            "reason": {
-              "problem": "precip",
-              "weakest": "wind_comfort"
-            },
-            "inversion_pct": null,
-            "outcome": "NO_GO",
-            "actual_verdict": "NO_GO",
-            "note": "Ponta do Pargo: špatný západ, kvůli dešti a mrakům v pozadí nebylo slunce vidět.",
-            "source": "backfill",
-            "time": "18:12",
-            "cloud_base": 520,
-            "cloud_top": null,
-            "above_deck_m": null,
-            "inversion_case": null,
-            "cloud_cover_low": 77,
-            "cloud_cover_high": null,
-            "canvas_cloud": 0,
-            "horizon_low_cloud": 46,
-            "humidity_peak": null,
-            "wind_speed": 28,
-            "wind_gusts": 111,
-            "temp": 18.1,
-            "visibility_km": 17
           }
         ]
       },
@@ -2418,27 +2402,27 @@
         "webcam_url": null,
         "date": "2026-11-16",
         "target_date": "2026-11-16",
-        "relative": "tomorrow",
+        "relative": "today",
         "time": "18:06",
         "verdict": "NO_GO",
-        "score": 9,
+        "score": 7,
         "score_range": [
-          4,
-          14
+          2,
+          12
         ],
         "confidence": "HIGH",
         "cloud_sea": null,
         "wind": {
-          "kmh": 12,
-          "gust_kmh": 44,
-          "dir_deg": 244
+          "kmh": 13,
+          "gust_kmh": 35,
+          "dir_deg": 243
         },
         "clouds_canvas": {
-          "pct": 50
+          "pct": 3
         },
-        "horizon_low_cloud_pct": 72,
-        "visibility_km": 30,
-        "summary": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 9 %. Největší problém je úplné zatažení.",
+        "horizon_low_cloud_pct": 84,
+        "visibility_km": 32,
+        "summary": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 7 %. Největší problém je úplné zatažení.",
         "problem": "overcast",
         "weakest": "horizon_clarity",
         "alerts": [
@@ -2447,7 +2431,7 @@
           },
           {
             "code": "horizon",
-            "value": 72
+            "value": 84
           },
           {
             "code": "terrain",
@@ -2455,6 +2439,36 @@
           }
         ],
         "history": [
+          {
+            "date": "2026-11-15",
+            "score": 28,
+            "score_pct": 28,
+            "verdict": "NO_GO",
+            "summary": "Nejslabší stránka: čistý východní obzor",
+            "reason": {
+              "problem": null,
+              "weakest": "horizon_clarity"
+            },
+            "inversion_pct": null,
+            "outcome": null,
+            "actual_verdict": null,
+            "note": null,
+            "source": "backfill",
+            "time": "18:06",
+            "cloud_base": 520,
+            "cloud_top": null,
+            "above_deck_m": null,
+            "inversion_case": null,
+            "cloud_cover_low": 76,
+            "cloud_cover_high": null,
+            "canvas_cloud": 1,
+            "horizon_low_cloud": 47,
+            "humidity_peak": null,
+            "wind_speed": 6,
+            "wind_gusts": 18,
+            "temp": 19.2,
+            "visibility_km": 32
+          },
           {
             "date": "2026-11-14",
             "score": 20,
@@ -2634,36 +2648,6 @@
             "wind_gusts": 83,
             "temp": 20.4,
             "visibility_km": 37
-          },
-          {
-            "date": "2026-11-08",
-            "score": 28,
-            "score_pct": 28,
-            "verdict": "NO_GO",
-            "summary": "Nejslabší stránka: vítr",
-            "reason": {
-              "problem": null,
-              "weakest": "wind_comfort"
-            },
-            "inversion_pct": null,
-            "outcome": null,
-            "actual_verdict": null,
-            "note": null,
-            "source": "backfill",
-            "time": "18:11",
-            "cloud_base": 570,
-            "cloud_top": null,
-            "above_deck_m": null,
-            "inversion_case": null,
-            "cloud_cover_low": 55,
-            "cloud_cover_high": null,
-            "canvas_cloud": 0,
-            "horizon_low_cloud": 41,
-            "humidity_peak": null,
-            "wind_speed": 31,
-            "wind_gusts": 105,
-            "temp": 19.2,
-            "visibility_km": 38
           }
         ]
       },
@@ -2679,7 +2663,7 @@
         "webcam_url": "https://www.netmadeira.com/webcams-madeira/pico-do-arieiro",
         "date": "2026-11-16",
         "target_date": "2026-11-16",
-        "relative": "tomorrow",
+        "relative": "today",
         "time": "18:06",
         "verdict": "NO_GO",
         "score": 0,
@@ -2690,32 +2674,75 @@
         "confidence": "HIGH",
         "cloud_sea": null,
         "wind": {
-          "kmh": 5,
-          "gust_kmh": 41,
-          "dir_deg": 303
+          "kmh": 6,
+          "gust_kmh": 33,
+          "dir_deg": 282
         },
         "clouds_canvas": {
-          "pct": 93
+          "pct": 2
         },
-        "horizon_low_cloud_pct": 58,
-        "visibility_km": 5,
+        "horizon_low_cloud_pct": 78,
+        "visibility_km": 6,
         "summary": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 0 %. Největší problém je mlha/mrak na vrcholu.",
         "problem": "fog",
-        "weakest": "low_cloud_penalty",
+        "weakest": "horizon_clarity",
         "alerts": [
           {
             "code": "fog"
           },
           {
+            "code": "overcast"
+          },
+          {
             "code": "horizon",
-            "value": 58
+            "value": 78
           },
           {
             "code": "visibility",
-            "value": 5
+            "value": 6
           }
         ],
         "history": [
+          {
+            "date": "2026-11-15",
+            "score": 41,
+            "score_pct": 41,
+            "verdict": "NO_GO",
+            "summary": "Bez výraznějšího problému",
+            "reason": {
+              "problem": null,
+              "weakest": null
+            },
+            "inversion_pct": null,
+            "outcome": null,
+            "actual_verdict": null,
+            "note": null,
+            "source": "backfill",
+            "time": "18:06",
+            "cloud_base": 2030,
+            "cloud_top": null,
+            "above_deck_m": null,
+            "inversion_case": null,
+            "cloud_cover_low": 82,
+            "cloud_cover_high": null,
+            "canvas_cloud": 11,
+            "horizon_low_cloud": 24,
+            "humidity_peak": null,
+            "wind_speed": 2,
+            "wind_gusts": 17,
+            "temp": 8.7,
+            "visibility_km": 18,
+            "webcam_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-15/18_00.jpg",
+            "webcam_time": "18:00",
+            "webcam_urls": [
+              "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-15/18_00.jpg",
+              "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-15/18_30.jpg"
+            ],
+            "webcam_times": [
+              "18:00",
+              "18:30"
+            ]
+          },
           {
             "date": "2026-11-14",
             "score": 3,
@@ -2955,46 +2982,6 @@
               "18:00",
               "18:30"
             ]
-          },
-          {
-            "date": "2026-11-08",
-            "score": 2,
-            "score_pct": 2,
-            "verdict": "NO_GO",
-            "summary": "Vrchol v mraku/mlze",
-            "reason": {
-              "problem": "fog",
-              "weakest": "low_cloud_penalty"
-            },
-            "inversion_pct": null,
-            "outcome": null,
-            "actual_verdict": null,
-            "note": null,
-            "source": "backfill",
-            "time": "18:11",
-            "cloud_base": 2060,
-            "cloud_top": null,
-            "above_deck_m": null,
-            "inversion_case": null,
-            "cloud_cover_low": 73,
-            "cloud_cover_high": null,
-            "canvas_cloud": 0,
-            "horizon_low_cloud": 54,
-            "humidity_peak": null,
-            "wind_speed": 20,
-            "wind_gusts": 109,
-            "temp": 8.1,
-            "visibility_km": 28,
-            "webcam_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-08/18_00.jpg",
-            "webcam_time": "18:00",
-            "webcam_urls": [
-              "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-08/18_00.jpg",
-              "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-08/18_30.jpg"
-            ],
-            "webcam_times": [
-              "18:00",
-              "18:30"
-            ]
           }
         ]
       },
@@ -3010,7 +2997,7 @@
         "webcam_url": null,
         "date": "2026-11-16",
         "target_date": "2026-11-16",
-        "relative": "tomorrow",
+        "relative": "today",
         "time": "18:06",
         "verdict": "NO_GO",
         "score": 0,
@@ -3021,15 +3008,15 @@
         "confidence": "HIGH",
         "cloud_sea": null,
         "wind": {
-          "kmh": 5,
-          "gust_kmh": 41,
-          "dir_deg": 303
+          "kmh": 6,
+          "gust_kmh": 33,
+          "dir_deg": 282
         },
         "clouds_canvas": {
-          "pct": 70
+          "pct": 0
         },
-        "horizon_low_cloud_pct": 63,
-        "visibility_km": 5,
+        "horizon_low_cloud_pct": 72,
+        "visibility_km": 6,
         "summary": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 0 %. Největší problém je mlha/mrak na vrcholu.",
         "problem": "fog",
         "weakest": "horizon_clarity",
@@ -3042,14 +3029,44 @@
           },
           {
             "code": "horizon",
-            "value": 63
+            "value": 72
           },
           {
             "code": "visibility",
-            "value": 5
+            "value": 6
           }
         ],
         "history": [
+          {
+            "date": "2026-11-15",
+            "score": 66,
+            "score_pct": 66,
+            "verdict": "MAYBE",
+            "summary": "Nejslabší stránka: barvy oblohy",
+            "reason": {
+              "problem": null,
+              "weakest": "cloud_canvas"
+            },
+            "inversion_pct": null,
+            "outcome": null,
+            "actual_verdict": null,
+            "note": null,
+            "source": "backfill",
+            "time": "18:06",
+            "cloud_base": 2070,
+            "cloud_top": null,
+            "above_deck_m": null,
+            "inversion_case": null,
+            "cloud_cover_low": 82,
+            "cloud_cover_high": null,
+            "canvas_cloud": 1,
+            "horizon_low_cloud": 62,
+            "humidity_peak": null,
+            "wind_speed": 2,
+            "wind_gusts": 17,
+            "temp": 8.4,
+            "visibility_km": 18
+          },
           {
             "date": "2026-11-14",
             "score": 9,
@@ -3229,36 +3246,6 @@
             "wind_gusts": 74,
             "temp": 9.0,
             "visibility_km": 23
-          },
-          {
-            "date": "2026-11-08",
-            "score": 2,
-            "score_pct": 2,
-            "verdict": "NO_GO",
-            "summary": "Vrchol v mraku/mlze",
-            "reason": {
-              "problem": "fog",
-              "weakest": "low_cloud_penalty"
-            },
-            "inversion_pct": null,
-            "outcome": null,
-            "actual_verdict": null,
-            "note": null,
-            "source": "backfill",
-            "time": "18:11",
-            "cloud_base": 2110,
-            "cloud_top": null,
-            "above_deck_m": null,
-            "inversion_case": null,
-            "cloud_cover_low": 73,
-            "cloud_cover_high": null,
-            "canvas_cloud": 0,
-            "horizon_low_cloud": 45,
-            "humidity_peak": null,
-            "wind_speed": 20,
-            "wind_gusts": 109,
-            "temp": 7.8,
-            "visibility_km": 28
           }
         ]
       }
@@ -3268,58 +3255,54 @@
     {
       "date": "2026-11-16",
       "sunrise": "07:38",
-      "verdict": "NO_GO",
-      "score_pct": 7,
+      "verdict": "GO",
+      "score_pct": 86,
       "score_range": [
-        2,
-        12
+        81,
+        91
       ],
       "confidence": "HIGH",
-      "cloud_deck_top_m": 1482,
-      "summit_above_deck_m": 336,
-      "inversion_pct": 34,
+      "cloud_deck_top_m": null,
+      "summit_above_deck_m": null,
+      "inversion_pct": 6,
       "wind_kmh": 5,
-      "gust_kmh": 23,
-      "wind_dir_deg": 286,
-      "summary_cs": "Spíš zůstaň v posteli. Skóre 7 %. Největší problém je mlha/mrak na vrcholu. Vrstva mraků sahá asi do 1482 m, vrchol (1818 m) je nad ní o ~336 m.",
-      "inversion_case": "above",
-      "problem": "fog",
-      "weakest": "sky",
+      "gust_kmh": 29,
+      "wind_dir_deg": 282,
+      "summary_cs": "Vypadá to dobře. Skóre 86 %. Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné.",
+      "inversion_case": "none",
+      "problem": null,
+      "weakest": null,
       "precip_mm": 0.0,
-      "alerts": [
-        {
-          "code": "fog"
-        }
-      ],
-      "canvas_cloud_pct": 33,
+      "alerts": [],
+      "canvas_cloud_pct": 39,
       "sun_azimuth_deg": null,
       "terrain_cutoff_deg": 0.0,
       "weather": {
         "funchal": {
           "rain": "none",
           "rain_mm": 0.0,
-          "rain_prob_pct": 28,
+          "rain_prob_pct": 33,
           "rain_from": null,
           "rain_to": null,
           "sky": "cloudy",
           "temp_min_c": 20,
-          "temp_max_c": 23,
-          "gust_max_kmh": 47
+          "temp_max_c": 22,
+          "gust_max_kmh": 36
         },
         "arieiro": {
           "rain": "none",
-          "rain_mm": 0.0,
-          "rain_prob_pct": 30,
+          "rain_mm": 0.1,
+          "rain_prob_pct": 38,
           "rain_from": null,
           "rain_to": null,
           "sky": "cloudy",
           "temp_min_c": 7,
           "temp_max_c": 12,
-          "gust_max_kmh": 41
+          "gust_max_kmh": 34
         }
       },
       "target_date": "2026-11-16",
-      "relative": "tomorrow"
+      "relative": "today"
     },
     {
       "date": "2026-11-17",
@@ -3327,16 +3310,16 @@
       "verdict": "NO_GO",
       "score_pct": 25,
       "score_range": [
-        15,
-        35
+        20,
+        30
       ],
-      "confidence": "MEDIUM",
+      "confidence": "HIGH",
       "cloud_deck_top_m": null,
       "summit_above_deck_m": null,
       "inversion_pct": 7,
       "wind_kmh": 3,
-      "gust_kmh": 21,
-      "wind_dir_deg": 325,
+      "gust_kmh": 16,
+      "wind_dir_deg": 314,
       "summary_cs": "Spíš zůstaň v posteli. Skóre 25 %. Největší problém jsou mraky u hřebene (hrozí přelévání přes hřeben). Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné.",
       "inversion_case": "none",
       "problem": null,
@@ -3347,20 +3330,20 @@
           "code": "spillover"
         }
       ],
-      "canvas_cloud_pct": 18,
+      "canvas_cloud_pct": 63,
       "sun_azimuth_deg": null,
       "terrain_cutoff_deg": 0.0,
       "weather": {
         "funchal": {
           "rain": "none",
           "rain_mm": 0.0,
-          "rain_prob_pct": 0,
+          "rain_prob_pct": 3,
           "rain_from": null,
           "rain_to": null,
           "sky": "cloudy",
-          "temp_min_c": 22,
-          "temp_max_c": 24,
-          "gust_max_kmh": 16
+          "temp_min_c": 21,
+          "temp_max_c": 23,
+          "gust_max_kmh": 17
         },
         "arieiro": {
           "rain": "none",
@@ -3369,21 +3352,21 @@
           "rain_from": null,
           "rain_to": null,
           "sky": "cloudy",
-          "temp_min_c": 11,
-          "temp_max_c": 15,
-          "gust_max_kmh": 25
+          "temp_min_c": 10,
+          "temp_max_c": 14,
+          "gust_max_kmh": 24
         }
       },
       "target_date": "2026-11-17",
-      "relative": null
+      "relative": "tomorrow"
     },
     {
       "date": "2026-11-18",
       "sunrise": "07:40",
       "verdict": "GO",
-      "score_pct": 94,
+      "score_pct": 96,
       "score_range": [
-        84,
+        86,
         100
       ],
       "confidence": "MEDIUM",
@@ -3391,15 +3374,15 @@
       "summit_above_deck_m": null,
       "inversion_pct": 12,
       "wind_kmh": 4,
-      "gust_kmh": 21,
-      "wind_dir_deg": 278,
-      "summary_cs": "Vypadá to dobře. Skóre 94 %. Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné.",
+      "gust_kmh": 17,
+      "wind_dir_deg": 281,
+      "summary_cs": "Vypadá to dobře. Skóre 97 %. Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné.",
       "inversion_case": "none",
       "problem": null,
       "weakest": null,
       "precip_mm": 0.0,
       "alerts": [],
-      "canvas_cloud_pct": 30,
+      "canvas_cloud_pct": 42,
       "sun_azimuth_deg": null,
       "terrain_cutoff_deg": 0.0,
       "weather": {
@@ -3412,7 +3395,7 @@
           "sky": "cloudy",
           "temp_min_c": 21,
           "temp_max_c": 24,
-          "gust_max_kmh": 24
+          "gust_max_kmh": 23
         },
         "arieiro": {
           "rain": "none",
@@ -3420,10 +3403,10 @@
           "rain_prob_pct": 0,
           "rain_from": null,
           "rain_to": null,
-          "sky": "partly",
+          "sky": "cloudy",
           "temp_min_c": 10,
           "temp_max_c": 15,
-          "gust_max_kmh": 31
+          "gust_max_kmh": 36
         }
       },
       "target_date": "2026-11-18",
@@ -3435,153 +3418,97 @@
       {
         "date": "2026-11-16",
         "sunrise": "07:38",
-        "verdict": "NO_GO",
-        "score_pct": 7,
+        "verdict": "GO",
+        "score_pct": 86,
         "score_range": [
-          2,
-          12
+          81,
+          91
         ],
         "confidence": "HIGH",
-        "cloud_deck_top_m": 1482,
-        "summit_above_deck_m": 336,
-        "inversion_pct": 34,
+        "cloud_deck_top_m": null,
+        "summit_above_deck_m": null,
+        "inversion_pct": 6,
         "wind_kmh": 5,
-        "gust_kmh": 23,
-        "wind_dir_deg": 286,
-        "summary_cs": "Spíš zůstaň v posteli. Skóre 7 %. Největší problém je mlha/mrak na vrcholu. Vrstva mraků sahá asi do 1482 m, vrchol (1818 m) je nad ní o ~336 m.",
-        "inversion_case": "above",
-        "problem": "fog",
-        "weakest": "sky",
-        "precip_mm": 0.0,
-        "alerts": [
-          {
-            "code": "fog"
-          }
-        ],
-        "canvas_cloud_pct": 33,
-        "sun_azimuth_deg": 112,
-        "terrain_cutoff_deg": 0.0,
-        "target_date": "2026-11-16",
-        "relative": "tomorrow",
-        "weather": {
-          "funchal": {
-            "rain": "none",
-            "rain_mm": 0.0,
-            "rain_prob_pct": 28,
-            "rain_from": null,
-            "rain_to": null,
-            "sky": "cloudy",
-            "temp_min_c": 20,
-            "temp_max_c": 23,
-            "gust_max_kmh": 47
-          },
-          "arieiro": {
-            "rain": "none",
-            "rain_mm": 0.0,
-            "rain_prob_pct": 30,
-            "rain_from": null,
-            "rain_to": null,
-            "sky": "cloudy",
-            "temp_min_c": 7,
-            "temp_max_c": 12,
-            "gust_max_kmh": 41
-          }
-        }
-      },
-      {
-        "date": "2026-11-17",
-        "sunrise": "07:39",
-        "verdict": "NO_GO",
-        "score_pct": 25,
-        "score_range": [
-          15,
-          35
-        ],
-        "confidence": "MEDIUM",
-        "cloud_deck_top_m": null,
-        "summit_above_deck_m": null,
-        "inversion_pct": 7,
-        "wind_kmh": 3,
-        "gust_kmh": 21,
-        "wind_dir_deg": 325,
-        "summary_cs": "Spíš zůstaň v posteli. Skóre 25 %. Největší problém jsou mraky u hřebene (hrozí přelévání přes hřeben). Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné.",
-        "inversion_case": "none",
-        "problem": null,
-        "weakest": "sky",
-        "precip_mm": 0.0,
-        "alerts": [
-          {
-            "code": "spillover"
-          }
-        ],
-        "canvas_cloud_pct": 18,
-        "sun_azimuth_deg": 112,
-        "terrain_cutoff_deg": 0.0,
-        "target_date": "2026-11-17",
-        "relative": null,
-        "weather": {
-          "funchal": {
-            "rain": "none",
-            "rain_mm": 0.0,
-            "rain_prob_pct": 0,
-            "rain_from": null,
-            "rain_to": null,
-            "sky": "cloudy",
-            "temp_min_c": 22,
-            "temp_max_c": 24,
-            "gust_max_kmh": 16
-          },
-          "arieiro": {
-            "rain": "none",
-            "rain_mm": 0.0,
-            "rain_prob_pct": 0,
-            "rain_from": null,
-            "rain_to": null,
-            "sky": "cloudy",
-            "temp_min_c": 11,
-            "temp_max_c": 15,
-            "gust_max_kmh": 25
-          }
-        }
-      },
-      {
-        "date": "2026-11-18",
-        "sunrise": "07:40",
-        "verdict": "GO",
-        "score_pct": 94,
-        "score_range": [
-          84,
-          100
-        ],
-        "confidence": "MEDIUM",
-        "cloud_deck_top_m": null,
-        "summit_above_deck_m": null,
-        "inversion_pct": 12,
-        "wind_kmh": 4,
-        "gust_kmh": 21,
-        "wind_dir_deg": 278,
-        "summary_cs": "Vypadá to dobře. Skóre 94 %. Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné.",
+        "gust_kmh": 29,
+        "wind_dir_deg": 282,
+        "summary_cs": "Vypadá to dobře. Skóre 86 %. Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné.",
         "inversion_case": "none",
         "problem": null,
         "weakest": null,
         "precip_mm": 0.0,
         "alerts": [],
-        "canvas_cloud_pct": 30,
+        "canvas_cloud_pct": 39,
         "sun_azimuth_deg": 112,
         "terrain_cutoff_deg": 0.0,
-        "target_date": "2026-11-18",
-        "relative": null,
+        "target_date": "2026-11-16",
+        "relative": "today",
         "weather": {
           "funchal": {
             "rain": "none",
             "rain_mm": 0.0,
-            "rain_prob_pct": 0,
+            "rain_prob_pct": 33,
+            "rain_from": null,
+            "rain_to": null,
+            "sky": "cloudy",
+            "temp_min_c": 20,
+            "temp_max_c": 22,
+            "gust_max_kmh": 36
+          },
+          "arieiro": {
+            "rain": "none",
+            "rain_mm": 0.1,
+            "rain_prob_pct": 38,
+            "rain_from": null,
+            "rain_to": null,
+            "sky": "cloudy",
+            "temp_min_c": 7,
+            "temp_max_c": 12,
+            "gust_max_kmh": 34
+          }
+        }
+      },
+      {
+        "date": "2026-11-17",
+        "sunrise": "07:39",
+        "verdict": "NO_GO",
+        "score_pct": 25,
+        "score_range": [
+          20,
+          30
+        ],
+        "confidence": "HIGH",
+        "cloud_deck_top_m": null,
+        "summit_above_deck_m": null,
+        "inversion_pct": 7,
+        "wind_kmh": 3,
+        "gust_kmh": 16,
+        "wind_dir_deg": 314,
+        "summary_cs": "Spíš zůstaň v posteli. Skóre 25 %. Největší problém jsou mraky u hřebene (hrozí přelévání přes hřeben). Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné.",
+        "inversion_case": "none",
+        "problem": null,
+        "weakest": "sky",
+        "precip_mm": 0.0,
+        "alerts": [
+          {
+            "code": "spillover"
+          }
+        ],
+        "canvas_cloud_pct": 63,
+        "sun_azimuth_deg": 112,
+        "terrain_cutoff_deg": 0.0,
+        "target_date": "2026-11-17",
+        "relative": "tomorrow",
+        "weather": {
+          "funchal": {
+            "rain": "none",
+            "rain_mm": 0.0,
+            "rain_prob_pct": 3,
             "rain_from": null,
             "rain_to": null,
             "sky": "cloudy",
             "temp_min_c": 21,
-            "temp_max_c": 24,
-            "gust_max_kmh": 24
+            "temp_max_c": 23,
+            "gust_max_kmh": 17
           },
           "arieiro": {
             "rain": "none",
@@ -3589,290 +3516,10 @@
             "rain_prob_pct": 0,
             "rain_from": null,
             "rain_to": null,
-            "sky": "partly",
-            "temp_min_c": 10,
-            "temp_max_c": 15,
-            "gust_max_kmh": 31
-          }
-        }
-      }
-    ],
-    "pico_ruivo": [
-      {
-        "date": "2026-11-16",
-        "sunrise": "07:38",
-        "verdict": "NO_GO",
-        "score_pct": 7,
-        "score_range": [
-          2,
-          12
-        ],
-        "confidence": "HIGH",
-        "cloud_deck_top_m": 1482,
-        "summit_above_deck_m": 380,
-        "inversion_pct": 34,
-        "wind_kmh": 5,
-        "gust_kmh": 23,
-        "wind_dir_deg": 286,
-        "summary_cs": "Spíš zůstaň v posteli. Skóre 7 %. Největší problém je mlha/mrak na vrcholu. Vrstva mraků sahá asi do 1482 m, vrchol (1862 m) je nad ní o ~380 m.",
-        "inversion_case": "above",
-        "problem": "fog",
-        "weakest": "sky",
-        "precip_mm": 0.0,
-        "alerts": [
-          {
-            "code": "fog"
-          }
-        ],
-        "canvas_cloud_pct": 33,
-        "sun_azimuth_deg": 112,
-        "terrain_cutoff_deg": 0.0,
-        "target_date": "2026-11-16",
-        "relative": "tomorrow",
-        "weather": {
-          "funchal": {
-            "rain": "none",
-            "rain_mm": 0.0,
-            "rain_prob_pct": 28,
-            "rain_from": null,
-            "rain_to": null,
-            "sky": "cloudy",
-            "temp_min_c": 20,
-            "temp_max_c": 23,
-            "gust_max_kmh": 47
-          },
-          "pico_ruivo": {
-            "rain": "none",
-            "rain_mm": 0.0,
-            "rain_prob_pct": 30,
-            "rain_from": null,
-            "rain_to": null,
-            "sky": "cloudy",
-            "temp_min_c": 7,
-            "temp_max_c": 12,
-            "gust_max_kmh": 41
-          }
-        }
-      },
-      {
-        "date": "2026-11-17",
-        "sunrise": "07:39",
-        "verdict": "NO_GO",
-        "score_pct": 25,
-        "score_range": [
-          15,
-          35
-        ],
-        "confidence": "MEDIUM",
-        "cloud_deck_top_m": null,
-        "summit_above_deck_m": null,
-        "inversion_pct": 7,
-        "wind_kmh": 3,
-        "gust_kmh": 21,
-        "wind_dir_deg": 325,
-        "summary_cs": "Spíš zůstaň v posteli. Skóre 25 %. Největší problém jsou mraky u hřebene (hrozí přelévání přes hřeben). Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné.",
-        "inversion_case": "none",
-        "problem": null,
-        "weakest": "sky",
-        "precip_mm": 0.0,
-        "alerts": [
-          {
-            "code": "spillover"
-          }
-        ],
-        "canvas_cloud_pct": 18,
-        "sun_azimuth_deg": 112,
-        "terrain_cutoff_deg": 0.0,
-        "target_date": "2026-11-17",
-        "relative": null,
-        "weather": {
-          "funchal": {
-            "rain": "none",
-            "rain_mm": 0.0,
-            "rain_prob_pct": 0,
-            "rain_from": null,
-            "rain_to": null,
-            "sky": "cloudy",
-            "temp_min_c": 22,
-            "temp_max_c": 24,
-            "gust_max_kmh": 16
-          },
-          "pico_ruivo": {
-            "rain": "none",
-            "rain_mm": 0.0,
-            "rain_prob_pct": 0,
-            "rain_from": null,
-            "rain_to": null,
             "sky": "cloudy",
             "temp_min_c": 10,
             "temp_max_c": 14,
-            "gust_max_kmh": 25
-          }
-        }
-      },
-      {
-        "date": "2026-11-18",
-        "sunrise": "07:40",
-        "verdict": "GO",
-        "score_pct": 94,
-        "score_range": [
-          84,
-          100
-        ],
-        "confidence": "MEDIUM",
-        "cloud_deck_top_m": null,
-        "summit_above_deck_m": null,
-        "inversion_pct": 12,
-        "wind_kmh": 4,
-        "gust_kmh": 21,
-        "wind_dir_deg": 278,
-        "summary_cs": "Vypadá to dobře. Skóre 94 %. Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné.",
-        "inversion_case": "none",
-        "problem": null,
-        "weakest": null,
-        "precip_mm": 0.0,
-        "alerts": [],
-        "canvas_cloud_pct": 30,
-        "sun_azimuth_deg": 112,
-        "terrain_cutoff_deg": 0.0,
-        "target_date": "2026-11-18",
-        "relative": null,
-        "weather": {
-          "funchal": {
-            "rain": "none",
-            "rain_mm": 0.0,
-            "rain_prob_pct": 0,
-            "rain_from": null,
-            "rain_to": null,
-            "sky": "cloudy",
-            "temp_min_c": 21,
-            "temp_max_c": 24,
             "gust_max_kmh": 24
-          },
-          "pico_ruivo": {
-            "rain": "none",
-            "rain_mm": 0.0,
-            "rain_prob_pct": 0,
-            "rain_from": null,
-            "rain_to": null,
-            "sky": "partly",
-            "temp_min_c": 10,
-            "temp_max_c": 14,
-            "gust_max_kmh": 31
-          }
-        }
-      }
-    ],
-    "bica_da_cana": [
-      {
-        "date": "2026-11-16",
-        "sunrise": "07:38",
-        "verdict": "NO_GO",
-        "score_pct": 6,
-        "score_range": [
-          1,
-          11
-        ],
-        "confidence": "HIGH",
-        "cloud_deck_top_m": 1482,
-        "summit_above_deck_m": 78,
-        "inversion_pct": 27,
-        "wind_kmh": 5,
-        "gust_kmh": 23,
-        "wind_dir_deg": 286,
-        "summary_cs": "Spíš zůstaň v posteli. Skóre 6 %. Největší problém je mlha/mrak na vrcholu. Vrstva mraků sahá asi do 1482 m — vrchol je na její hranici.",
-        "inversion_case": "edge",
-        "problem": "fog",
-        "weakest": "visibility",
-        "precip_mm": 0.0,
-        "alerts": [
-          {
-            "code": "fog"
-          }
-        ],
-        "canvas_cloud_pct": 33,
-        "sun_azimuth_deg": 112,
-        "terrain_cutoff_deg": 0.0,
-        "target_date": "2026-11-16",
-        "relative": "tomorrow",
-        "weather": {
-          "funchal": {
-            "rain": "none",
-            "rain_mm": 0.0,
-            "rain_prob_pct": 28,
-            "rain_from": null,
-            "rain_to": null,
-            "sky": "cloudy",
-            "temp_min_c": 20,
-            "temp_max_c": 23,
-            "gust_max_kmh": 47
-          },
-          "bica_da_cana": {
-            "rain": "none",
-            "rain_mm": 0.0,
-            "rain_prob_pct": 40,
-            "rain_from": null,
-            "rain_to": null,
-            "sky": "cloudy",
-            "temp_min_c": 9,
-            "temp_max_c": 14,
-            "gust_max_kmh": 41
-          }
-        }
-      },
-      {
-        "date": "2026-11-17",
-        "sunrise": "07:39",
-        "verdict": "NO_GO",
-        "score_pct": 25,
-        "score_range": [
-          15,
-          35
-        ],
-        "confidence": "MEDIUM",
-        "cloud_deck_top_m": null,
-        "summit_above_deck_m": null,
-        "inversion_pct": 8,
-        "wind_kmh": 3,
-        "gust_kmh": 21,
-        "wind_dir_deg": 325,
-        "summary_cs": "Spíš zůstaň v posteli. Skóre 25 %. Největší problém jsou mraky u hřebene (hrozí přelévání přes hřeben). Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné.",
-        "inversion_case": "none",
-        "problem": null,
-        "weakest": "sky",
-        "precip_mm": 0.0,
-        "alerts": [
-          {
-            "code": "spillover"
-          }
-        ],
-        "canvas_cloud_pct": 18,
-        "sun_azimuth_deg": 112,
-        "terrain_cutoff_deg": 0.0,
-        "target_date": "2026-11-17",
-        "relative": null,
-        "weather": {
-          "funchal": {
-            "rain": "none",
-            "rain_mm": 0.0,
-            "rain_prob_pct": 0,
-            "rain_from": null,
-            "rain_to": null,
-            "sky": "cloudy",
-            "temp_min_c": 22,
-            "temp_max_c": 24,
-            "gust_max_kmh": 16
-          },
-          "bica_da_cana": {
-            "rain": "none",
-            "rain_mm": 0.0,
-            "rain_prob_pct": 0,
-            "rain_from": null,
-            "rain_to": null,
-            "sky": "cloudy",
-            "temp_min_c": 12,
-            "temp_max_c": 16,
-            "gust_max_kmh": 25
           }
         }
       },
@@ -3890,15 +3537,15 @@
         "summit_above_deck_m": null,
         "inversion_pct": 12,
         "wind_kmh": 4,
-        "gust_kmh": 21,
-        "wind_dir_deg": 278,
-        "summary_cs": "Vypadá to dobře. Skóre 96 %. Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné.",
+        "gust_kmh": 17,
+        "wind_dir_deg": 281,
+        "summary_cs": "Vypadá to dobře. Skóre 97 %. Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné.",
         "inversion_case": "none",
         "problem": null,
         "weakest": null,
         "precip_mm": 0.0,
         "alerts": [],
-        "canvas_cloud_pct": 30,
+        "canvas_cloud_pct": 42,
         "sun_azimuth_deg": 112,
         "terrain_cutoff_deg": 0.0,
         "target_date": "2026-11-18",
@@ -3913,7 +3560,279 @@
             "sky": "cloudy",
             "temp_min_c": 21,
             "temp_max_c": 24,
+            "gust_max_kmh": 23
+          },
+          "arieiro": {
+            "rain": "none",
+            "rain_mm": 0.0,
+            "rain_prob_pct": 0,
+            "rain_from": null,
+            "rain_to": null,
+            "sky": "cloudy",
+            "temp_min_c": 10,
+            "temp_max_c": 15,
+            "gust_max_kmh": 36
+          }
+        }
+      }
+    ],
+    "pico_ruivo": [
+      {
+        "date": "2026-11-16",
+        "sunrise": "07:38",
+        "verdict": "GO",
+        "score_pct": 95,
+        "score_range": [
+          90,
+          100
+        ],
+        "confidence": "HIGH",
+        "cloud_deck_top_m": null,
+        "summit_above_deck_m": null,
+        "inversion_pct": 6,
+        "wind_kmh": 5,
+        "gust_kmh": 29,
+        "wind_dir_deg": 282,
+        "summary_cs": "Vypadá to dobře. Skóre 95 %. Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné.",
+        "inversion_case": "none",
+        "problem": null,
+        "weakest": null,
+        "precip_mm": 0.0,
+        "alerts": [],
+        "canvas_cloud_pct": 39,
+        "sun_azimuth_deg": 112,
+        "terrain_cutoff_deg": 0.0,
+        "target_date": "2026-11-16",
+        "relative": "today",
+        "weather": {
+          "funchal": {
+            "rain": "none",
+            "rain_mm": 0.0,
+            "rain_prob_pct": 33,
+            "rain_from": null,
+            "rain_to": null,
+            "sky": "cloudy",
+            "temp_min_c": 20,
+            "temp_max_c": 22,
+            "gust_max_kmh": 36
+          },
+          "pico_ruivo": {
+            "rain": "none",
+            "rain_mm": 0.1,
+            "rain_prob_pct": 38,
+            "rain_from": null,
+            "rain_to": null,
+            "sky": "cloudy",
+            "temp_min_c": 6,
+            "temp_max_c": 11,
+            "gust_max_kmh": 34
+          }
+        }
+      },
+      {
+        "date": "2026-11-17",
+        "sunrise": "07:39",
+        "verdict": "NO_GO",
+        "score_pct": 25,
+        "score_range": [
+          20,
+          30
+        ],
+        "confidence": "HIGH",
+        "cloud_deck_top_m": null,
+        "summit_above_deck_m": null,
+        "inversion_pct": 7,
+        "wind_kmh": 3,
+        "gust_kmh": 16,
+        "wind_dir_deg": 314,
+        "summary_cs": "Spíš zůstaň v posteli. Skóre 25 %. Největší problém jsou mraky u hřebene (hrozí přelévání přes hřeben). Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné.",
+        "inversion_case": "none",
+        "problem": null,
+        "weakest": "sky",
+        "precip_mm": 0.0,
+        "alerts": [
+          {
+            "code": "spillover"
+          }
+        ],
+        "canvas_cloud_pct": 63,
+        "sun_azimuth_deg": 112,
+        "terrain_cutoff_deg": 0.0,
+        "target_date": "2026-11-17",
+        "relative": "tomorrow",
+        "weather": {
+          "funchal": {
+            "rain": "none",
+            "rain_mm": 0.0,
+            "rain_prob_pct": 3,
+            "rain_from": null,
+            "rain_to": null,
+            "sky": "cloudy",
+            "temp_min_c": 21,
+            "temp_max_c": 23,
+            "gust_max_kmh": 17
+          },
+          "pico_ruivo": {
+            "rain": "none",
+            "rain_mm": 0.0,
+            "rain_prob_pct": 0,
+            "rain_from": null,
+            "rain_to": null,
+            "sky": "cloudy",
+            "temp_min_c": 10,
+            "temp_max_c": 14,
             "gust_max_kmh": 24
+          }
+        }
+      },
+      {
+        "date": "2026-11-18",
+        "sunrise": "07:40",
+        "verdict": "GO",
+        "score_pct": 95,
+        "score_range": [
+          85,
+          100
+        ],
+        "confidence": "MEDIUM",
+        "cloud_deck_top_m": null,
+        "summit_above_deck_m": null,
+        "inversion_pct": 12,
+        "wind_kmh": 4,
+        "gust_kmh": 17,
+        "wind_dir_deg": 281,
+        "summary_cs": "Vypadá to dobře. Skóre 95 %. Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné.",
+        "inversion_case": "none",
+        "problem": null,
+        "weakest": null,
+        "precip_mm": 0.0,
+        "alerts": [],
+        "canvas_cloud_pct": 42,
+        "sun_azimuth_deg": 112,
+        "terrain_cutoff_deg": 0.0,
+        "target_date": "2026-11-18",
+        "relative": null,
+        "weather": {
+          "funchal": {
+            "rain": "none",
+            "rain_mm": 0.0,
+            "rain_prob_pct": 0,
+            "rain_from": null,
+            "rain_to": null,
+            "sky": "cloudy",
+            "temp_min_c": 21,
+            "temp_max_c": 24,
+            "gust_max_kmh": 23
+          },
+          "pico_ruivo": {
+            "rain": "none",
+            "rain_mm": 0.0,
+            "rain_prob_pct": 0,
+            "rain_from": null,
+            "rain_to": null,
+            "sky": "cloudy",
+            "temp_min_c": 10,
+            "temp_max_c": 14,
+            "gust_max_kmh": 36
+          }
+        }
+      }
+    ],
+    "bica_da_cana": [
+      {
+        "date": "2026-11-16",
+        "sunrise": "07:38",
+        "verdict": "GO",
+        "score_pct": 82,
+        "score_range": [
+          77,
+          87
+        ],
+        "confidence": "HIGH",
+        "cloud_deck_top_m": null,
+        "summit_above_deck_m": null,
+        "inversion_pct": 11,
+        "wind_kmh": 5,
+        "gust_kmh": 29,
+        "wind_dir_deg": 282,
+        "summary_cs": "Vypadá to dobře. Skóre 82 %. Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné.",
+        "inversion_case": "none",
+        "problem": null,
+        "weakest": null,
+        "precip_mm": 0.0,
+        "alerts": [],
+        "canvas_cloud_pct": 39,
+        "sun_azimuth_deg": 112,
+        "terrain_cutoff_deg": 0.0,
+        "target_date": "2026-11-16",
+        "relative": "today",
+        "weather": {
+          "funchal": {
+            "rain": "none",
+            "rain_mm": 0.0,
+            "rain_prob_pct": 33,
+            "rain_from": null,
+            "rain_to": null,
+            "sky": "cloudy",
+            "temp_min_c": 20,
+            "temp_max_c": 22,
+            "gust_max_kmh": 36
+          },
+          "bica_da_cana": {
+            "rain": "none",
+            "rain_mm": 0.1,
+            "rain_prob_pct": 40,
+            "rain_from": null,
+            "rain_to": null,
+            "sky": "cloudy",
+            "temp_min_c": 8,
+            "temp_max_c": 13,
+            "gust_max_kmh": 34
+          }
+        }
+      },
+      {
+        "date": "2026-11-17",
+        "sunrise": "07:39",
+        "verdict": "NO_GO",
+        "score_pct": 25,
+        "score_range": [
+          20,
+          30
+        ],
+        "confidence": "HIGH",
+        "cloud_deck_top_m": null,
+        "summit_above_deck_m": null,
+        "inversion_pct": 7,
+        "wind_kmh": 3,
+        "gust_kmh": 16,
+        "wind_dir_deg": 314,
+        "summary_cs": "Spíš zůstaň v posteli. Skóre 25 %. Největší problém jsou mraky u hřebene (hrozí přelévání přes hřeben). Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné.",
+        "inversion_case": "none",
+        "problem": null,
+        "weakest": "sky",
+        "precip_mm": 0.0,
+        "alerts": [
+          {
+            "code": "spillover"
+          }
+        ],
+        "canvas_cloud_pct": 63,
+        "sun_azimuth_deg": 112,
+        "terrain_cutoff_deg": 0.0,
+        "target_date": "2026-11-17",
+        "relative": "tomorrow",
+        "weather": {
+          "funchal": {
+            "rain": "none",
+            "rain_mm": 0.0,
+            "rain_prob_pct": 3,
+            "rain_from": null,
+            "rain_to": null,
+            "sky": "cloudy",
+            "temp_min_c": 21,
+            "temp_max_c": 23,
+            "gust_max_kmh": 17
           },
           "bica_da_cana": {
             "rain": "none",
@@ -3921,10 +3840,62 @@
             "rain_prob_pct": 0,
             "rain_from": null,
             "rain_to": null,
-            "sky": "partly",
+            "sky": "cloudy",
             "temp_min_c": 12,
             "temp_max_c": 16,
-            "gust_max_kmh": 31
+            "gust_max_kmh": 24
+          }
+        }
+      },
+      {
+        "date": "2026-11-18",
+        "sunrise": "07:40",
+        "verdict": "GO",
+        "score_pct": 93,
+        "score_range": [
+          83,
+          100
+        ],
+        "confidence": "MEDIUM",
+        "cloud_deck_top_m": null,
+        "summit_above_deck_m": null,
+        "inversion_pct": 12,
+        "wind_kmh": 4,
+        "gust_kmh": 17,
+        "wind_dir_deg": 281,
+        "summary_cs": "Vypadá to dobře. Skóre 93 %. Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné.",
+        "inversion_case": "none",
+        "problem": null,
+        "weakest": null,
+        "precip_mm": 0.0,
+        "alerts": [],
+        "canvas_cloud_pct": 42,
+        "sun_azimuth_deg": 112,
+        "terrain_cutoff_deg": 0.0,
+        "target_date": "2026-11-18",
+        "relative": null,
+        "weather": {
+          "funchal": {
+            "rain": "none",
+            "rain_mm": 0.0,
+            "rain_prob_pct": 0,
+            "rain_from": null,
+            "rain_to": null,
+            "sky": "cloudy",
+            "temp_min_c": 21,
+            "temp_max_c": 24,
+            "gust_max_kmh": 23
+          },
+          "bica_da_cana": {
+            "rain": "none",
+            "rain_mm": 0.0,
+            "rain_prob_pct": 0,
+            "rain_from": null,
+            "rain_to": null,
+            "sky": "cloudy",
+            "temp_min_c": 12,
+            "temp_max_c": 16,
+            "gust_max_kmh": 36
           }
         }
       }
@@ -3933,83 +3904,82 @@
       {
         "date": "2026-11-16",
         "sunrise": "07:38",
-        "verdict": "MAYBE",
-        "score_pct": 47,
+        "verdict": "NO_GO",
+        "score_pct": 42,
         "score_range": [
-          42,
-          52
+          37,
+          47
         ],
         "confidence": "HIGH",
-        "horizon_low_cloud_pct": 40,
-        "canvas_cloud_pct": 13,
-        "wind_kmh": 7,
-        "gust_kmh": 18,
+        "horizon_low_cloud_pct": 46,
+        "canvas_cloud_pct": 62,
+        "wind_kmh": 8,
+        "gust_kmh": 20,
         "wind_dir_deg": 290,
-        "visibility_km": 40,
+        "visibility_km": 39,
         "precip_mm": 0.0,
-        "summary_cs": "Hazard, výsledek je nejistý. Skóre 47 %. Nejslabší stránka: čistý východní obzor (nízká oblačnost na východním obzoru 40 %).",
+        "summary_cs": "Spíš zůstaň v posteli. Skóre 42 %. Nejslabší stránka: čistý východní obzor (nízká oblačnost na východním obzoru 46 %).",
         "problem": null,
         "weakest": "horizon_clarity",
         "warnings": [
-          "Nízké mraky na východním obzoru (40 %) mohou zakrýt slunce."
+          "Nízké mraky na východním obzoru (46 %) mohou zakrýt slunce."
         ],
         "alerts": [
           {
             "code": "horizon_east",
-            "value": 40
+            "value": 46
           }
         ],
         "sun_azimuth_deg": 112,
         "terrain_cutoff_deg": 0.0,
         "target_date": "2026-11-16",
-        "relative": "tomorrow",
+        "relative": "today",
         "weather": {
           "funchal": {
             "rain": "none",
             "rain_mm": 0.0,
-            "rain_prob_pct": 28,
+            "rain_prob_pct": 33,
             "rain_from": null,
             "rain_to": null,
             "sky": "cloudy",
             "temp_min_c": 20,
-            "temp_max_c": 23,
-            "gust_max_kmh": 47
+            "temp_max_c": 22,
+            "gust_max_kmh": 36
           },
           "ponta_do_rosto": {
             "rain": "none",
             "rain_mm": 0.0,
-            "rain_prob_pct": 18,
+            "rain_prob_pct": 20,
             "rain_from": null,
             "rain_to": null,
             "sky": "cloudy",
-            "temp_min_c": 16,
-            "temp_max_c": 23,
-            "gust_max_kmh": 18
+            "temp_min_c": 15,
+            "temp_max_c": 22,
+            "gust_max_kmh": 20
           }
         }
       },
       {
         "date": "2026-11-17",
         "sunrise": "07:38",
-        "verdict": "MAYBE",
-        "score_pct": 46,
+        "verdict": "NO_GO",
+        "score_pct": 43,
         "score_range": [
-          36,
-          56
+          38,
+          48
         ],
-        "confidence": "MEDIUM",
+        "confidence": "HIGH",
         "horizon_low_cloud_pct": 39,
-        "canvas_cloud_pct": 64,
+        "canvas_cloud_pct": 94,
         "wind_kmh": 3,
-        "gust_kmh": 9,
-        "wind_dir_deg": 291,
-        "visibility_km": 32,
+        "gust_kmh": 8,
+        "wind_dir_deg": 290,
+        "visibility_km": 28,
         "precip_mm": 0.0,
-        "summary_cs": "Hazard, výsledek je nejistý. Skóre 46 %. Nejslabší stránka: čistý východní obzor (nízká oblačnost na východním obzoru 39 %).",
+        "summary_cs": "Spíš zůstaň v posteli. Skóre 43 %. Nejslabší stránka: barvy oblohy (vysoká oblačnost (cirry) 94 %).",
         "problem": null,
-        "weakest": "horizon_clarity",
+        "weakest": "cloud_canvas",
         "warnings": [
-          "Střední oblačnost (62 %) může zakrýt slunce.",
           "Nízké mraky na východním obzoru (39 %) mohou zakrýt slunce."
         ],
         "alerts": [
@@ -4021,59 +3991,59 @@
         "sun_azimuth_deg": 112,
         "terrain_cutoff_deg": 0.0,
         "target_date": "2026-11-17",
-        "relative": null,
+        "relative": "tomorrow",
         "weather": {
           "funchal": {
             "rain": "none",
             "rain_mm": 0.0,
-            "rain_prob_pct": 0,
+            "rain_prob_pct": 3,
             "rain_from": null,
             "rain_to": null,
             "sky": "cloudy",
-            "temp_min_c": 22,
-            "temp_max_c": 24,
-            "gust_max_kmh": 16
+            "temp_min_c": 21,
+            "temp_max_c": 23,
+            "gust_max_kmh": 17
           },
           "ponta_do_rosto": {
             "rain": "none",
             "rain_mm": 0.0,
-            "rain_prob_pct": 9,
+            "rain_prob_pct": 15,
             "rain_from": null,
             "rain_to": null,
             "sky": "cloudy",
-            "temp_min_c": 20,
+            "temp_min_c": 19,
             "temp_max_c": 23,
-            "gust_max_kmh": 15
+            "gust_max_kmh": 13
           }
         }
       },
       {
         "date": "2026-11-18",
         "sunrise": "07:39",
-        "verdict": "GO",
-        "score_pct": 77,
+        "verdict": "MAYBE",
+        "score_pct": 54,
         "score_range": [
-          67,
-          87
+          44,
+          64
         ],
         "confidence": "MEDIUM",
-        "horizon_low_cloud_pct": 27,
-        "canvas_cloud_pct": 40,
-        "wind_kmh": 3,
-        "gust_kmh": 8,
-        "wind_dir_deg": 330,
-        "visibility_km": 19,
+        "horizon_low_cloud_pct": 37,
+        "canvas_cloud_pct": 60,
+        "wind_kmh": 4,
+        "gust_kmh": 9,
+        "wind_dir_deg": 312,
+        "visibility_km": 17,
         "precip_mm": 0.0,
-        "summary_cs": "Východ slunce vypadá slibně. Skóre 77 %. Nejslabší stránka: dohlednost (dohlednost 19 km, rozdíl T − rosný bod 0.8 °C).",
+        "summary_cs": "Hazard, výsledek je nejistý. Skóre 54 %. Nejslabší stránka: dohlednost (dohlednost 17 km, rozdíl T − rosný bod 0.6 °C).",
         "problem": null,
         "weakest": "visibility",
         "warnings": [
-          "Nízké mraky na východním obzoru (27 %) mohou zakrýt slunce."
+          "Nízké mraky na východním obzoru (37 %) mohou zakrýt slunce."
         ],
         "alerts": [
           {
             "code": "horizon_east",
-            "value": 27
+            "value": 37
           }
         ],
         "sun_azimuth_deg": 112,
@@ -4090,18 +4060,18 @@
             "sky": "cloudy",
             "temp_min_c": 21,
             "temp_max_c": 24,
-            "gust_max_kmh": 24
+            "gust_max_kmh": 23
           },
           "ponta_do_rosto": {
             "rain": "none",
             "rain_mm": 0.0,
-            "rain_prob_pct": 12,
+            "rain_prob_pct": 8,
             "rain_from": null,
             "rain_to": null,
             "sky": "cloudy",
             "temp_min_c": 19,
             "temp_max_c": 23,
-            "gust_max_kmh": 15
+            "gust_max_kmh": 16
           }
         }
       }
@@ -4111,63 +4081,68 @@
         "date": "2026-11-16",
         "sunset": "18:07",
         "verdict": "NO_GO",
-        "score_pct": 2,
+        "score_pct": 0,
         "score_range": [
           0,
-          7
+          5
         ],
         "confidence": "HIGH",
-        "horizon_low_cloud_pct": 62,
-        "canvas_cloud_pct": 82,
+        "horizon_low_cloud_pct": 80,
+        "canvas_cloud_pct": 5,
         "wind_kmh": 14,
-        "gust_kmh": 40,
-        "wind_dir_deg": 236,
-        "visibility_km": 0,
-        "precip_mm": 0.0,
-        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 2 %. Největší problém jsou nízké mraky na obzoru.",
-        "problem": "horizon",
+        "gust_kmh": 42,
+        "wind_dir_deg": 231,
+        "visibility_km": 14,
+        "precip_mm": 0.2,
+        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 0 %. Největší problém jsou srážky.",
+        "problem": "precip",
         "weakest": "horizon_clarity",
         "warnings": [
-          "Nízké mraky na západním obzoru (62 %) mohou zakrýt slunce.",
-          "Snížená dohlednost (0 km).",
+          "Srážky kolem západu: 0.2 mm (NO-GO).",
+          "Nízké mraky na západním obzoru (80 %) mohou zakrýt slunce.",
+          "Snížená dohlednost (14 km).",
           "Zataženo nízkou/střední oblačností na západě – slunce nebude vidět."
         ],
         "alerts": [
           {
+            "code": "precip",
+            "value": 0.2
+          },
+          {
             "code": "horizon",
-            "value": 62
+            "value": 80
           },
           {
             "code": "visibility",
-            "value": 0
+            "value": 14
           }
         ],
         "sun_azimuth_deg": 248,
         "terrain_cutoff_deg": 0.0,
         "target_date": "2026-11-16",
-        "relative": "tomorrow",
+        "relative": "today",
         "weather": {
           "funchal": {
             "rain": "none",
             "rain_mm": 0.0,
-            "rain_prob_pct": 28,
+            "rain_prob_pct": 33,
             "rain_from": null,
             "rain_to": null,
             "sky": "cloudy",
             "temp_min_c": 20,
-            "temp_max_c": 23,
-            "gust_max_kmh": 47
+            "temp_max_c": 22,
+            "gust_max_kmh": 36
           },
           "ponta_do_pargo": {
-            "rain": "none",
-            "rain_mm": 0.1,
-            "rain_prob_pct": 65,
-            "rain_from": null,
-            "rain_to": null,
+            "rain": "drizzle",
+            "rain_mm": 0.7,
+            "rain_prob_pct": 63,
+            "rain_from": 16,
+            "rain_to": 20,
             "sky": "cloudy",
-            "temp_min_c": 19,
-            "temp_max_c": 21,
-            "gust_max_kmh": 48
+            "temp_min_c": 18,
+            "temp_max_c": 20,
+            "gust_max_kmh": 43
           }
         }
       },
@@ -4175,26 +4150,31 @@
         "date": "2026-11-17",
         "sunset": "18:06",
         "verdict": "NO_GO",
-        "score_pct": 22,
+        "score_pct": 4,
         "score_range": [
-          12,
-          32
+          0,
+          8
         ],
-        "confidence": "MEDIUM",
-        "horizon_low_cloud_pct": 18,
-        "canvas_cloud_pct": 27,
+        "confidence": "HIGH",
+        "horizon_low_cloud_pct": 63,
+        "canvas_cloud_pct": 0,
         "wind_kmh": 4,
-        "gust_kmh": 18,
-        "wind_dir_deg": 321,
+        "gust_kmh": 19,
+        "wind_dir_deg": 331,
         "visibility_km": 1,
         "precip_mm": 0.0,
-        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 22 %. Nejslabší stránka: mlha na vyhlídce (nízká oblačnost na vyhlídce 75 %, rozdíl T − rosný bod 0.7 °C).",
-        "problem": null,
-        "weakest": "low_cloud_penalty",
+        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 3 %. Největší problém jsou nízké mraky na obzoru.",
+        "problem": "horizon",
+        "weakest": "horizon_clarity",
         "warnings": [
+          "Nízké mraky na západním obzoru (63 %) mohou zakrýt slunce.",
           "Snížená dohlednost (1 km)."
         ],
         "alerts": [
+          {
+            "code": "horizon",
+            "value": 63
+          },
           {
             "code": "visibility",
             "value": 1
@@ -4203,29 +4183,29 @@
         "sun_azimuth_deg": 248,
         "terrain_cutoff_deg": 0.0,
         "target_date": "2026-11-17",
-        "relative": null,
+        "relative": "tomorrow",
         "weather": {
           "funchal": {
             "rain": "none",
             "rain_mm": 0.0,
-            "rain_prob_pct": 0,
+            "rain_prob_pct": 3,
             "rain_from": null,
             "rain_to": null,
             "sky": "cloudy",
-            "temp_min_c": 22,
-            "temp_max_c": 24,
-            "gust_max_kmh": 16
+            "temp_min_c": 21,
+            "temp_max_c": 23,
+            "gust_max_kmh": 17
           },
           "ponta_do_pargo": {
             "rain": "none",
             "rain_mm": 0.0,
-            "rain_prob_pct": 8,
+            "rain_prob_pct": 5,
             "rain_from": null,
             "rain_to": null,
             "sky": "cloudy",
             "temp_min_c": 19,
             "temp_max_c": 21,
-            "gust_max_kmh": 24
+            "gust_max_kmh": 22
           }
         }
       },
@@ -4233,34 +4213,34 @@
         "date": "2026-11-18",
         "sunset": "18:06",
         "verdict": "NO_GO",
-        "score_pct": 3,
+        "score_pct": 11,
         "score_range": [
-          0,
-          13
+          1,
+          21
         ],
         "confidence": "MEDIUM",
-        "horizon_low_cloud_pct": 64,
-        "canvas_cloud_pct": 0,
-        "wind_kmh": 8,
-        "gust_kmh": 33,
-        "wind_dir_deg": 252,
-        "visibility_km": 3,
+        "horizon_low_cloud_pct": 39,
+        "canvas_cloud_pct": 16,
+        "wind_kmh": 6,
+        "gust_kmh": 36,
+        "wind_dir_deg": 270,
+        "visibility_km": 1,
         "precip_mm": 0.0,
-        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 3 %. Největší problém jsou nízké mraky na obzoru.",
-        "problem": "horizon",
-        "weakest": "horizon_clarity",
+        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 11 %. Nejslabší stránka: mlha na vyhlídce (nízká oblačnost na vyhlídce 70 %, rozdíl T − rosný bod 0.7 °C).",
+        "problem": null,
+        "weakest": "low_cloud_penalty",
         "warnings": [
-          "Nízké mraky na západním obzoru (64 %) mohou zakrýt slunce.",
-          "Snížená dohlednost (3 km)."
+          "Nízké mraky na západním obzoru (39 %) mohou zakrýt slunce.",
+          "Snížená dohlednost (1 km)."
         ],
         "alerts": [
           {
             "code": "horizon",
-            "value": 64
+            "value": 39
           },
           {
             "code": "visibility",
-            "value": 3
+            "value": 1
           }
         ],
         "sun_azimuth_deg": 248,
@@ -4277,18 +4257,18 @@
             "sky": "cloudy",
             "temp_min_c": 21,
             "temp_max_c": 24,
-            "gust_max_kmh": 24
+            "gust_max_kmh": 23
           },
           "ponta_do_pargo": {
             "rain": "none",
             "rain_mm": 0.0,
-            "rain_prob_pct": 6,
+            "rain_prob_pct": 5,
             "rain_from": null,
             "rain_to": null,
             "sky": "cloudy",
             "temp_min_c": 19,
-            "temp_max_c": 22,
-            "gust_max_kmh": 37
+            "temp_max_c": 21,
+            "gust_max_kmh": 40
           }
         }
       }
@@ -4298,25 +4278,25 @@
         "date": "2026-11-16",
         "sunset": "18:06",
         "verdict": "NO_GO",
-        "score_pct": 9,
+        "score_pct": 7,
         "score_range": [
-          4,
-          14
+          2,
+          12
         ],
         "confidence": "HIGH",
-        "horizon_low_cloud_pct": 72,
-        "canvas_cloud_pct": 50,
-        "wind_kmh": 12,
-        "gust_kmh": 44,
-        "wind_dir_deg": 244,
-        "visibility_km": 30,
+        "horizon_low_cloud_pct": 84,
+        "canvas_cloud_pct": 3,
+        "wind_kmh": 13,
+        "gust_kmh": 35,
+        "wind_dir_deg": 243,
+        "visibility_km": 32,
         "precip_mm": 0.0,
-        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 9 %. Největší problém je úplné zatažení.",
+        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 7 %. Největší problém je úplné zatažení.",
         "problem": "overcast",
         "weakest": "horizon_clarity",
         "warnings": [
           "Slunce zapadne za terén (1.5° nad obzorem) dřív než nad mořem.",
-          "Nízké mraky na západním obzoru (72 %) mohou zakrýt slunce.",
+          "Nízké mraky na západním obzoru (84 %) mohou zakrýt slunce.",
           "Zataženo nízkou/střední oblačností na západě – slunce nebude vidět."
         ],
         "alerts": [
@@ -4325,7 +4305,7 @@
           },
           {
             "code": "horizon",
-            "value": 72
+            "value": 84
           },
           {
             "code": "terrain",
@@ -4335,61 +4315,56 @@
         "sun_azimuth_deg": 248,
         "terrain_cutoff_deg": 1.5,
         "target_date": "2026-11-16",
-        "relative": "tomorrow",
+        "relative": "today",
         "weather": {
           "funchal": {
             "rain": "none",
             "rain_mm": 0.0,
-            "rain_prob_pct": 28,
+            "rain_prob_pct": 33,
             "rain_from": null,
             "rain_to": null,
             "sky": "cloudy",
             "temp_min_c": 20,
-            "temp_max_c": 23,
-            "gust_max_kmh": 47
+            "temp_max_c": 22,
+            "gust_max_kmh": 36
           },
           "cristo_rei": {
             "rain": "none",
             "rain_mm": 0.0,
-            "rain_prob_pct": 15,
+            "rain_prob_pct": 20,
             "rain_from": null,
             "rain_to": null,
             "sky": "cloudy",
             "temp_min_c": 19,
-            "temp_max_c": 22,
-            "gust_max_kmh": 47
+            "temp_max_c": 21,
+            "gust_max_kmh": 36
           }
         }
       },
       {
         "date": "2026-11-17",
         "sunset": "18:05",
-        "verdict": "NO_GO",
-        "score_pct": 36,
+        "verdict": "MAYBE",
+        "score_pct": 47,
         "score_range": [
-          26,
-          46
+          42,
+          52
         ],
-        "confidence": "MEDIUM",
-        "horizon_low_cloud_pct": 26,
+        "confidence": "HIGH",
+        "horizon_low_cloud_pct": 24,
         "canvas_cloud_pct": 0,
         "wind_kmh": 5,
-        "gust_kmh": 11,
-        "wind_dir_deg": 120,
-        "visibility_km": 12,
+        "gust_kmh": 15,
+        "wind_dir_deg": 135,
+        "visibility_km": 16,
         "precip_mm": 0.0,
-        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 36 %. Nejslabší stránka: mlha na vyhlídce (nízká oblačnost na vyhlídce 92 %, rozdíl T − rosný bod 0.7 °C).",
+        "summary_cs": "Hazard, výsledek je nejistý. Skóre 47 %. Nejslabší stránka: mlha na vyhlídce (nízká oblačnost na vyhlídce 96 %, rozdíl T − rosný bod 0.4 °C).",
         "problem": null,
         "weakest": "low_cloud_penalty",
         "warnings": [
-          "Slunce zapadne za terén (1.5° nad obzorem) dřív než nad mořem.",
-          "Snížená dohlednost (12 km)."
+          "Slunce zapadne za terén (1.5° nad obzorem) dřív než nad mořem."
         ],
         "alerts": [
-          {
-            "code": "visibility",
-            "value": 12
-          },
           {
             "code": "terrain",
             "value": 1.5
@@ -4398,29 +4373,29 @@
         "sun_azimuth_deg": 248,
         "terrain_cutoff_deg": 1.5,
         "target_date": "2026-11-17",
-        "relative": null,
+        "relative": "tomorrow",
         "weather": {
           "funchal": {
             "rain": "none",
             "rain_mm": 0.0,
-            "rain_prob_pct": 0,
+            "rain_prob_pct": 3,
             "rain_from": null,
             "rain_to": null,
             "sky": "cloudy",
-            "temp_min_c": 22,
-            "temp_max_c": 24,
-            "gust_max_kmh": 16
+            "temp_min_c": 21,
+            "temp_max_c": 23,
+            "gust_max_kmh": 17
           },
           "cristo_rei": {
             "rain": "none",
             "rain_mm": 0.0,
-            "rain_prob_pct": 9,
+            "rain_prob_pct": 8,
             "rain_from": null,
             "rain_to": null,
             "sky": "cloudy",
             "temp_min_c": 20,
-            "temp_max_c": 23,
-            "gust_max_kmh": 16
+            "temp_max_c": 22,
+            "gust_max_kmh": 17
           }
         }
       },
@@ -4428,30 +4403,35 @@
         "date": "2026-11-18",
         "sunset": "18:05",
         "verdict": "NO_GO",
-        "score_pct": 15,
+        "score_pct": 24,
         "score_range": [
-          5,
-          25
+          14,
+          34
         ],
         "confidence": "MEDIUM",
-        "horizon_low_cloud_pct": 53,
-        "canvas_cloud_pct": 0,
+        "horizon_low_cloud_pct": 40,
+        "canvas_cloud_pct": 22,
         "wind_kmh": 3,
-        "gust_kmh": 15,
-        "wind_dir_deg": 175,
-        "visibility_km": 19,
+        "gust_kmh": 16,
+        "wind_dir_deg": 161,
+        "visibility_km": 10,
         "precip_mm": 0.0,
-        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 15 %. Největší problém jsou nízké mraky na obzoru.",
-        "problem": "horizon",
+        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 24 %. Nejslabší stránka: mlha na vyhlídce (nízká oblačnost na vyhlídce 86 %, rozdíl T − rosný bod 0.6 °C).",
+        "problem": null,
         "weakest": "low_cloud_penalty",
         "warnings": [
           "Slunce zapadne za terén (1.5° nad obzorem) dřív než nad mořem.",
-          "Nízké mraky na západním obzoru (53 %) mohou zakrýt slunce."
+          "Nízké mraky na západním obzoru (40 %) mohou zakrýt slunce.",
+          "Snížená dohlednost (10 km)."
         ],
         "alerts": [
           {
             "code": "horizon",
-            "value": 53
+            "value": 40
+          },
+          {
+            "code": "visibility",
+            "value": 10
           },
           {
             "code": "terrain",
@@ -4472,18 +4452,18 @@
             "sky": "cloudy",
             "temp_min_c": 21,
             "temp_max_c": 24,
-            "gust_max_kmh": 24
+            "gust_max_kmh": 23
           },
           "cristo_rei": {
             "rain": "none",
             "rain_mm": 0.0,
-            "rain_prob_pct": 4,
+            "rain_prob_pct": 10,
             "rain_from": null,
             "rain_to": null,
             "sky": "cloudy",
             "temp_min_c": 20,
             "temp_max_c": 22,
-            "gust_max_kmh": 24
+            "gust_max_kmh": 23
           }
         }
       }
@@ -4499,19 +4479,19 @@
           5
         ],
         "confidence": "HIGH",
-        "horizon_low_cloud_pct": 58,
-        "canvas_cloud_pct": 93,
-        "wind_kmh": 5,
-        "gust_kmh": 41,
-        "wind_dir_deg": 303,
-        "visibility_km": 5,
+        "horizon_low_cloud_pct": 78,
+        "canvas_cloud_pct": 2,
+        "wind_kmh": 6,
+        "gust_kmh": 33,
+        "wind_dir_deg": 282,
+        "visibility_km": 6,
         "precip_mm": 0.0,
         "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 0 %. Největší problém je mlha/mrak na vrcholu.",
         "problem": "fog",
-        "weakest": "low_cloud_penalty",
+        "weakest": "horizon_clarity",
         "warnings": [
-          "Nízké mraky na západním obzoru (58 %) mohou zakrýt slunce.",
-          "Snížená dohlednost (5 km).",
+          "Nízké mraky na západním obzoru (78 %) mohou zakrýt slunce.",
+          "Snížená dohlednost (6 km).",
           "Zataženo nízkou/střední oblačností na západě – slunce nebude vidět.",
           "Vrchol bude pravděpodobně v mraku/mlze."
         ],
@@ -4520,40 +4500,43 @@
             "code": "fog"
           },
           {
+            "code": "overcast"
+          },
+          {
             "code": "horizon",
-            "value": 58
+            "value": 78
           },
           {
             "code": "visibility",
-            "value": 5
+            "value": 6
           }
         ],
         "sun_azimuth_deg": 248,
         "terrain_cutoff_deg": 0.0,
         "target_date": "2026-11-16",
-        "relative": "tomorrow",
+        "relative": "today",
         "weather": {
           "funchal": {
             "rain": "none",
             "rain_mm": 0.0,
-            "rain_prob_pct": 28,
+            "rain_prob_pct": 33,
             "rain_from": null,
             "rain_to": null,
             "sky": "cloudy",
             "temp_min_c": 20,
-            "temp_max_c": 23,
-            "gust_max_kmh": 47
+            "temp_max_c": 22,
+            "gust_max_kmh": 36
           },
           "arieiro": {
             "rain": "none",
-            "rain_mm": 0.0,
-            "rain_prob_pct": 30,
+            "rain_mm": 0.1,
+            "rain_prob_pct": 38,
             "rain_from": null,
             "rain_to": null,
             "sky": "cloudy",
             "temp_min_c": 7,
             "temp_max_c": 12,
-            "gust_max_kmh": 41
+            "gust_max_kmh": 34
           }
         }
       },
@@ -4563,22 +4546,22 @@
         "verdict": "NO_GO",
         "score_pct": 35,
         "score_range": [
-          25,
-          45
+          30,
+          40
         ],
-        "confidence": "MEDIUM",
-        "horizon_low_cloud_pct": 22,
-        "canvas_cloud_pct": 29,
+        "confidence": "HIGH",
+        "horizon_low_cloud_pct": 64,
+        "canvas_cloud_pct": 0,
         "wind_kmh": 2,
-        "gust_kmh": 14,
-        "wind_dir_deg": 22,
+        "gust_kmh": 18,
+        "wind_dir_deg": 340,
         "visibility_km": 4,
         "precip_mm": 0.0,
         "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 35 %. Největší problém je mlha/mrak na vrcholu.",
         "problem": null,
-        "weakest": null,
+        "weakest": "cloud_canvas",
         "warnings": [
-          "Hodně nízké oblačnosti (18 %) a vlhko u vrcholu – hrozí mlha.",
+          "Hodně nízké oblačnosti (12 %) a vlhko u vrcholu – hrozí mlha.",
           "Snížená dohlednost (4 km)."
         ],
         "alerts": [
@@ -4590,18 +4573,18 @@
         "sun_azimuth_deg": 248,
         "terrain_cutoff_deg": 0.0,
         "target_date": "2026-11-17",
-        "relative": null,
+        "relative": "tomorrow",
         "weather": {
           "funchal": {
             "rain": "none",
             "rain_mm": 0.0,
-            "rain_prob_pct": 0,
+            "rain_prob_pct": 3,
             "rain_from": null,
             "rain_to": null,
             "sky": "cloudy",
-            "temp_min_c": 22,
-            "temp_max_c": 24,
-            "gust_max_kmh": 16
+            "temp_min_c": 21,
+            "temp_max_c": 23,
+            "gust_max_kmh": 17
           },
           "arieiro": {
             "rain": "none",
@@ -4610,32 +4593,32 @@
             "rain_from": null,
             "rain_to": null,
             "sky": "cloudy",
-            "temp_min_c": 11,
-            "temp_max_c": 15,
-            "gust_max_kmh": 25
+            "temp_min_c": 10,
+            "temp_max_c": 14,
+            "gust_max_kmh": 24
           }
         }
       },
       {
         "date": "2026-11-18",
         "sunset": "18:05",
-        "verdict": "MAYBE",
-        "score_pct": 64,
+        "verdict": "NO_GO",
+        "score_pct": 35,
         "score_range": [
-          54,
-          74
+          25,
+          45
         ],
         "confidence": "MEDIUM",
-        "horizon_low_cloud_pct": 59,
-        "canvas_cloud_pct": 0,
+        "horizon_low_cloud_pct": 32,
+        "canvas_cloud_pct": 58,
         "wind_kmh": 3,
-        "gust_kmh": 27,
+        "gust_kmh": 32,
         "wind_dir_deg": 312,
-        "visibility_km": 2,
+        "visibility_km": 9,
         "precip_mm": 0.0,
-        "summary_cs": "Hazard, výsledek je nejistý. Skóre 64 %. Nejslabší stránka: barvy oblohy (vysoká oblačnost (cirry) 0 %).",
+        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 35 %. Největší problém je mlha/mrak na vrcholu.",
         "problem": null,
-        "weakest": "cloud_canvas",
+        "weakest": null,
         "warnings": [
           "Hodně nízké oblačnosti (0 %) a vlhko u vrcholu – hrozí mlha."
         ],
@@ -4654,7 +4637,7 @@
             "sky": "cloudy",
             "temp_min_c": 21,
             "temp_max_c": 24,
-            "gust_max_kmh": 24
+            "gust_max_kmh": 23
           },
           "arieiro": {
             "rain": "none",
@@ -4662,10 +4645,10 @@
             "rain_prob_pct": 0,
             "rain_from": null,
             "rain_to": null,
-            "sky": "partly",
+            "sky": "cloudy",
             "temp_min_c": 10,
             "temp_max_c": 15,
-            "gust_max_kmh": 31
+            "gust_max_kmh": 36
           }
         }
       }
@@ -4681,19 +4664,19 @@
           5
         ],
         "confidence": "HIGH",
-        "horizon_low_cloud_pct": 63,
-        "canvas_cloud_pct": 70,
-        "wind_kmh": 5,
-        "gust_kmh": 41,
-        "wind_dir_deg": 303,
-        "visibility_km": 5,
+        "horizon_low_cloud_pct": 72,
+        "canvas_cloud_pct": 0,
+        "wind_kmh": 6,
+        "gust_kmh": 33,
+        "wind_dir_deg": 282,
+        "visibility_km": 6,
         "precip_mm": 0.0,
         "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 0 %. Největší problém je mlha/mrak na vrcholu.",
         "problem": "fog",
         "weakest": "horizon_clarity",
         "warnings": [
-          "Nízké mraky na západním obzoru (63 %) mohou zakrýt slunce.",
-          "Snížená dohlednost (5 km).",
+          "Nízké mraky na západním obzoru (72 %) mohou zakrýt slunce.",
+          "Snížená dohlednost (6 km).",
           "Zataženo nízkou/střední oblačností na západě – slunce nebude vidět.",
           "Vrchol bude pravděpodobně v mraku/mlze."
         ],
@@ -4706,39 +4689,39 @@
           },
           {
             "code": "horizon",
-            "value": 63
+            "value": 72
           },
           {
             "code": "visibility",
-            "value": 5
+            "value": 6
           }
         ],
         "sun_azimuth_deg": 248,
         "terrain_cutoff_deg": 0.0,
         "target_date": "2026-11-16",
-        "relative": "tomorrow",
+        "relative": "today",
         "weather": {
           "funchal": {
             "rain": "none",
             "rain_mm": 0.0,
-            "rain_prob_pct": 28,
+            "rain_prob_pct": 33,
             "rain_from": null,
             "rain_to": null,
             "sky": "cloudy",
             "temp_min_c": 20,
-            "temp_max_c": 23,
-            "gust_max_kmh": 47
+            "temp_max_c": 22,
+            "gust_max_kmh": 36
           },
           "pico_ruivo": {
             "rain": "none",
-            "rain_mm": 0.0,
-            "rain_prob_pct": 30,
+            "rain_mm": 0.1,
+            "rain_prob_pct": 38,
             "rain_from": null,
             "rain_to": null,
             "sky": "cloudy",
-            "temp_min_c": 7,
-            "temp_max_c": 12,
-            "gust_max_kmh": 41
+            "temp_min_c": 6,
+            "temp_max_c": 11,
+            "gust_max_kmh": 34
           }
         }
       },
@@ -4748,45 +4731,39 @@
         "verdict": "NO_GO",
         "score_pct": 35,
         "score_range": [
-          25,
-          45
+          30,
+          40
         ],
-        "confidence": "MEDIUM",
-        "horizon_low_cloud_pct": 49,
+        "confidence": "HIGH",
+        "horizon_low_cloud_pct": 23,
         "canvas_cloud_pct": 0,
         "wind_kmh": 2,
-        "gust_kmh": 14,
-        "wind_dir_deg": 22,
+        "gust_kmh": 18,
+        "wind_dir_deg": 340,
         "visibility_km": 4,
         "precip_mm": 0.0,
         "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 35 %. Největší problém je mlha/mrak na vrcholu.",
         "problem": null,
         "weakest": "cloud_canvas",
         "warnings": [
-          "Hodně nízké oblačnosti (8 %) a vlhko u vrcholu – hrozí mlha.",
-          "Snížená dohlednost (4 km)."
+          "Hodně nízké oblačnosti (0 %) a vlhko u vrcholu – hrozí mlha."
         ],
-        "alerts": [
-          {
-            "code": "visibility",
-            "value": 4
-          }
-        ],
+        "alerts": [],
         "sun_azimuth_deg": 248,
         "terrain_cutoff_deg": 0.0,
         "target_date": "2026-11-17",
-        "relative": null,
+        "relative": "tomorrow",
         "weather": {
           "funchal": {
             "rain": "none",
             "rain_mm": 0.0,
-            "rain_prob_pct": 0,
+            "rain_prob_pct": 3,
             "rain_from": null,
             "rain_to": null,
             "sky": "cloudy",
-            "temp_min_c": 22,
-            "temp_max_c": 24,
-            "gust_max_kmh": 16
+            "temp_min_c": 21,
+            "temp_max_c": 23,
+            "gust_max_kmh": 17
           },
           "pico_ruivo": {
             "rain": "none",
@@ -4797,30 +4774,30 @@
             "sky": "cloudy",
             "temp_min_c": 10,
             "temp_max_c": 14,
-            "gust_max_kmh": 25
+            "gust_max_kmh": 24
           }
         }
       },
       {
         "date": "2026-11-18",
         "sunset": "18:05",
-        "verdict": "MAYBE",
-        "score_pct": 67,
+        "verdict": "NO_GO",
+        "score_pct": 35,
         "score_range": [
-          57,
-          77
+          25,
+          45
         ],
         "confidence": "MEDIUM",
-        "horizon_low_cloud_pct": 37,
-        "canvas_cloud_pct": 0,
+        "horizon_low_cloud_pct": 54,
+        "canvas_cloud_pct": 7,
         "wind_kmh": 3,
-        "gust_kmh": 27,
+        "gust_kmh": 32,
         "wind_dir_deg": 312,
-        "visibility_km": 2,
+        "visibility_km": 9,
         "precip_mm": 0.0,
-        "summary_cs": "Hazard, výsledek je nejistý. Skóre 67 %. Nejslabší stránka: barvy oblohy (vysoká oblačnost (cirry) 0 %).",
+        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 35 %. Největší problém je mlha/mrak na vrcholu.",
         "problem": null,
-        "weakest": "cloud_canvas",
+        "weakest": null,
         "warnings": [
           "Hodně nízké oblačnosti (0 %) a vlhko u vrcholu – hrozí mlha."
         ],
@@ -4839,7 +4816,7 @@
             "sky": "cloudy",
             "temp_min_c": 21,
             "temp_max_c": 24,
-            "gust_max_kmh": 24
+            "gust_max_kmh": 23
           },
           "pico_ruivo": {
             "rain": "none",
@@ -4847,16 +4824,56 @@
             "rain_prob_pct": 0,
             "rain_from": null,
             "rain_to": null,
-            "sky": "partly",
+            "sky": "cloudy",
             "temp_min_c": 10,
             "temp_max_c": 14,
-            "gust_max_kmh": 31
+            "gust_max_kmh": 36
           }
         }
       }
     ]
   },
   "history": [
+    {
+      "date": "2026-11-15",
+      "score": 25,
+      "score_pct": 25,
+      "verdict": "NO_GO",
+      "summary": "Bez výraznějšího problému",
+      "reason": {
+        "problem": null,
+        "weakest": null
+      },
+      "inversion_pct": 7,
+      "outcome": null,
+      "actual_verdict": null,
+      "note": null,
+      "source": "backfill",
+      "time": "07:37",
+      "cloud_base": 2190,
+      "cloud_top": null,
+      "above_deck_m": null,
+      "inversion_case": "none",
+      "cloud_cover_low": 0,
+      "cloud_cover_high": 60,
+      "canvas_cloud": 65,
+      "horizon_low_cloud": 31,
+      "humidity_peak": 68,
+      "wind_speed": 3,
+      "wind_gusts": 15,
+      "temp": 6.5,
+      "visibility_km": 37,
+      "webcam_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-15/07_00.jpg",
+      "webcam_time": "07:00",
+      "webcam_urls": [
+        "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-15/07_00.jpg",
+        "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-15/07_30.jpg"
+      ],
+      "webcam_times": [
+        "07:00",
+        "07:30"
+      ]
+    },
     {
       "date": "2026-11-14",
       "score": 91,
@@ -5096,46 +5113,6 @@
         "07:00",
         "07:30"
       ]
-    },
-    {
-      "date": "2026-11-08",
-      "score": 1,
-      "score_pct": 1,
-      "verdict": "NO_GO",
-      "summary": "Vrchol v mraku/mlze · hladina mraků ~2184 m",
-      "reason": {
-        "problem": "fog",
-        "weakest": "wind"
-      },
-      "inversion_pct": 8,
-      "outcome": null,
-      "actual_verdict": null,
-      "note": null,
-      "source": "backfill",
-      "time": "07:31",
-      "cloud_base": null,
-      "cloud_top": 2184,
-      "above_deck_m": -366,
-      "inversion_case": "inside",
-      "cloud_cover_low": 98,
-      "cloud_cover_high": 0,
-      "canvas_cloud": 0,
-      "horizon_low_cloud": 3,
-      "humidity_peak": 96,
-      "wind_speed": 20,
-      "wind_gusts": 97,
-      "temp": 9.1,
-      "visibility_km": 33,
-      "webcam_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-08/07_00.jpg",
-      "webcam_time": "07:00",
-      "webcam_urls": [
-        "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-08/07_00.jpg",
-        "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-08/07_30.jpg"
-      ],
-      "webcam_times": [
-        "07:00",
-        "07:30"
-      ]
     }
   ],
   "sunny_escape": {
@@ -5143,57 +5120,57 @@
       11,
       16
     ],
-    "day": "tomorrow",
+    "day": "today",
     "date": "2026-11-16",
     "winner": {
       "key": "machico",
       "name": "Machico",
       "name_gen": "Machica",
-      "sun_score": 65,
-      "temp_c": 23,
+      "sun_score": 68,
+      "temp_c": 22,
       "precip_mm": 0.0,
-      "sky": "cloudy",
-      "recommendation": "Zítra jeďte do Machica – 23 °C, zataženo, 0 mm srážek"
+      "sky": "partly",
+      "recommendation": "Dnes jeďte do Machica – 22 °C, polojasno, 0 mm srážek"
     },
     "locations": [
       {
         "key": "machico",
         "name": "Machico",
         "name_gen": "Machica",
-        "sun_score": 65,
-        "temp_c": 23,
-        "precip_mm": 0.0,
-        "cloud_pct": 65,
-        "sunshine_pct": 82,
-        "sky": "cloudy",
-        "lat": 32.7183,
-        "lon": -16.7644
-      },
-      {
-        "key": "funchal",
-        "name": "Funchal",
-        "name_gen": "Funchalu",
-        "sun_score": 62,
+        "sun_score": 68,
         "temp_c": 22,
         "precip_mm": 0.0,
-        "cloud_pct": 63,
-        "sunshine_pct": 74,
-        "sky": "cloudy",
-        "lat": 32.65,
-        "lon": -16.9086
+        "cloud_pct": 56,
+        "sunshine_pct": 83,
+        "sky": "partly",
+        "lat": 32.7183,
+        "lon": -16.7644
       },
       {
         "key": "sao_vicente",
         "name": "São Vicente",
         "name_gen": "São Vicente",
-        "sun_score": 53,
+        "sun_score": 42,
         "temp_c": 23,
         "precip_mm": 0.0,
-        "cloud_pct": 61,
-        "sunshine_pct": 48,
-        "sky": "cloudy",
+        "cloud_pct": 56,
+        "sunshine_pct": 17,
+        "sky": "partly",
         "lat": 32.8028,
         "lon": -17.0436
+      },
+      {
+        "key": "funchal",
+        "name": "Funchal",
+        "name_gen": "Funchalu",
+        "sun_score": 38,
+        "temp_c": 22,
+        "precip_mm": 0.0,
+        "cloud_pct": 72,
+        "sunshine_pct": 25,
+        "sky": "cloudy",
+        "lat": 32.65,
+        "lon": -16.9086
       },
       {
         "key": "ponta_do_sol",
@@ -5202,8 +5179,8 @@
         "sun_score": 32,
         "temp_c": 22,
         "precip_mm": 0.0,
-        "cloud_pct": 80,
-        "sunshine_pct": 18,
+        "cloud_pct": 74,
+        "sunshine_pct": 12,
         "sky": "cloudy",
         "lat": 32.6806,
         "lon": -17.1042
@@ -5215,20 +5192,20 @@
         "sun_score": 32,
         "temp_c": 22,
         "precip_mm": 0.0,
-        "cloud_pct": 80,
-        "sunshine_pct": 18,
+        "cloud_pct": 74,
+        "sunshine_pct": 12,
         "sky": "cloudy",
         "lat": 32.7214,
         "lon": -17.1742
       }
     ],
     "today": {
-      "date": "2026-11-15",
+      "date": "2026-11-16",
       "winner": {
         "key": "machico",
         "name": "Machico",
         "name_gen": "Machica",
-        "sun_score": 83,
+        "sun_score": 68,
         "temp_c": 22,
         "precip_mm": 0.0,
         "sky": "partly",
@@ -5239,50 +5216,24 @@
           "key": "machico",
           "name": "Machico",
           "name_gen": "Machica",
-          "sun_score": 83,
+          "sun_score": 68,
           "temp_c": 22,
           "precip_mm": 0.0,
-          "cloud_pct": 32,
-          "sunshine_pct": 100,
+          "cloud_pct": 56,
+          "sunshine_pct": 83,
           "sky": "partly",
           "lat": 32.7183,
           "lon": -16.7644
         },
         {
-          "key": "ponta_do_sol",
-          "name": "Ponta do Sol",
-          "name_gen": "Ponta do Sol",
-          "sun_score": 80,
-          "temp_c": 21,
-          "precip_mm": 0.0,
-          "cloud_pct": 36,
-          "sunshine_pct": 100,
-          "sky": "partly",
-          "lat": 32.6806,
-          "lon": -17.1042
-        },
-        {
-          "key": "calheta",
-          "name": "Calheta / Jardim do Mar",
-          "name_gen": "Calhety / Jardim do Mar",
-          "sun_score": 80,
-          "temp_c": 21,
-          "precip_mm": 0.0,
-          "cloud_pct": 36,
-          "sunshine_pct": 100,
-          "sky": "partly",
-          "lat": 32.7214,
-          "lon": -17.1742
-        },
-        {
           "key": "sao_vicente",
           "name": "São Vicente",
           "name_gen": "São Vicente",
-          "sun_score": 79,
-          "temp_c": 21,
+          "sun_score": 42,
+          "temp_c": 23,
           "precip_mm": 0.0,
-          "cloud_pct": 41,
-          "sunshine_pct": 100,
+          "cloud_pct": 56,
+          "sunshine_pct": 17,
           "sky": "partly",
           "lat": 32.8028,
           "lon": -17.0436
@@ -5291,79 +5242,66 @@
           "key": "funchal",
           "name": "Funchal",
           "name_gen": "Funchalu",
-          "sun_score": 78,
-          "temp_c": 21,
+          "sun_score": 38,
+          "temp_c": 22,
           "precip_mm": 0.0,
-          "cloud_pct": 40,
-          "sunshine_pct": 100,
-          "sky": "partly",
+          "cloud_pct": 72,
+          "sunshine_pct": 25,
+          "sky": "cloudy",
           "lat": 32.65,
           "lon": -16.9086
+        },
+        {
+          "key": "ponta_do_sol",
+          "name": "Ponta do Sol",
+          "name_gen": "Ponta do Sol",
+          "sun_score": 32,
+          "temp_c": 22,
+          "precip_mm": 0.0,
+          "cloud_pct": 74,
+          "sunshine_pct": 12,
+          "sky": "cloudy",
+          "lat": 32.6806,
+          "lon": -17.1042
+        },
+        {
+          "key": "calheta",
+          "name": "Calheta / Jardim do Mar",
+          "name_gen": "Calhety / Jardim do Mar",
+          "sun_score": 32,
+          "temp_c": 22,
+          "precip_mm": 0.0,
+          "cloud_pct": 74,
+          "sunshine_pct": 12,
+          "sky": "cloudy",
+          "lat": 32.7214,
+          "lon": -17.1742
         }
       ]
     },
     "tomorrow": {
-      "date": "2026-11-16",
+      "date": "2026-11-17",
       "winner": {
-        "key": "machico",
-        "name": "Machico",
-        "name_gen": "Machica",
-        "sun_score": 65,
-        "temp_c": 23,
+        "key": "ponta_do_sol",
+        "name": "Ponta do Sol",
+        "name_gen": "Ponta do Sol",
+        "sun_score": 86,
+        "temp_c": 24,
         "precip_mm": 0.0,
-        "sky": "cloudy",
-        "recommendation": "Zítra jeďte do Machica – 23 °C, zataženo, 0 mm srážek"
+        "sky": "partly",
+        "recommendation": "Zítra jeďte do Ponta do Sol – 24 °C, polojasno, 0 mm srážek"
       },
       "locations": [
-        {
-          "key": "machico",
-          "name": "Machico",
-          "name_gen": "Machica",
-          "sun_score": 65,
-          "temp_c": 23,
-          "precip_mm": 0.0,
-          "cloud_pct": 65,
-          "sunshine_pct": 82,
-          "sky": "cloudy",
-          "lat": 32.7183,
-          "lon": -16.7644
-        },
-        {
-          "key": "funchal",
-          "name": "Funchal",
-          "name_gen": "Funchalu",
-          "sun_score": 62,
-          "temp_c": 22,
-          "precip_mm": 0.0,
-          "cloud_pct": 63,
-          "sunshine_pct": 74,
-          "sky": "cloudy",
-          "lat": 32.65,
-          "lon": -16.9086
-        },
-        {
-          "key": "sao_vicente",
-          "name": "São Vicente",
-          "name_gen": "São Vicente",
-          "sun_score": 53,
-          "temp_c": 23,
-          "precip_mm": 0.0,
-          "cloud_pct": 61,
-          "sunshine_pct": 48,
-          "sky": "cloudy",
-          "lat": 32.8028,
-          "lon": -17.0436
-        },
         {
           "key": "ponta_do_sol",
           "name": "Ponta do Sol",
           "name_gen": "Ponta do Sol",
-          "sun_score": 32,
-          "temp_c": 22,
+          "sun_score": 86,
+          "temp_c": 24,
           "precip_mm": 0.0,
-          "cloud_pct": 80,
-          "sunshine_pct": 18,
-          "sky": "cloudy",
+          "cloud_pct": 31,
+          "sunshine_pct": 100,
+          "sky": "partly",
           "lat": 32.6806,
           "lon": -17.1042
         },
@@ -5371,20 +5309,84 @@
           "key": "calheta",
           "name": "Calheta / Jardim do Mar",
           "name_gen": "Calhety / Jardim do Mar",
-          "sun_score": 32,
-          "temp_c": 22,
+          "sun_score": 86,
+          "temp_c": 24,
           "precip_mm": 0.0,
-          "cloud_pct": 80,
-          "sunshine_pct": 18,
-          "sky": "cloudy",
+          "cloud_pct": 31,
+          "sunshine_pct": 100,
+          "sky": "partly",
           "lat": 32.7214,
           "lon": -17.1742
+        },
+        {
+          "key": "machico",
+          "name": "Machico",
+          "name_gen": "Machica",
+          "sun_score": 85,
+          "temp_c": 24,
+          "precip_mm": 0.0,
+          "cloud_pct": 33,
+          "sunshine_pct": 100,
+          "sky": "partly",
+          "lat": 32.7183,
+          "lon": -16.7644
+        },
+        {
+          "key": "funchal",
+          "name": "Funchal",
+          "name_gen": "Funchalu",
+          "sun_score": 83,
+          "temp_c": 23,
+          "precip_mm": 0.0,
+          "cloud_pct": 37,
+          "sunshine_pct": 100,
+          "sky": "partly",
+          "lat": 32.65,
+          "lon": -16.9086
+        },
+        {
+          "key": "sao_vicente",
+          "name": "São Vicente",
+          "name_gen": "São Vicente",
+          "sun_score": 82,
+          "temp_c": 23,
+          "precip_mm": 0.0,
+          "cloud_pct": 40,
+          "sunshine_pct": 100,
+          "sky": "partly",
+          "lat": 32.8028,
+          "lon": -17.0436
         }
       ]
     }
   },
   "fanal": {
     "history": [
+      {
+        "date": "2026-11-15",
+        "score": 30,
+        "verdict": "CLEAR",
+        "metrics": {
+          "temp": 14.4,
+          "humidity": 83,
+          "forest_humidity": 91,
+          "dew_point": 11.6,
+          "dew_point_spread": 2.8,
+          "wind_speed": 4,
+          "wind_dir": 280
+        },
+        "summary": "Vlhkost v lese 91 %, vítr z západu – bez mlhy",
+        "snapshots": [
+          {
+            "time": "11:00",
+            "url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/rabacal-madeira/2026-11-15/11_00.jpg"
+          },
+          {
+            "time": "15:00",
+            "url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/rabacal-madeira/2026-11-15/15_00.jpg"
+          }
+        ]
+      },
       {
         "date": "2026-11-14",
         "score": 50,
@@ -5534,31 +5536,6 @@
             "url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/rabacal-madeira/2026-11-09/15_00.jpg"
           }
         ]
-      },
-      {
-        "date": "2026-11-08",
-        "score": 5,
-        "verdict": "CLEAR",
-        "metrics": {
-          "temp": 13.1,
-          "humidity": 83,
-          "forest_humidity": 86,
-          "dew_point": 10.3,
-          "dew_point_spread": 2.8,
-          "wind_speed": 19,
-          "wind_dir": 235
-        },
-        "summary": "Vlhkost v lese 86 %, vítr z jihozápadu – bez mlhy",
-        "snapshots": [
-          {
-            "time": "11:00",
-            "url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/rabacal-madeira/2026-11-08/11_00.jpg"
-          },
-          {
-            "time": "15:00",
-            "url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/rabacal-madeira/2026-11-08/15_00.jpg"
-          }
-        ]
       }
     ],
     "location": {
@@ -5570,25 +5547,25 @@
       "elevation_m": 1150
     },
     "webcam_url": "https://www.netmadeira.com/webcams-madeira/rabacal-madeira",
-    "day": "tomorrow",
+    "day": "today",
     "date": "2026-11-16",
     "verdict": "PARTIAL",
     "score": 50,
     "peak_score": 50,
     "peak_hour": 17,
-    "humidity": 95,
-    "forest_humidity": 98,
-    "rh_900": 98,
-    "rh_850": 100,
-    "cloud_coverage_local": 90,
-    "cloud_base_m": 1250,
-    "visibility_m": 13860,
-    "wind_gusts": 42,
-    "rain": 0.0,
-    "temp": 15.1,
-    "dew_point_spread": 0.8,
-    "wind_speed": 7,
-    "wind_dir_deg": 245,
+    "humidity": 93,
+    "forest_humidity": 96,
+    "rh_900": 96,
+    "rh_850": 99,
+    "cloud_coverage_local": 84,
+    "cloud_base_m": 1288,
+    "visibility_m": 25800,
+    "wind_gusts": 43,
+    "rain": 0.1,
+    "temp": 14.7,
+    "dew_point_spread": 1.1,
+    "wind_speed": 8,
+    "wind_dir_deg": 235,
     "best_window_hours": [
       17,
       20
@@ -5613,26 +5590,26 @@
       }
     ],
     "target_date": "2026-11-16",
-    "relative": "tomorrow",
-    "tomorrow": {
+    "relative": "today",
+    "today": {
       "date": "2026-11-16",
       "verdict": "PARTIAL",
       "score": 50,
       "peak_score": 50,
       "peak_hour": 17,
-      "humidity": 95,
-      "forest_humidity": 98,
-      "rh_900": 98,
-      "rh_850": 100,
-      "cloud_coverage_local": 90,
-      "cloud_base_m": 1250,
-      "visibility_m": 13860,
-      "wind_gusts": 42,
-      "rain": 0.0,
-      "temp": 15.1,
-      "dew_point_spread": 0.8,
-      "wind_speed": 7,
-      "wind_dir_deg": 245,
+      "humidity": 93,
+      "forest_humidity": 96,
+      "rh_900": 96,
+      "rh_850": 99,
+      "cloud_coverage_local": 84,
+      "cloud_base_m": 1288,
+      "visibility_m": 25800,
+      "wind_gusts": 43,
+      "rain": 0.1,
+      "temp": 14.7,
+      "dew_point_spread": 1.1,
+      "wind_speed": 8,
+      "wind_dir_deg": 235,
       "best_window_hours": [
         17,
         20
@@ -5657,6 +5634,51 @@
         }
       ],
       "target_date": "2026-11-16",
+      "relative": "today"
+    },
+    "tomorrow": {
+      "date": "2026-11-17",
+      "verdict": "PARTIAL",
+      "score": 69,
+      "peak_score": 69,
+      "peak_hour": 13,
+      "humidity": 94,
+      "forest_humidity": 96,
+      "rh_900": 100,
+      "rh_850": 60,
+      "cloud_coverage_local": 100,
+      "cloud_base_m": 1275,
+      "visibility_m": 300,
+      "wind_gusts": 30,
+      "rain": 0.0,
+      "temp": 17.5,
+      "dew_point_spread": 1.0,
+      "wind_speed": 4,
+      "wind_dir_deg": 318,
+      "best_window_hours": [
+        13,
+        16
+      ],
+      "best_window": "Odpoledne 13:00–16:00",
+      "summary": "Převalující se cáry mlhy, mezi nimi občasné protrhání.",
+      "slots": [
+        {
+          "hour": 9,
+          "score": 0,
+          "verdict": "CLEAR"
+        },
+        {
+          "hour": 13,
+          "score": 69,
+          "verdict": "PARTIAL"
+        },
+        {
+          "hour": 17,
+          "score": 69,
+          "verdict": "PARTIAL"
+        }
+      ],
+      "target_date": "2026-11-17",
       "relative": "tomorrow"
     }
   },
@@ -5666,31 +5688,31 @@
       "name": "Pico do Arieiro",
       "altitude_m": 1818,
       "category": "mountain",
-      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-15/21_30.jpg",
-      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-15/21_00.jpg",
-      "snapshot_time": "21:30",
+      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-16/06_30.jpg",
+      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-16/06_00.jpg",
+      "snapshot_time": "06:30",
       "live_url": "https://www.netmadeira.com/webcams-madeira/pico-do-arieiro",
       "spot_id": "arieiro",
       "lat": 32.7358,
       "lon": -16.9285,
       "forecast": {
         "kind": "sunrise",
-        "verdict": "NO_GO",
-        "score": 7,
-        "relative": "tomorrow",
+        "verdict": "GO",
+        "score": 86,
+        "relative": "today",
         "target_date": "2026-11-16"
       },
       "current_weather": {
         "temp": 7,
-        "feels_like": 5,
-        "wind_kmh": 5,
+        "feels_like": 4,
+        "wind_kmh": 6,
         "gusts_kmh": null,
-        "humidity_pct": 76,
+        "humidity_pct": 72,
         "precip_mm": 0.0,
-        "weather_code": 3,
-        "condition_key": "overcast",
-        "icon": "☁️",
-        "condition": "☁️ Zataženo"
+        "weather_code": 2,
+        "condition_key": "partly",
+        "icon": "⛅",
+        "condition": "⛅ Polojasno"
       }
     },
     {
@@ -5698,25 +5720,25 @@
       "name": "Achada do Teixeira",
       "altitude_m": 1590,
       "category": "mountain",
-      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/achada-do-teixeira/2026-11-15/21_30.jpg",
-      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/achada-do-teixeira/2026-11-15/21_00.jpg",
-      "snapshot_time": "21:30",
+      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/achada-do-teixeira/2026-11-16/06_30.jpg",
+      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/achada-do-teixeira/2026-11-16/06_00.jpg",
+      "snapshot_time": "06:30",
       "live_url": "https://www.netmadeira.com/webcams-madeira/achada-do-teixeira",
       "spot_id": null,
       "lat": 32.764,
       "lon": -16.92,
       "forecast": null,
       "current_weather": {
-        "temp": 9,
-        "feels_like": 7,
-        "wind_kmh": 5,
+        "temp": 8,
+        "feels_like": 6,
+        "wind_kmh": 6,
         "gusts_kmh": null,
-        "humidity_pct": 76,
+        "humidity_pct": 72,
         "precip_mm": 0.0,
-        "weather_code": 3,
-        "condition_key": "overcast",
-        "icon": "☁️",
-        "condition": "☁️ Zataženo"
+        "weather_code": 2,
+        "condition_key": "partly",
+        "icon": "⛅",
+        "condition": "⛅ Polojasno"
       }
     },
     {
@@ -5724,25 +5746,25 @@
       "name": "Eira do Serrado",
       "altitude_m": 1095,
       "category": "mountain",
-      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/eira-do-serrado/2026-11-15/21_30.jpg",
-      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/eira-do-serrado/2026-11-15/21_00.jpg",
-      "snapshot_time": "21:30",
+      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/eira-do-serrado/2026-11-16/06_30.jpg",
+      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/eira-do-serrado/2026-11-16/06_00.jpg",
+      "snapshot_time": "06:30",
       "live_url": "https://www.netmadeira.com/webcams-madeira/eira-do-serrado",
       "spot_id": null,
       "lat": 32.7125,
       "lon": -16.9606,
       "forecast": null,
       "current_weather": {
-        "temp": 12,
+        "temp": 11,
         "feels_like": 10,
-        "wind_kmh": 5,
+        "wind_kmh": 6,
         "gusts_kmh": null,
-        "humidity_pct": 76,
+        "humidity_pct": 72,
         "precip_mm": 0.0,
-        "weather_code": 3,
-        "condition_key": "overcast",
-        "icon": "☁️",
-        "condition": "☁️ Zataženo"
+        "weather_code": 2,
+        "condition_key": "partly",
+        "icon": "⛅",
+        "condition": "⛅ Polojasno"
       }
     },
     {
@@ -5750,9 +5772,9 @@
       "name": "Rabaçal",
       "altitude_m": 1100,
       "category": "forest",
-      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/rabacal-madeira/2026-11-15/21_30.jpg",
-      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/rabacal-madeira/2026-11-15/21_00.jpg",
-      "snapshot_time": "21:30",
+      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/rabacal-madeira/2026-11-16/06_30.jpg",
+      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/rabacal-madeira/2026-11-16/06_00.jpg",
+      "snapshot_time": "06:30",
       "live_url": "https://www.netmadeira.com/webcams-madeira/rabacal-madeira",
       "spot_id": "fanal",
       "lat": 32.755,
@@ -5761,15 +5783,15 @@
         "kind": "fog",
         "verdict": "PARTIAL",
         "score": 50,
-        "relative": "tomorrow",
+        "relative": "today",
         "target_date": "2026-11-16"
       },
       "current_weather": {
         "temp": 12,
-        "feels_like": 11,
-        "wind_kmh": 5,
-        "gusts_kmh": null,
-        "humidity_pct": 86,
+        "feels_like": 10,
+        "wind_kmh": 10,
+        "gusts_kmh": 36,
+        "humidity_pct": 91,
         "precip_mm": 0.0,
         "weather_code": 3,
         "condition_key": "overcast",
@@ -5782,9 +5804,9 @@
       "name": "Santo da Serra",
       "altitude_m": 670,
       "category": "forest",
-      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/santo-da-serra-golf/2026-11-15/21_30.jpg",
-      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/santo-da-serra-golf/2026-11-15/21_00.jpg",
-      "snapshot_time": "21:30",
+      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/santo-da-serra-golf/2026-11-16/06_30.jpg",
+      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/santo-da-serra-golf/2026-11-16/06_00.jpg",
+      "snapshot_time": "06:30",
       "live_url": "https://www.netmadeira.com/webcams-madeira/santo-da-serra-golf",
       "spot_id": null,
       "lat": 32.7258,
@@ -5792,15 +5814,15 @@
       "forecast": null,
       "current_weather": {
         "temp": 14,
-        "feels_like": 14,
-        "wind_kmh": 4,
+        "feels_like": 11,
+        "wind_kmh": 6,
         "gusts_kmh": null,
-        "humidity_pct": 83,
+        "humidity_pct": 56,
         "precip_mm": 0.0,
-        "weather_code": 3,
-        "condition_key": "overcast",
-        "icon": "☁️",
-        "condition": "☁️ Zataženo"
+        "weather_code": 1,
+        "condition_key": "mostly_clear",
+        "icon": "🌤️",
+        "condition": "🌤️ Skoro jasno"
       }
     },
     {
@@ -5808,25 +5830,25 @@
       "name": "Monte",
       "altitude_m": 580,
       "category": "forest",
-      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/monte/2026-11-15/21_30.jpg",
-      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/monte/2026-11-15/21_00.jpg",
-      "snapshot_time": "21:30",
+      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/monte/2026-11-16/06_30.jpg",
+      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/monte/2026-11-16/06_00.jpg",
+      "snapshot_time": "06:30",
       "live_url": "https://www.netmadeira.com/webcams-madeira/monte",
       "spot_id": null,
       "lat": 32.676,
       "lon": -16.9025,
       "forecast": null,
       "current_weather": {
-        "temp": 15,
-        "feels_like": 15,
-        "wind_kmh": 4,
+        "temp": 14,
+        "feels_like": 12,
+        "wind_kmh": 6,
         "gusts_kmh": null,
-        "humidity_pct": 83,
+        "humidity_pct": 56,
         "precip_mm": 0.0,
-        "weather_code": 3,
-        "condition_key": "overcast",
-        "icon": "☁️",
-        "condition": "☁️ Zataženo"
+        "weather_code": 1,
+        "condition_key": "mostly_clear",
+        "icon": "🌤️",
+        "condition": "🌤️ Skoro jasno"
       }
     },
     {
@@ -5834,20 +5856,20 @@
       "name": "Ponta do Sol",
       "altitude_m": 20,
       "category": "sunset",
-      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/ponta-do-sol/2026-11-15/21_30.jpg",
-      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/ponta-do-sol/2026-11-15/21_00.jpg",
-      "snapshot_time": "21:30",
+      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/ponta-do-sol/2026-11-16/06_30.jpg",
+      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/ponta-do-sol/2026-11-16/06_00.jpg",
+      "snapshot_time": "06:30",
       "live_url": "https://www.netmadeira.com/webcams-madeira/ponta-do-sol",
       "spot_id": null,
       "lat": 32.6783,
       "lon": -17.1034,
       "forecast": null,
       "current_weather": {
-        "temp": 20,
+        "temp": 19,
         "feels_like": 21,
-        "wind_kmh": 4,
+        "wind_kmh": 6,
         "gusts_kmh": null,
-        "humidity_pct": 80,
+        "humidity_pct": 82,
         "precip_mm": 0.0,
         "weather_code": 3,
         "condition_key": "overcast",
@@ -5860,20 +5882,20 @@
       "name": "Ribeira Brava",
       "altitude_m": 20,
       "category": "sunset",
-      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/ribeira-brava/2026-11-15/21_30.jpg",
-      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/ribeira-brava/2026-11-15/21_00.jpg",
-      "snapshot_time": "21:30",
+      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/ribeira-brava/2026-11-16/06_30.jpg",
+      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/ribeira-brava/2026-11-16/06_00.jpg",
+      "snapshot_time": "06:30",
       "live_url": "https://www.netmadeira.com/webcams-madeira/ribeira-brava",
       "spot_id": null,
       "lat": 32.673,
       "lon": -17.062,
       "forecast": null,
       "current_weather": {
-        "temp": 20,
+        "temp": 19,
         "feels_like": 21,
-        "wind_kmh": 4,
+        "wind_kmh": 6,
         "gusts_kmh": null,
-        "humidity_pct": 80,
+        "humidity_pct": 82,
         "precip_mm": 0.0,
         "weather_code": 3,
         "condition_key": "overcast",
@@ -5886,25 +5908,25 @@
       "name": "Câmara de Lobos",
       "altitude_m": 10,
       "category": "sunset",
-      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/camara-de-lobos-baia/2026-11-15/21_30.jpg",
-      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/camara-de-lobos-baia/2026-11-15/21_00.jpg",
-      "snapshot_time": "21:30",
+      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/camara-de-lobos-baia/2026-11-16/06_30.jpg",
+      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/camara-de-lobos-baia/2026-11-16/06_00.jpg",
+      "snapshot_time": "06:30",
       "live_url": "https://www.netmadeira.com/webcams-madeira/camara-de-lobos-baia",
       "spot_id": null,
       "lat": 32.648,
       "lon": -16.977,
       "forecast": null,
       "current_weather": {
-        "temp": 19,
-        "feels_like": 21,
-        "wind_kmh": 5,
-        "gusts_kmh": null,
-        "humidity_pct": 84,
+        "temp": 20,
+        "feels_like": 19,
+        "wind_kmh": 13,
+        "gusts_kmh": 36,
+        "humidity_pct": 63,
         "precip_mm": 0.0,
-        "weather_code": 2,
-        "condition_key": "partly",
-        "icon": "⛅",
-        "condition": "⛅ Polojasno"
+        "weather_code": 1,
+        "condition_key": "mostly_clear",
+        "icon": "🌤️",
+        "condition": "🌤️ Skoro jasno"
       }
     },
     {
@@ -5912,25 +5934,25 @@
       "name": "Funchal – Baía",
       "altitude_m": 10,
       "category": "sunset",
-      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/funchal-baia-do-funchal/2026-11-15/21_30.jpg",
-      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/funchal-baia-do-funchal/2026-11-15/21_00.jpg",
-      "snapshot_time": "21:30",
+      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/funchal-baia-do-funchal/2026-11-16/06_30.jpg",
+      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/funchal-baia-do-funchal/2026-11-16/06_00.jpg",
+      "snapshot_time": "06:30",
       "live_url": "https://www.netmadeira.com/webcams-madeira/funchal-baia-do-funchal",
       "spot_id": null,
       "lat": 32.642,
       "lon": -16.914,
       "forecast": null,
       "current_weather": {
-        "temp": 19,
-        "feels_like": 21,
-        "wind_kmh": 5,
-        "gusts_kmh": null,
-        "humidity_pct": 84,
+        "temp": 20,
+        "feels_like": 19,
+        "wind_kmh": 13,
+        "gusts_kmh": 36,
+        "humidity_pct": 63,
         "precip_mm": 0.0,
-        "weather_code": 2,
-        "condition_key": "partly",
-        "icon": "⛅",
-        "condition": "⛅ Polojasno"
+        "weather_code": 1,
+        "condition_key": "mostly_clear",
+        "icon": "🌤️",
+        "condition": "🌤️ Skoro jasno"
       }
     },
     {
@@ -5938,9 +5960,9 @@
       "name": "Porto Moniz",
       "altitude_m": 15,
       "category": "coast",
-      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/porto-moniz/2026-11-15/21_30.jpg",
-      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/porto-moniz/2026-11-15/21_00.jpg",
-      "snapshot_time": "21:30",
+      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/porto-moniz/2026-11-16/06_30.jpg",
+      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/porto-moniz/2026-11-16/06_00.jpg",
+      "snapshot_time": "06:30",
       "live_url": "https://www.netmadeira.com/webcams-madeira/porto-moniz",
       "spot_id": null,
       "lat": 32.866,
@@ -5948,10 +5970,10 @@
       "forecast": null,
       "current_weather": {
         "temp": 20,
-        "feels_like": 21,
-        "wind_kmh": 9,
-        "gusts_kmh": null,
-        "humidity_pct": 81,
+        "feels_like": 20,
+        "wind_kmh": 16,
+        "gusts_kmh": 39,
+        "humidity_pct": 83,
         "precip_mm": 0.0,
         "weather_code": 3,
         "condition_key": "overcast",
@@ -5964,9 +5986,9 @@
       "name": "Seixal",
       "altitude_m": 10,
       "category": "coast",
-      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/seixal/2026-11-15/21_30.jpg",
-      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/seixal/2026-11-15/21_00.jpg",
-      "snapshot_time": "21:30",
+      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/seixal/2026-11-16/06_30.jpg",
+      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/seixal/2026-11-16/06_00.jpg",
+      "snapshot_time": "06:30",
       "live_url": "https://www.netmadeira.com/webcams-madeira/seixal",
       "spot_id": null,
       "lat": 32.8265,
@@ -5974,10 +5996,10 @@
       "forecast": null,
       "current_weather": {
         "temp": 20,
-        "feels_like": 21,
-        "wind_kmh": 9,
-        "gusts_kmh": null,
-        "humidity_pct": 81,
+        "feels_like": 20,
+        "wind_kmh": 16,
+        "gusts_kmh": 39,
+        "humidity_pct": 83,
         "precip_mm": 0.0,
         "weather_code": 3,
         "condition_key": "overcast",
@@ -5990,25 +6012,25 @@
       "name": "Boaventura",
       "altitude_m": 280,
       "category": "coast",
-      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/boaventura/2026-11-15/21_30.jpg",
-      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/boaventura/2026-11-15/21_00.jpg",
-      "snapshot_time": "21:30",
+      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/boaventura/2026-11-16/06_30.jpg",
+      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/boaventura/2026-11-16/06_00.jpg",
+      "snapshot_time": "06:30",
       "live_url": "https://www.netmadeira.com/webcams-madeira/boaventura",
       "spot_id": null,
       "lat": 32.815,
       "lon": -16.998,
       "forecast": null,
       "current_weather": {
-        "temp": 18,
-        "feels_like": 18,
-        "wind_kmh": 4,
+        "temp": 17,
+        "feels_like": 16,
+        "wind_kmh": 6,
         "gusts_kmh": null,
-        "humidity_pct": 81,
+        "humidity_pct": 64,
         "precip_mm": 0.0,
-        "weather_code": 3,
-        "condition_key": "overcast",
-        "icon": "☁️",
-        "condition": "☁️ Zataženo"
+        "weather_code": 2,
+        "condition_key": "partly",
+        "icon": "⛅",
+        "condition": "⛅ Polojasno"
       }
     },
     {
@@ -6016,25 +6038,25 @@
       "name": "São Jorge",
       "altitude_m": 270,
       "category": "coast",
-      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/sao-jorge/2026-11-15/21_30.jpg",
-      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/sao-jorge/2026-11-15/21_00.jpg",
-      "snapshot_time": "21:30",
+      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/sao-jorge/2026-11-16/06_30.jpg",
+      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/sao-jorge/2026-11-16/06_00.jpg",
+      "snapshot_time": "06:30",
       "live_url": "https://www.netmadeira.com/webcams-madeira/sao-jorge",
       "spot_id": null,
       "lat": 32.833,
       "lon": -16.906,
       "forecast": null,
       "current_weather": {
-        "temp": 18,
-        "feels_like": 19,
-        "wind_kmh": 4,
+        "temp": 17,
+        "feels_like": 16,
+        "wind_kmh": 6,
         "gusts_kmh": null,
-        "humidity_pct": 81,
+        "humidity_pct": 64,
         "precip_mm": 0.0,
-        "weather_code": 3,
-        "condition_key": "overcast",
-        "icon": "☁️",
-        "condition": "☁️ Zataženo"
+        "weather_code": 2,
+        "condition_key": "partly",
+        "icon": "⛅",
+        "condition": "⛅ Polojasno"
       }
     },
     {
@@ -6042,25 +6064,25 @@
       "name": "Machico",
       "altitude_m": 10,
       "category": "coast",
-      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/machico/2026-11-15/21_30.jpg",
-      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/machico/2026-11-15/21_00.jpg",
-      "snapshot_time": "21:30",
+      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/machico/2026-11-16/06_30.jpg",
+      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/machico/2026-11-16/06_00.jpg",
+      "snapshot_time": "06:30",
       "live_url": "https://www.netmadeira.com/webcams-madeira/machico",
       "spot_id": null,
       "lat": 32.719,
       "lon": -16.765,
       "forecast": null,
       "current_weather": {
-        "temp": 18,
-        "feels_like": 20,
-        "wind_kmh": 4,
+        "temp": 16,
+        "feels_like": 14,
+        "wind_kmh": 8,
         "gusts_kmh": null,
-        "humidity_pct": 91,
+        "humidity_pct": 58,
         "precip_mm": 0.0,
-        "weather_code": 3,
-        "condition_key": "overcast",
-        "icon": "☁️",
-        "condition": "☁️ Zataženo"
+        "weather_code": 2,
+        "condition_key": "partly",
+        "icon": "⛅",
+        "condition": "⛅ Polojasno"
       }
     },
     {
@@ -6068,31 +6090,31 @@
       "name": "Caniçal",
       "altitude_m": 15,
       "category": "coast",
-      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/canical/2026-11-15/21_30.jpg",
-      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/canical/2026-11-15/21_00.jpg",
-      "snapshot_time": "21:30",
+      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/canical/2026-11-16/06_30.jpg",
+      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/canical/2026-11-16/06_00.jpg",
+      "snapshot_time": "06:30",
       "live_url": "https://www.netmadeira.com/webcams-madeira/canical",
       "spot_id": "ponta_do_rosto",
       "lat": 32.7385,
       "lon": -16.734,
       "forecast": {
         "kind": "sunrise",
-        "verdict": "MAYBE",
-        "score": 47,
-        "relative": "tomorrow",
+        "verdict": "NO_GO",
+        "score": 42,
+        "relative": "today",
         "target_date": "2026-11-16"
       },
       "current_weather": {
-        "temp": 18,
-        "feels_like": 20,
-        "wind_kmh": 4,
+        "temp": 16,
+        "feels_like": 14,
+        "wind_kmh": 8,
         "gusts_kmh": null,
-        "humidity_pct": 91,
+        "humidity_pct": 58,
         "precip_mm": 0.0,
-        "weather_code": 3,
-        "condition_key": "overcast",
-        "icon": "☁️",
-        "condition": "☁️ Zataženo"
+        "weather_code": 2,
+        "condition_key": "partly",
+        "icon": "⛅",
+        "condition": "⛅ Polojasno"
       }
     }
   ]
