@@ -134,6 +134,34 @@ snížit frekvenci cronu, nebo cachovat historii v repu.
 současně píše „žádná výrazná vlhká vrstva – moře mraků nepravděpodobné". Texty se v jednom souhrnu odporují
 (viz Q1). Opravit až společně s Q1 (stejná příčina).
 
+## Q14 · „Mlha na vrcholu" a zároveň „vrchol je nad vrstvou mraků" – `OPEN`
+
+**Pozorování.** Arieiro 16. 11. 2026 (export z 15. 11. 22:07 UTC): 7 % NO_GO, `problem: fog`, `inversion_case: above`,
+horní hranice mraků 1482 m, vrchol 336 m nad ní. Souhrn říká zároveň „Největší problém je mlha/mrak na vrcholu" a
+„vrchol (1818 m) je nad ní o ~336 m". Uživateli to dává smysl jen jako rozpor.
+
+**Mechanismus (z kódu, přesné vstupy té předpovědi se nepodařilo rekonstruovat).** Dvě nezávislé výpočty ze stejného
+profilu RH:
+1. `estimate_deck_top`: vrstva mraků = RH ≥ 85 %; horní hranice 1482 m (pod vrcholem) ⇒ „nad vrstvou".
+2. `fog_likelihood` (brána `fog`): max z (a) RH ve výšce vrcholu (interpolace 850/800 hPa, rampa 70→90 %), (b) mlha
+   hnaná větrem z RH800 (≥ 80 %) při oblačnosti, (c) přízemní T − rosný bod × `surface_trust` (důvěra roste s RH800
+   65 %+). Žádná z těchto částí nezohledňuje, že inverze je „potvrzená" (vrchol ≥ rezerva nad vrstvou); `high_deck_gate`
+   to dělá (`confirmed`), `fog` ne.
+Souhrn (`_summary_cs`) jmenuje jen první problém z bran a vrstvu mraků doplní z (1), takže se věty odporují.
+
+**Co chybí v kalibraci.** Všech 8 dní potvrzené inverze v archivu (7.–17. 10.) mělo suchý vzduch nad vrstvou
+(RH800 ≤ 45 %), `surface_trust` = 0. Případ „nízká vrstva + vlhko (RH800 ≥ 65–80 %) nad ní" (vícevrstvé mraky) nemá
+žádné hodnocení. Skóre navíc u téže předpovědi skáče: 15. 11. večer 7 %, 16. 11. ráno (nový běh modelu) 51 % MAYBE
+bez mlhy (RH800 78 %, mid 82 %), takže strmé rampy bran reagují na malé změny RH.
+
+**Jak ověřit.** `madeira rate arieiro 2026-11-16 …`; z `forecast_log.jsonl` porovnat běhy téhož dne (rozptyl skóre
+mezi běhy); `scripts/backtest.py`. Až bude hodnocených dnů s vlhkem nad nízkou vrstvou ≥ 2, rozhodnout, zda `fog`
+při potvrzené inverzi nemá odečíst přízemní část (jako `high_deck_gate`).
+
+**Rychlá, bezpečná část (bez změny skóre).** Sjednotit text: při `problem = fog` a `inversion_case = above/edge`
+nepsat „vrchol je nad vrstvou" bez vysvětlení, např. „Pod vrcholem je vrstva mraků, ale vzduch nad ní je vlhký
+(RH 800 hPa X %), vrchol může být ve vlhku/mlze." Nutné předat do souhrnu zdroj `fog` (vrchol vs. vítr vs. přízemí).
+
 ---
 
 ## Log rozhodnutí
