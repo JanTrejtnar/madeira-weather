@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-11-16T19:52:49+00:00",
-  "generated_local": "2026-11-16T19:52:49+00:00",
+  "generated_at": "2026-11-16T22:14:08+00:00",
+  "generated_local": "2026-11-16T22:14:08+00:00",
   "timezone": "Atlantic/Madeira",
   "today": "2026-11-16",
   "model": "best_match",
@@ -233,7 +233,7 @@
         "wind_kmh": 4,
         "gust_kmh": 7,
         "wind_dir_deg": 282,
-        "visibility_km": 28,
+        "visibility_km": 32,
         "precip_mm": 0.0,
         "summary_cs": "Spíš zůstaň v posteli. Skóre 30 %. Největší problém jsou nízké mraky na východním obzoru.",
         "problem": "horizon",
@@ -1632,7 +1632,7 @@
           "pct": 97
         },
         "horizon_low_cloud_pct": 48,
-        "visibility_km": 28,
+        "visibility_km": 32,
         "summary": "Spíš zůstaň v posteli. Skóre 30 %. Největší problém jsou nízké mraky na východním obzoru.",
         "problem": "horizon",
         "weakest": "horizon_clarity",
@@ -3753,10 +3753,10 @@
         "date": "2026-11-18",
         "sunrise": "07:40",
         "verdict": "GO",
-        "score_pct": 78,
+        "score_pct": 79,
         "score_range": [
-          68,
-          88
+          69,
+          89
         ],
         "confidence": "MEDIUM",
         "cloud_deck_top_m": null,
@@ -3765,7 +3765,7 @@
         "wind_kmh": 4,
         "gust_kmh": 18,
         "wind_dir_deg": 286,
-        "summary_cs": "Vypadá to dobře. Skóre 78 %. Nejslabší stránka: barvy oblohy (vysoká oblačnost (cirry) 72 %). Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné.",
+        "summary_cs": "Vypadá to dobře. Skóre 79 %. Nejslabší stránka: barvy oblohy (vysoká oblačnost (cirry) 72 %). Žádná výrazná vlhká vrstva pod vrcholem — moře mraků nepravděpodobné.",
         "inversion_case": "none",
         "problem": null,
         "weakest": "color",
@@ -3804,11 +3804,11 @@
       {
         "date": "2026-11-19",
         "sunrise": "07:41",
-        "verdict": "NO_GO",
-        "score_pct": 44,
+        "verdict": "MAYBE",
+        "score_pct": 47,
         "score_range": [
-          34,
-          54
+          37,
+          57
         ],
         "confidence": "MEDIUM",
         "cloud_deck_top_m": 860,
@@ -3817,7 +3817,7 @@
         "wind_kmh": 1,
         "gust_kmh": 15,
         "wind_dir_deg": 345,
-        "summary_cs": "Spíš zůstaň v posteli. Skóre 44 %. Největší problém je vlhko kolem vrcholu. Pod vrcholem je vrstva mraků (do ~860 m), ale přízemní vzduch je téměř nasycený, takže vrchol může být ve vlhku.",
+        "summary_cs": "Hazard, výsledek je nejistý. Skóre 47 %. Největší problém je vlhko kolem vrcholu. Pod vrcholem je vrstva mraků (do ~860 m), ale přízemní vzduch je téměř nasycený, takže vrchol může být ve vlhku.",
         "inversion_case": "above",
         "problem": "fog",
         "weakest": "color",
@@ -3877,7 +3877,7 @@
         "wind_kmh": 4,
         "gust_kmh": 7,
         "wind_dir_deg": 282,
-        "visibility_km": 28,
+        "visibility_km": 32,
         "precip_mm": 0.0,
         "summary_cs": "Spíš zůstaň v posteli. Skóre 30 %. Největší problém jsou nízké mraky na východním obzoru.",
         "problem": "horizon",
@@ -3935,7 +3935,7 @@
         "wind_kmh": 4,
         "gust_kmh": 9,
         "wind_dir_deg": 318,
-        "visibility_km": 21,
+        "visibility_km": 18,
         "precip_mm": 0.0,
         "summary_cs": "Hazard, výsledek je nejistý. Skóre 67 %. Nejslabší stránka: barvy oblohy (vysoká oblačnost (cirry) 74 %).",
         "problem": null,
@@ -3993,7 +3993,7 @@
         "wind_kmh": 4,
         "gust_kmh": 10,
         "wind_dir_deg": 303,
-        "visibility_km": 20,
+        "visibility_km": 27,
         "precip_mm": 0.0,
         "summary_cs": "Spíš zůstaň v posteli. Skóre 14 %. Největší problém jsou nízké mraky na východním obzoru.",
         "problem": "horizon",
@@ -4105,10 +4105,10 @@
         "date": "2026-11-18",
         "sunset": "18:06",
         "verdict": "NO_GO",
-        "score_pct": 10,
+        "score_pct": 33,
         "score_range": [
-          0,
-          20
+          23,
+          43
         ],
         "confidence": "MEDIUM",
         "horizon_low_cloud_pct": 45,
@@ -4116,23 +4116,18 @@
         "wind_kmh": 4,
         "gust_kmh": 29,
         "wind_dir_deg": 285,
-        "visibility_km": 1,
+        "visibility_km": 25,
         "precip_mm": 0.0,
-        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 10 %. Nejslabší stránka: mlha na vyhlídce (nízká oblačnost na vyhlídce 65 %, rozdíl T − rosný bod 0.9 °C).",
+        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 33 %. Nejslabší stránka: mlha na vyhlídce (nízká oblačnost na vyhlídce 65 %, rozdíl T − rosný bod 0.9 °C).",
         "problem": null,
         "weakest": "low_cloud_penalty",
         "warnings": [
-          "Nízké mraky na západním obzoru (45 %) mohou zakrýt slunce.",
-          "Snížená dohlednost (1 km)."
+          "Nízké mraky na západním obzoru (45 %) mohou zakrýt slunce."
         ],
         "alerts": [
           {
             "code": "horizon",
             "value": 45
-          },
-          {
-            "code": "visibility",
-            "value": 1
           }
         ],
         "sun_azimuth_deg": 248,
@@ -4168,10 +4163,10 @@
         "date": "2026-11-19",
         "sunset": "18:05",
         "verdict": "NO_GO",
-        "score_pct": 18,
+        "score_pct": 10,
         "score_range": [
-          8,
-          28
+          0,
+          20
         ],
         "confidence": "MEDIUM",
         "horizon_low_cloud_pct": 57,
@@ -4179,18 +4174,23 @@
         "wind_kmh": 4,
         "gust_kmh": 12,
         "wind_dir_deg": 41,
-        "visibility_km": 17,
+        "visibility_km": 9,
         "precip_mm": 0.0,
-        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 18 %. Největší problém jsou nízké mraky na obzoru.",
+        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 10 %. Největší problém jsou nízké mraky na obzoru.",
         "problem": "horizon",
         "weakest": "horizon_clarity",
         "warnings": [
-          "Nízké mraky na západním obzoru (57 %) mohou zakrýt slunce."
+          "Nízké mraky na západním obzoru (57 %) mohou zakrýt slunce.",
+          "Snížená dohlednost (9 km)."
         ],
         "alerts": [
           {
             "code": "horizon",
             "value": 57
+          },
+          {
+            "code": "visibility",
+            "value": 9
           }
         ],
         "sun_azimuth_deg": 247,
@@ -4296,10 +4296,10 @@
         "date": "2026-11-18",
         "sunset": "18:05",
         "verdict": "NO_GO",
-        "score_pct": 21,
+        "score_pct": 16,
         "score_range": [
-          11,
-          31
+          6,
+          26
         ],
         "confidence": "MEDIUM",
         "horizon_low_cloud_pct": 42,
@@ -4307,15 +4307,15 @@
         "wind_kmh": 4,
         "gust_kmh": 15,
         "wind_dir_deg": 138,
-        "visibility_km": 14,
+        "visibility_km": 11,
         "precip_mm": 0.0,
-        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 21 %. Nejslabší stránka: mlha na vyhlídce (nízká oblačnost na vyhlídce 92 %, rozdíl T − rosný bod 0.5 °C).",
+        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 16 %. Nejslabší stránka: mlha na vyhlídce (nízká oblačnost na vyhlídce 92 %, rozdíl T − rosný bod 0.5 °C).",
         "problem": null,
         "weakest": "low_cloud_penalty",
         "warnings": [
           "Slunce zapadne za terén (1.5° nad obzorem) dřív než nad mořem.",
           "Nízké mraky na západním obzoru (42 %) mohou zakrýt slunce.",
-          "Snížená dohlednost (14 km)."
+          "Snížená dohlednost (11 km)."
         ],
         "alerts": [
           {
@@ -4324,7 +4324,7 @@
           },
           {
             "code": "visibility",
-            "value": 14
+            "value": 11
           },
           {
             "code": "terrain",
@@ -4364,10 +4364,10 @@
         "date": "2026-11-19",
         "sunset": "18:04",
         "verdict": "NO_GO",
-        "score_pct": 18,
+        "score_pct": 17,
         "score_range": [
-          8,
-          28
+          7,
+          27
         ],
         "confidence": "MEDIUM",
         "horizon_low_cloud_pct": 47,
@@ -4375,15 +4375,15 @@
         "wind_kmh": 5,
         "gust_kmh": 13,
         "wind_dir_deg": 105,
-        "visibility_km": 14,
+        "visibility_km": 13,
         "precip_mm": 0.0,
-        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 18 %. Nejslabší stránka: mlha na vyhlídce (nízká oblačnost na vyhlídce 97 %, rozdíl T − rosný bod 0.8 °C).",
+        "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 17 %. Nejslabší stránka: mlha na vyhlídce (nízká oblačnost na vyhlídce 97 %, rozdíl T − rosný bod 0.8 °C).",
         "problem": null,
         "weakest": "low_cloud_penalty",
         "warnings": [
           "Slunce zapadne za terén (1.5° nad obzorem) dřív než nad mořem.",
           "Nízké mraky na západním obzoru (47 %) mohou zakrýt slunce.",
-          "Snížená dohlednost (14 km)."
+          "Snížená dohlednost (13 km)."
         ],
         "alerts": [
           {
@@ -4392,7 +4392,7 @@
           },
           {
             "code": "visibility",
-            "value": 14
+            "value": 13
           },
           {
             "code": "terrain",
@@ -4498,19 +4498,19 @@
         "wind_kmh": 3,
         "gust_kmh": 28,
         "wind_dir_deg": 316,
-        "visibility_km": 7,
+        "visibility_km": 5,
         "precip_mm": 0.0,
         "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 35 %. Největší problém je mlha/mrak na vrcholu.",
         "problem": null,
         "weakest": null,
         "warnings": [
           "Hodně nízké oblačnosti (2 %) a vlhko u vrcholu – hrozí mlha.",
-          "Snížená dohlednost (7 km)."
+          "Snížená dohlednost (5 km)."
         ],
         "alerts": [
           {
             "code": "visibility",
-            "value": 7
+            "value": 5
           }
         ],
         "sun_azimuth_deg": 248,
@@ -4557,14 +4557,14 @@
         "wind_kmh": 2,
         "gust_kmh": 15,
         "wind_dir_deg": 153,
-        "visibility_km": 13,
+        "visibility_km": 14,
         "precip_mm": 0.0,
         "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 16 %. Největší problém je mlha/mrak na vrcholu.",
         "problem": "fog",
         "weakest": "horizon_clarity",
         "warnings": [
           "Nízké mraky na západním obzoru (35 %) mohou zakrýt slunce.",
-          "Snížená dohlednost (13 km).",
+          "Snížená dohlednost (14 km).",
           "Vrchol bude pravděpodobně v mraku/mlze."
         ],
         "alerts": [
@@ -4577,7 +4577,7 @@
           },
           {
             "code": "visibility",
-            "value": 13
+            "value": 14
           }
         ],
         "sun_azimuth_deg": 247,
@@ -4679,7 +4679,7 @@
         "wind_kmh": 3,
         "gust_kmh": 28,
         "wind_dir_deg": 316,
-        "visibility_km": 7,
+        "visibility_km": 5,
         "precip_mm": 0.0,
         "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 35 %. Největší problém je mlha/mrak na vrcholu.",
         "problem": null,
@@ -4732,7 +4732,7 @@
         "wind_kmh": 2,
         "gust_kmh": 15,
         "wind_dir_deg": 153,
-        "visibility_km": 13,
+        "visibility_km": 14,
         "precip_mm": 0.0,
         "summary_cs": "Dnes to nevypadá na západ, který by stál za cestu. Skóre 25 %. Největší problém je mlha/mrak na vrcholu.",
         "problem": null,
@@ -4740,12 +4740,12 @@
         "warnings": [
           "Hodně nízké oblačnosti (36 %) a vlhko u vrcholu – hrozí mlha.",
           "Mraky sahají k ~1901 m, tedy těsně pod hřeben – hrozí přelévání.",
-          "Snížená dohlednost (13 km)."
+          "Snížená dohlednost (14 km)."
         ],
         "alerts": [
           {
             "code": "visibility",
-            "value": 13
+            "value": 14
           }
         ],
         "sun_azimuth_deg": 247,
@@ -5505,7 +5505,7 @@
     "rh_850": 89,
     "cloud_coverage_local": 71,
     "cloud_base_m": 1350,
-    "visibility_m": 13440,
+    "visibility_m": 14420,
     "wind_gusts": 29,
     "rain": 0.0,
     "temp": 17.4,
@@ -5549,7 +5549,7 @@
       "rh_850": 89,
       "cloud_coverage_local": 71,
       "cloud_base_m": 1350,
-      "visibility_m": 13440,
+      "visibility_m": 14420,
       "wind_gusts": 29,
       "rain": 0.0,
       "temp": 17.4,
@@ -5589,9 +5589,9 @@
       "name": "Pico do Arieiro",
       "altitude_m": 1818,
       "category": "mountain",
-      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-16/19_30.jpg",
-      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-16/19_00.jpg",
-      "snapshot_time": "19:30",
+      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-16/22_00.jpg",
+      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/pico-do-arieiro/2026-11-16/21_30.jpg",
+      "snapshot_time": "22:00",
       "live_url": "https://www.netmadeira.com/webcams-madeira/pico-do-arieiro",
       "spot_id": "arieiro",
       "lat": 32.7358,
@@ -5604,16 +5604,16 @@
         "target_date": "2026-11-17"
       },
       "current_weather": {
-        "temp": 10,
+        "temp": 11,
         "feels_like": 10,
         "wind_kmh": 5,
         "gusts_kmh": null,
-        "humidity_pct": 97,
+        "humidity_pct": 95,
         "precip_mm": 0.0,
-        "weather_code": 45,
-        "condition_key": "fog",
-        "icon": "🌫️",
-        "condition": "🌫️ Mlha"
+        "weather_code": 3,
+        "condition_key": "overcast",
+        "icon": "☁️",
+        "condition": "☁️ Zataženo"
       }
     },
     {
@@ -5621,9 +5621,9 @@
       "name": "Achada do Teixeira",
       "altitude_m": 1590,
       "category": "mountain",
-      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/achada-do-teixeira/2026-11-16/19_30.jpg",
-      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/achada-do-teixeira/2026-11-16/19_00.jpg",
-      "snapshot_time": "19:30",
+      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/achada-do-teixeira/2026-11-16/22_00.jpg",
+      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/achada-do-teixeira/2026-11-16/21_30.jpg",
+      "snapshot_time": "22:00",
       "live_url": "https://www.netmadeira.com/webcams-madeira/achada-do-teixeira",
       "spot_id": null,
       "lat": 32.764,
@@ -5634,12 +5634,12 @@
         "feels_like": 12,
         "wind_kmh": 5,
         "gusts_kmh": null,
-        "humidity_pct": 97,
+        "humidity_pct": 95,
         "precip_mm": 0.0,
-        "weather_code": 45,
-        "condition_key": "fog",
-        "icon": "🌫️",
-        "condition": "🌫️ Mlha"
+        "weather_code": 3,
+        "condition_key": "overcast",
+        "icon": "☁️",
+        "condition": "☁️ Zataženo"
       }
     },
     {
@@ -5647,25 +5647,25 @@
       "name": "Eira do Serrado",
       "altitude_m": 1095,
       "category": "mountain",
-      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/eira-do-serrado/2026-11-16/19_30.jpg",
-      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/eira-do-serrado/2026-11-16/19_00.jpg",
-      "snapshot_time": "19:30",
+      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/eira-do-serrado/2026-11-16/22_00.jpg",
+      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/eira-do-serrado/2026-11-16/21_30.jpg",
+      "snapshot_time": "22:00",
       "live_url": "https://www.netmadeira.com/webcams-madeira/eira-do-serrado",
       "spot_id": null,
       "lat": 32.7125,
       "lon": -16.9606,
       "forecast": null,
       "current_weather": {
-        "temp": 15,
+        "temp": 16,
         "feels_like": 16,
         "wind_kmh": 5,
         "gusts_kmh": null,
-        "humidity_pct": 97,
+        "humidity_pct": 95,
         "precip_mm": 0.0,
-        "weather_code": 45,
-        "condition_key": "fog",
-        "icon": "🌫️",
-        "condition": "🌫️ Mlha"
+        "weather_code": 3,
+        "condition_key": "overcast",
+        "icon": "☁️",
+        "condition": "☁️ Zataženo"
       }
     },
     {
@@ -5673,9 +5673,9 @@
       "name": "Rabaçal",
       "altitude_m": 1100,
       "category": "forest",
-      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/rabacal-madeira/2026-11-16/19_30.jpg",
-      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/rabacal-madeira/2026-11-16/19_00.jpg",
-      "snapshot_time": "19:30",
+      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/rabacal-madeira/2026-11-16/22_00.jpg",
+      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/rabacal-madeira/2026-11-16/21_30.jpg",
+      "snapshot_time": "22:00",
       "live_url": "https://www.netmadeira.com/webcams-madeira/rabacal-madeira",
       "spot_id": "fanal",
       "lat": 32.755,
@@ -5690,9 +5690,9 @@
       "current_weather": {
         "temp": 15,
         "feels_like": 16,
-        "wind_kmh": 6,
-        "gusts_kmh": 40,
-        "humidity_pct": 96,
+        "wind_kmh": 5,
+        "gusts_kmh": 37,
+        "humidity_pct": 97,
         "precip_mm": 0.0,
         "weather_code": 3,
         "condition_key": "overcast",
@@ -5705,9 +5705,9 @@
       "name": "Santo da Serra",
       "altitude_m": 670,
       "category": "forest",
-      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/santo-da-serra-golf/2026-11-16/19_30.jpg",
-      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/santo-da-serra-golf/2026-11-16/19_00.jpg",
-      "snapshot_time": "19:30",
+      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/santo-da-serra-golf/2026-11-16/22_00.jpg",
+      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/santo-da-serra-golf/2026-11-16/21_30.jpg",
+      "snapshot_time": "22:00",
       "live_url": "https://www.netmadeira.com/webcams-madeira/santo-da-serra-golf",
       "spot_id": null,
       "lat": 32.7258,
@@ -5715,15 +5715,15 @@
       "forecast": null,
       "current_weather": {
         "temp": 17,
-        "feels_like": 19,
-        "wind_kmh": 2,
+        "feels_like": 18,
+        "wind_kmh": 3,
         "gusts_kmh": null,
         "humidity_pct": 88,
         "precip_mm": 0.0,
-        "weather_code": 3,
-        "condition_key": "overcast",
-        "icon": "☁️",
-        "condition": "☁️ Zataženo"
+        "weather_code": 2,
+        "condition_key": "partly",
+        "icon": "⛅",
+        "condition": "⛅ Polojasno"
       }
     },
     {
@@ -5731,9 +5731,9 @@
       "name": "Monte",
       "altitude_m": 580,
       "category": "forest",
-      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/monte/2026-11-16/19_30.jpg",
-      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/monte/2026-11-16/19_00.jpg",
-      "snapshot_time": "19:30",
+      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/monte/2026-11-16/22_00.jpg",
+      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/monte/2026-11-16/21_30.jpg",
+      "snapshot_time": "22:00",
       "live_url": "https://www.netmadeira.com/webcams-madeira/monte",
       "spot_id": null,
       "lat": 32.676,
@@ -5741,15 +5741,15 @@
       "forecast": null,
       "current_weather": {
         "temp": 18,
-        "feels_like": 20,
-        "wind_kmh": 2,
+        "feels_like": 19,
+        "wind_kmh": 3,
         "gusts_kmh": null,
         "humidity_pct": 88,
         "precip_mm": 0.0,
-        "weather_code": 3,
-        "condition_key": "overcast",
-        "icon": "☁️",
-        "condition": "☁️ Zataženo"
+        "weather_code": 2,
+        "condition_key": "partly",
+        "icon": "⛅",
+        "condition": "⛅ Polojasno"
       }
     },
     {
@@ -5757,9 +5757,9 @@
       "name": "Ponta do Sol",
       "altitude_m": 20,
       "category": "sunset",
-      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/ponta-do-sol/2026-11-16/19_30.jpg",
-      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/ponta-do-sol/2026-11-16/19_00.jpg",
-      "snapshot_time": "19:30",
+      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/ponta-do-sol/2026-11-16/22_00.jpg",
+      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/ponta-do-sol/2026-11-16/21_30.jpg",
+      "snapshot_time": "22:00",
       "live_url": "https://www.netmadeira.com/webcams-madeira/ponta-do-sol",
       "spot_id": null,
       "lat": 32.6783,
@@ -5767,10 +5767,10 @@
       "forecast": null,
       "current_weather": {
         "temp": 22,
-        "feels_like": 24,
-        "wind_kmh": 7,
+        "feels_like": 25,
+        "wind_kmh": 9,
         "gusts_kmh": null,
-        "humidity_pct": 92,
+        "humidity_pct": 89,
         "precip_mm": 0.0,
         "weather_code": 3,
         "condition_key": "overcast",
@@ -5783,9 +5783,9 @@
       "name": "Ribeira Brava",
       "altitude_m": 20,
       "category": "sunset",
-      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/ribeira-brava/2026-11-16/19_30.jpg",
-      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/ribeira-brava/2026-11-16/19_00.jpg",
-      "snapshot_time": "19:30",
+      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/ribeira-brava/2026-11-16/22_00.jpg",
+      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/ribeira-brava/2026-11-16/21_30.jpg",
+      "snapshot_time": "22:00",
       "live_url": "https://www.netmadeira.com/webcams-madeira/ribeira-brava",
       "spot_id": null,
       "lat": 32.673,
@@ -5793,10 +5793,10 @@
       "forecast": null,
       "current_weather": {
         "temp": 22,
-        "feels_like": 24,
-        "wind_kmh": 7,
+        "feels_like": 25,
+        "wind_kmh": 9,
         "gusts_kmh": null,
-        "humidity_pct": 92,
+        "humidity_pct": 89,
         "precip_mm": 0.0,
         "weather_code": 3,
         "condition_key": "overcast",
@@ -5809,9 +5809,9 @@
       "name": "Câmara de Lobos",
       "altitude_m": 10,
       "category": "sunset",
-      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/camara-de-lobos-baia/2026-11-16/19_30.jpg",
-      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/camara-de-lobos-baia/2026-11-16/19_00.jpg",
-      "snapshot_time": "19:30",
+      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/camara-de-lobos-baia/2026-11-16/22_00.jpg",
+      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/camara-de-lobos-baia/2026-11-16/21_30.jpg",
+      "snapshot_time": "22:00",
       "live_url": "https://www.netmadeira.com/webcams-madeira/camara-de-lobos-baia",
       "spot_id": null,
       "lat": 32.648,
@@ -5819,15 +5819,15 @@
       "forecast": null,
       "current_weather": {
         "temp": 22,
-        "feels_like": 24,
-        "wind_kmh": 9,
+        "feels_like": 25,
+        "wind_kmh": 4,
         "gusts_kmh": null,
-        "humidity_pct": 89,
+        "humidity_pct": 90,
         "precip_mm": 0.0,
-        "weather_code": 3,
-        "condition_key": "overcast",
-        "icon": "☁️",
-        "condition": "☁️ Zataženo"
+        "weather_code": 2,
+        "condition_key": "partly",
+        "icon": "⛅",
+        "condition": "⛅ Polojasno"
       }
     },
     {
@@ -5835,9 +5835,9 @@
       "name": "Funchal – Baía",
       "altitude_m": 10,
       "category": "sunset",
-      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/funchal-baia-do-funchal/2026-11-16/19_30.jpg",
-      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/funchal-baia-do-funchal/2026-11-16/19_00.jpg",
-      "snapshot_time": "19:30",
+      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/funchal-baia-do-funchal/2026-11-16/22_00.jpg",
+      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/funchal-baia-do-funchal/2026-11-16/21_30.jpg",
+      "snapshot_time": "22:00",
       "live_url": "https://www.netmadeira.com/webcams-madeira/funchal-baia-do-funchal",
       "spot_id": null,
       "lat": 32.642,
@@ -5845,15 +5845,15 @@
       "forecast": null,
       "current_weather": {
         "temp": 22,
-        "feels_like": 24,
-        "wind_kmh": 9,
+        "feels_like": 25,
+        "wind_kmh": 4,
         "gusts_kmh": null,
-        "humidity_pct": 89,
+        "humidity_pct": 90,
         "precip_mm": 0.0,
-        "weather_code": 3,
-        "condition_key": "overcast",
-        "icon": "☁️",
-        "condition": "☁️ Zataženo"
+        "weather_code": 2,
+        "condition_key": "partly",
+        "icon": "⛅",
+        "condition": "⛅ Polojasno"
       }
     },
     {
@@ -5861,9 +5861,9 @@
       "name": "Porto Moniz",
       "altitude_m": 15,
       "category": "coast",
-      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/porto-moniz/2026-11-16/19_30.jpg",
-      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/porto-moniz/2026-11-16/19_00.jpg",
-      "snapshot_time": "19:30",
+      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/porto-moniz/2026-11-16/22_00.jpg",
+      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/porto-moniz/2026-11-16/21_30.jpg",
+      "snapshot_time": "22:00",
       "live_url": "https://www.netmadeira.com/webcams-madeira/porto-moniz",
       "spot_id": null,
       "lat": 32.866,
@@ -5871,10 +5871,10 @@
       "forecast": null,
       "current_weather": {
         "temp": 22,
-        "feels_like": 24,
-        "wind_kmh": 12,
-        "gusts_kmh": 38,
-        "humidity_pct": 96,
+        "feels_like": 25,
+        "wind_kmh": 8,
+        "gusts_kmh": null,
+        "humidity_pct": 98,
         "precip_mm": 0.0,
         "weather_code": 3,
         "condition_key": "overcast",
@@ -5887,9 +5887,9 @@
       "name": "Seixal",
       "altitude_m": 10,
       "category": "coast",
-      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/seixal/2026-11-16/19_30.jpg",
-      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/seixal/2026-11-16/19_00.jpg",
-      "snapshot_time": "19:30",
+      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/seixal/2026-11-16/22_00.jpg",
+      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/seixal/2026-11-16/21_30.jpg",
+      "snapshot_time": "22:00",
       "live_url": "https://www.netmadeira.com/webcams-madeira/seixal",
       "spot_id": null,
       "lat": 32.8265,
@@ -5897,10 +5897,10 @@
       "forecast": null,
       "current_weather": {
         "temp": 22,
-        "feels_like": 24,
-        "wind_kmh": 12,
-        "gusts_kmh": 38,
-        "humidity_pct": 96,
+        "feels_like": 25,
+        "wind_kmh": 8,
+        "gusts_kmh": null,
+        "humidity_pct": 98,
         "precip_mm": 0.0,
         "weather_code": 3,
         "condition_key": "overcast",
@@ -5913,9 +5913,9 @@
       "name": "Boaventura",
       "altitude_m": 280,
       "category": "coast",
-      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/boaventura/2026-11-16/19_30.jpg",
-      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/boaventura/2026-11-16/19_00.jpg",
-      "snapshot_time": "19:30",
+      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/boaventura/2026-11-16/22_00.jpg",
+      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/boaventura/2026-11-16/21_30.jpg",
+      "snapshot_time": "22:00",
       "live_url": "https://www.netmadeira.com/webcams-madeira/boaventura",
       "spot_id": null,
       "lat": 32.815,
@@ -5924,9 +5924,9 @@
       "current_weather": {
         "temp": 20,
         "feels_like": 22,
-        "wind_kmh": 2,
+        "wind_kmh": 4,
         "gusts_kmh": null,
-        "humidity_pct": 88,
+        "humidity_pct": 90,
         "precip_mm": 0.0,
         "weather_code": 3,
         "condition_key": "overcast",
@@ -5939,9 +5939,9 @@
       "name": "São Jorge",
       "altitude_m": 270,
       "category": "coast",
-      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/sao-jorge/2026-11-16/19_30.jpg",
-      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/sao-jorge/2026-11-16/19_00.jpg",
-      "snapshot_time": "19:30",
+      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/sao-jorge/2026-11-16/22_00.jpg",
+      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/sao-jorge/2026-11-16/21_30.jpg",
+      "snapshot_time": "22:00",
       "live_url": "https://www.netmadeira.com/webcams-madeira/sao-jorge",
       "spot_id": null,
       "lat": 32.833,
@@ -5950,9 +5950,9 @@
       "current_weather": {
         "temp": 20,
         "feels_like": 22,
-        "wind_kmh": 2,
+        "wind_kmh": 4,
         "gusts_kmh": null,
-        "humidity_pct": 88,
+        "humidity_pct": 90,
         "precip_mm": 0.0,
         "weather_code": 3,
         "condition_key": "overcast",
@@ -5965,9 +5965,9 @@
       "name": "Machico",
       "altitude_m": 10,
       "category": "coast",
-      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/machico/2026-11-16/19_30.jpg",
-      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/machico/2026-11-16/19_00.jpg",
-      "snapshot_time": "19:30",
+      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/machico/2026-11-16/22_00.jpg",
+      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/machico/2026-11-16/21_30.jpg",
+      "snapshot_time": "22:00",
       "live_url": "https://www.netmadeira.com/webcams-madeira/machico",
       "spot_id": null,
       "lat": 32.719,
@@ -5976,14 +5976,14 @@
       "current_weather": {
         "temp": 20,
         "feels_like": 23,
-        "wind_kmh": 3,
+        "wind_kmh": 5,
         "gusts_kmh": null,
-        "humidity_pct": 93,
+        "humidity_pct": 91,
         "precip_mm": 0.0,
-        "weather_code": 3,
-        "condition_key": "overcast",
-        "icon": "☁️",
-        "condition": "☁️ Zataženo"
+        "weather_code": 2,
+        "condition_key": "partly",
+        "icon": "⛅",
+        "condition": "⛅ Polojasno"
       }
     },
     {
@@ -5991,9 +5991,9 @@
       "name": "Caniçal",
       "altitude_m": 15,
       "category": "coast",
-      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/canical/2026-11-16/19_30.jpg",
-      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/canical/2026-11-16/19_00.jpg",
-      "snapshot_time": "19:30",
+      "snapshot_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/canical/2026-11-16/22_00.jpg",
+      "fallback_url": "https://www.netmadeira.com/assets/images/services/webcams/timelapses/netmadeira/canical/2026-11-16/21_30.jpg",
+      "snapshot_time": "22:00",
       "live_url": "https://www.netmadeira.com/webcams-madeira/canical",
       "spot_id": "ponta_do_rosto",
       "lat": 32.7385,
@@ -6008,14 +6008,14 @@
       "current_weather": {
         "temp": 20,
         "feels_like": 23,
-        "wind_kmh": 3,
+        "wind_kmh": 5,
         "gusts_kmh": null,
-        "humidity_pct": 93,
+        "humidity_pct": 91,
         "precip_mm": 0.0,
-        "weather_code": 3,
-        "condition_key": "overcast",
-        "icon": "☁️",
-        "condition": "☁️ Zataženo"
+        "weather_code": 2,
+        "condition_key": "partly",
+        "icon": "⛅",
+        "condition": "⛅ Polojasno"
       }
     }
   ]
