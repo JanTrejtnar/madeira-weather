@@ -768,3 +768,42 @@ def test_sunset_low_cloud_above_coastal_spot_is_not_fog():
     fog = run(0.5)  # základna ~60 m nad vyhlídkou: mlha reálná
     assert ceiling.value == 1.0 and "nad vyhlídkou" in ceiling.explanation
     assert fog.value < 0.3
+
+
+def _fog_under_inversion_features():
+    return features(
+        low_cloud_summit=20.0, east_low_cloud=10.0, east_mid_cloud=10.0, mid_cloud=10.0, high_cloud=30.0,
+        visibility_km=30.0, dewpoint_depression_c=5.0, gust_kmh=23.0, summit_m=1818.0, aloft_hpa=800,
+        rh={925: 95.0, 850: 80.0, 800: 84.0, 700: 50.0},
+        z={925: 850.0, 850: 1560.0, 800: 2070.0, 700: 3170.0},
+    )
+
+
+def test_fog_gate_under_inversion_is_explained_not_contradictory():
+    """Vrchol je nad vrstvou mraků (deck 1323 m), ale vlhko ve výšce vrcholu sráží skóre: text to musí říct."""
+    from madeira.analyzers.sunrise import score_sunrise
+    from madeira.domain.config import Settings
+    from madeira.services.webexport import _fog_detail
+
+    f = _fog_under_inversion_features()
+    a = score_sunrise(f, Settings())
+    assert a.inversion.summit_above_deck_m > 0 and a.gates["fog"] < 0.6
+    assert a.fog_source == "summit_rh"
+    assert "vlhko kolem vrcholu" in a.summary_cs and "RH 82 %" in a.summary_cs
+    assert "mlha/mrak na vrcholu" not in a.summary_cs  # žádné „problém je mlha“ vedle „vrchol je nad vrstvou“
+    detail = _fog_detail(a, f)
+    assert detail["fog_source"] == "summit_rh" and detail["summit_rh_pct"] == 82 and detail["aloft_rh_pct"] == 84
+
+
+def test_fog_source_absent_when_fog_gate_does_not_fire():
+    from madeira.analyzers.sunrise import score_sunrise
+    from madeira.domain.config import Settings
+    from madeira.services.webexport import _fog_detail
+
+    f = features(
+        low_cloud_summit=0.0, east_low_cloud=0.0, east_mid_cloud=0.0, mid_cloud=0.0, high_cloud=30.0,
+        visibility_km=30.0, dewpoint_depression_c=6.0, gust_kmh=10.0,
+        rh={925: 50.0, 850: 40.0, 800: 30.0, 700: 20.0},
+    )
+    a = score_sunrise(f, Settings())
+    assert a.fog_source is None and _fog_detail(a, f) == {}

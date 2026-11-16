@@ -16,7 +16,7 @@ from madeira.analyzers import sunset as _sunset
 from madeira.analyzers.coastal_sunrise import score_coastal_sunrise
 from madeira.analyzers.daily_weather import day_weather
 from madeira.analyzers.features import extract_sunrise_features
-from madeira.analyzers.inversion import summit_rh
+from madeira.analyzers.inversion import rh_aloft, summit_rh
 from madeira.analyzers.sunny_escape import rank_locations, recommendation_cs
 from madeira.analyzers.sunrise import extract_spot_features, score_sunrise
 from madeira.analyzers.sunset import extract_sunset_features, score_sunset
@@ -305,7 +305,20 @@ def _day_entry(analysis: SunriseAnalysis, features) -> dict:
         "precip_mm": round(features.precip_mm, 1),
         "alerts": _alerts(analysis, features),
         "canvas_cloud_pct": _canvas_pct(features),
+        **_fog_detail(analysis, features),
         **_sun_geometry(features),
+    }
+
+
+def _fog_detail(analysis: SunriseAnalysis, features) -> dict:
+    """Zdroj brány mlhy a vlhkosti, ze kterých frontend vysvětlí „mlha na vrcholu“ i při vrcholu nad vrstvou mraků."""
+    if analysis.fog_source is None:
+        return {}
+    summit, aloft = summit_rh(features), rh_aloft(features)
+    return {
+        "fog_source": analysis.fog_source,
+        "summit_rh_pct": None if summit is None else round(summit),
+        "aloft_rh_pct": None if aloft is None else round(aloft),
     }
 
 

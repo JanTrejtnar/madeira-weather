@@ -89,6 +89,24 @@ def fog_likelihood(
     return max(parts) if parts else None
 
 
+def fog_source(
+    f: SunriseFeatures, cfg: FogConfig, mc: MountainCloudConfig | None = None
+) -> str | None:
+    """Která část bran mlhy ji způsobila (pro srozumitelný text): `summit_rh` (vlhko ve výšce vrcholu),
+    `wind` (mlha hnaná větrem při vlhku v 800 hPa) nebo `surface` (přízemní T − rosný bod). None = žádná."""
+    parts: dict[str, float] = {}
+    rh = summit_rh(f)
+    if rh is not None:
+        parts["summit_rh"] = pw(rh, [(cfg.summit_rh_clear, 0.0), (cfg.summit_rh_fog, 1.0)])
+        if mc is not None:
+            cover = cloud_cover(f.low_cloud_summit, f.mid_cloud)
+            parts["wind"] = wind_driven_fog(rh_aloft(f), f.gust_kmh, cover, mc)
+    if f.dewpoint_depression_c is not None:
+        parts["surface"] = surface_trust(f, cfg) * pw(f.dewpoint_depression_c, FOG_DEP)
+    name, value = max(parts.items(), key=lambda kv: kv[1], default=(None, 0.0))
+    return name if value > 0 else None
+
+
 def _confidence(days_ahead: int) -> tuple[str, float]:
     if days_ahead <= 1:
         return "HIGH", 5.0
@@ -145,6 +163,7 @@ def score_sunrise(
     if f.east_low_cloud is not None and f.east_mid_cloud is not None:
         east_block = max(f.east_low_cloud * (1 - clear), 0.6 * f.east_mid_cloud)
     fog = fog_likelihood(f, fog_cfg, mcfg)
+    fog_src = fog_source(f, fog_cfg, mcfg) if (fog or 0.0) > 0 else None
     trust = surface_trust(f, fog_cfg)
 
     comps: list[tuple[str, float, str]] = []
@@ -291,7 +310,10 @@ def score_sunrise(
     verdict = (
         "GO" if score >= cfg.verdict.go else "MAYBE" if score >= cfg.verdict.maybe else "NO_GO"
     )
-    summary = _summary_cs(score, verdict, inv.description_cs, components, gates)
+    summary = _summary_cs(
+        score, verdict, inv.description_cs, components, gates, fog_src, inv.summit_above_deck_m,
+        inv.cloud_deck_top_m, summit_rh(f), rh_aloft(f),
+    )
     return SunriseAnalysis(
         target_date=f.target_date,
         sunrise_utc=f.sunrise_utc,
@@ -304,6 +326,7 @@ def score_sunrise(
         gates=gates,
         summary_cs=summary,
         warnings=warnings,
+        fog_source=fog_src if gates["fog"] < 0.6 else None,
     )
 
 
@@ -316,7 +339,22 @@ _NAMES_CS = {
 }
 
 
-def _summary_cs(score, verdict, inv_text, components, gates) -> str:
+def _fog_under_inversion_cs(source, deck_top, summit_rh_pct, aloft_rh_pct) -> str | None:
+    """Vysvětlení, proč hrozí mlha na vrcholu, i když je vrchol nad horní hranicí vrstvy mraků."""
+    base = f"Pod vrcholem je vrstva mraků (do ~{deck_top:.0f} m), "
+    if source == "summit_rh" and summit_rh_pct is not None:
+        return base + f"ale ve výšce vrcholu je vzduch pořád vlhký (RH {summit_rh_pct:.0f} %), takže vrchol může být ve vlhku nebo v mlze."
+    if source == "wind" and aloft_rh_pct is not None:
+        return base + f"ale nad ní je vlhko (RH {aloft_rh_pct:.0f} % ve výšce ~2 km) a fouká, takže se mraky mohou tvořit i na vrcholu."
+    if source == "surface":
+        return base + "ale přízemní vzduch je téměř nasycený, takže vrchol může být ve vlhku."
+    return None
+
+
+def _summary_cs(
+    score, verdict, inv_text, components, gates,
+    fog_src=None, above_deck_m=None, deck_top_m=None, summit_rh_pct=None, aloft_rh_pct=None,
+) -> str:
     head = {
         "GO": "Vypadá to dobře.",
         "MAYBE": "Hazard, výsledek je nejistý.",
@@ -324,8 +362,17 @@ def _summary_cs(score, verdict, inv_text, components, gates) -> str:
     }[verdict]
     weakest = min(components, key=lambda c: c.value * 100 - 0)
     parts = [f"{head} Skóre {score:.0f} %."]
+    # vrchol je nad vrstvou mraků, přesto brána mlhy sráží skóre: vysvětlit, ne si odporovat
+    under_inversion = (
+        gates["fog"] < 0.6 and gates.get("high_deck", 1.0) >= 0.6 and deck_top_m is not None
+        and above_deck_m is not None and above_deck_m > -200
+    )
+    why = _fog_under_inversion_cs(fog_src, deck_top_m, summit_rh_pct, aloft_rh_pct) if under_inversion else None
     if gates["precip"] < 1:
         parts.append("Největší problém jsou srážky.")
+    elif why:
+        parts.append("Největší problém je vlhko kolem vrcholu.")
+        inv_text = why
     elif gates["fog"] < 0.6 or gates.get("high_deck", 1.0) < 0.6:
         parts.append("Největší problém je mlha/mrak na vrcholu.")
     elif gates.get("overcast", 1.0) < 0.6:

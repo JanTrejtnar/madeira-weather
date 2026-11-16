@@ -300,12 +300,18 @@
           : w.gust_max_kmh < 70 ? `Vítr: silný, nárazy až ${w.gust_max_kmh} km/h.`
           : `Vítr: velmi silný, nárazy až ${w.gust_max_kmh} km/h.`,
       },
+      // vrchol nad vrstvou mraků, ale brána mlhy sráží skóre: vysvětlit zdroj, ne si odporovat
+      fogUnder: (d) => d.problem === "fog" && ["above", "edge"].includes(d.inversion_case) && d.cloud_deck_top_m != null
+        ? ({ summit_rh: d.summit_rh_pct == null ? "" : `ale ve výšce vrcholu je vzduch pořád vlhký (RH ${d.summit_rh_pct} %), takže vrchol může být ve vlhku nebo v mlze.`,
+             wind: d.aloft_rh_pct == null ? "" : `ale nad ní je vlhko (RH ${d.aloft_rh_pct} % ve výšce ~2 km) a fouká, takže se mraky mohou tvořit i na vrcholu.`,
+             surface: "ale přízemní vzduch je téměř nasycený, takže vrchol může být ve vlhku." })[d.fog_source] || ""
+        : "",
       summary: (d, t, sp) => [
         `${t.head[d.verdict]} Skóre ${d.score_pct} %.`,
         d.problem === "precip" ? "Největší problém jsou srážky."
-          : d.problem === "fog" ? "Největší problém je mlha/mrak na vrcholu."
+          : d.problem === "fog" ? (t.fogUnder(d) ? "Největší problém je vlhko kolem vrcholu." : "Největší problém je mlha/mrak na vrcholu.")
           : d.weakest ? `Nejslabší stránka: ${t.comp[d.weakest] || d.weakest}.` : "",
-        ({ none: "Žádná výrazná vlhká vrstva pod vrcholem – moře mraků nepravděpodobné.",
+        t.fogUnder(d) ? `Pod vrcholem je vrstva mraků (do ~${d.cloud_deck_top_m} m), ${t.fogUnder(d)}` : ({ none: "Žádná výrazná vlhká vrstva pod vrcholem – moře mraků nepravděpodobné.",
            above: `Vrstva mraků sahá asi do ${d.cloud_deck_top_m} m, ${sp.name} (${sp.elevation_m} m) je nad ní o ~${d.summit_above_deck_m} m.`,
            edge: `Vrstva mraků sahá asi do ${d.cloud_deck_top_m} m – vrchol je na její hranici.`,
            inside: `Vlhká vrstva sahá až k ~${d.cloud_deck_top_m} m – vrchol bude pravděpodobně v mraku.` })[d.inversion_case] || "",
@@ -394,12 +400,17 @@
           : w.gust_max_kmh < 70 ? `Wind: strong, gusts up to ${w.gust_max_kmh} km/h.`
           : `Wind: very strong, gusts up to ${w.gust_max_kmh} km/h.`,
       },
+      fogUnder: (d) => d.problem === "fog" && ["above", "edge"].includes(d.inversion_case) && d.cloud_deck_top_m != null
+        ? ({ summit_rh: d.summit_rh_pct == null ? "" : `but the air at summit height is still humid (RH ${d.summit_rh_pct}%), so the summit may be in moisture or fog.`,
+             wind: d.aloft_rh_pct == null ? "" : `but it is humid above (RH ${d.aloft_rh_pct}% at ~2 km) and windy, so cloud can form at the summit too.`,
+             surface: "but the near-surface air is almost saturated, so the summit may be in moisture." })[d.fog_source] || ""
+        : "",
       summary: (d, t, sp) => [
         `${t.head[d.verdict]} Score ${d.score_pct}%.`,
         d.problem === "precip" ? "The main problem is rain."
-          : d.problem === "fog" ? "The main problem is fog/cloud at the summit."
+          : d.problem === "fog" ? (t.fogUnder(d) ? "The main problem is moisture around the summit." : "The main problem is fog/cloud at the summit.")
           : d.weakest ? `Weakest factor: ${t.comp[d.weakest] || d.weakest}.` : "",
-        ({ none: "No significant moist layer below the summit – a cloud sea is unlikely.",
+        t.fogUnder(d) ? `There is a cloud deck below the summit (up to ~${d.cloud_deck_top_m} m), ${t.fogUnder(d)}` : ({ none: "No significant moist layer below the summit – a cloud sea is unlikely.",
            above: `The cloud deck tops out around ${d.cloud_deck_top_m} m; ${sp.name} (${sp.elevation_m} m) is ~${d.summit_above_deck_m} m above it.`,
            edge: `The cloud deck tops out around ${d.cloud_deck_top_m} m – the summit sits right at its edge.`,
            inside: `The moist layer reaches ~${d.cloud_deck_top_m} m – the summit will probably be in cloud.` })[d.inversion_case] || "",

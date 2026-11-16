@@ -100,6 +100,8 @@ class SunriseAnalysis(BaseModel):
     gates: dict[str, float]
     summary_cs: str
     warnings: list[str]
+    # co způsobilo bránu mlhy: summit_rh | wind | surface (None = brána nezasáhla)
+    fog_source: str | None = None
 
 
 class SunsetAnalysis(BaseModel):

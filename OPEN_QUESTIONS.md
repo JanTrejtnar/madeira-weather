@@ -134,7 +134,7 @@ snížit frekvenci cronu, nebo cachovat historii v repu.
 současně píše „žádná výrazná vlhká vrstva – moře mraků nepravděpodobné". Texty se v jednom souhrnu odporují
 (viz Q1). Opravit až společně s Q1 (stejná příčina).
 
-## Q14 · „Mlha na vrcholu" a zároveň „vrchol je nad vrstvou mraků" – `OPEN`
+## Q14 · „Mlha na vrcholu" a zároveň „vrchol je nad vrstvou mraků" – `OPEN` (text opraven 2026-11-16, logika otevřená)
 
 **Pozorování.** Arieiro 16. 11. 2026 (export z 15. 11. 22:07 UTC): 7 % NO_GO, `problem: fog`, `inversion_case: above`,
 horní hranice mraků 1482 m, vrchol 336 m nad ní. Souhrn říká zároveň „Největší problém je mlha/mrak na vrcholu" a
@@ -158,7 +158,13 @@ bez mlhy (RH800 78 %, mid 82 %), takže strmé rampy bran reagují na malé změ
 mezi běhy); `scripts/backtest.py`. Až bude hodnocených dnů s vlhkem nad nízkou vrstvou ≥ 2, rozhodnout, zda `fog`
 při potvrzené inverzi nemá odečíst přízemní část (jako `high_deck_gate`).
 
-**Rychlá, bezpečná část (bez změny skóre).** Sjednotit text: při `problem = fog` a `inversion_case = above/edge`
+**Hotovo (text, bez změny skóre).** `SunriseAnalysis.fog_source` (`summit_rh` | `wind` | `surface`), pole
+`fog_source`, `summit_rh_pct`, `aloft_rh_pct` v exportu a nový souhrn v `sunrise.py` i `docs/index.html` (CZ/EN):
+„Největší problém je vlhko kolem vrcholu. Pod vrcholem je vrstva mraků (do ~X m), ale …“. Testy v `test_analyzers.py`.
+**Zjištěno při testu:** wet-column strop z Q1 zasáhne i když je horní hranice mraků jasně pod vrcholem (deck 1323 m,
+RH850 80 %, RH800 84 % ⇒ cap 25 přes `z(800)` místo vrstvy), takže Q1 se netýká jen případů bez vrstvy.
+
+**Původní návrh textu (pro přehled).** Sjednotit text: při `problem = fog` a `inversion_case = above/edge`
 nepsat „vrchol je nad vrstvou" bez vysvětlení, např. „Pod vrcholem je vrstva mraků, ale vzduch nad ní je vlhký
 (RH 800 hPa X %), vrchol může být ve vlhku/mlze." Nutné předat do souhrnu zdroj `fog` (vrchol vs. vítr vs. přízemí).
 
